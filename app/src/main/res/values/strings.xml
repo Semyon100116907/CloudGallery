@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">CloudGallery</string>
+
+    <string name="msg_create">Create</string>
+    <string name="msg_disk">Disk</string>
+    <string name="msg_offline">Offline</string>
+    <string name="msg_settings">Settings</string>
+    <string name="msg_trash">Trash</string>
+
+    <string name="action_download">Download</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_make_photo">Photograph</string>
+    <string name="action_upload">Upload</string>
+    <string name="action_upload_from_gallery">Upload image</string>
+</resources>

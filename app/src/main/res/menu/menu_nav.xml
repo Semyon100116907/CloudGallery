@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_disk"
+        android:enabled="true"
+        android:title="@string/msg_disk"
+        android:icon="@drawable/ic_yandex_disk"/>
+    <item
+        android:id="@+id/nav_offline"
+        android:enabled="true"
+        android:title="@string/msg_offline"
+        android:icon="@drawable/ic_gallery"/>
+    <item
+        android:id="@+id/nav_trash"
+        android:enabled="true"
+        android:title="@string/msg_trash"
+        android:icon="@drawable/ic_delete"/>
+    <item
+        android:id="@+id/nav_settings"
+        android:enabled="true"
+        android:title="@string/msg_settings"
+        android:icon="@drawable/ic_settings"/>
+</menu>

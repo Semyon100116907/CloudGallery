@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Toolbar padding-->
+    <dimen name="first_keyline">16dp</dimen>
+    <dimen name="second_keyline">72dp</dimen>
+    <dimen name="toolbar_horizontal_padding">4dp</dimen>
+    <!--RecyclerView item decoration-->
+    <dimen name="disk_grid_space">5dp</dimen>
+    <dimen name="disk_linear_space">8dp</dimen>
+    <dimen name="photo_detail_space">2dp</dimen>
+    <dimen name="upload_linear_space">4dp</dimen>
+</resources>
