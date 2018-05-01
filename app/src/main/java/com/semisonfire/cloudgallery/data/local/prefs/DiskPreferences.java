@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.data.prefs;
+package com.semisonfire.cloudgallery.data.local.prefs;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -8,11 +8,12 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.main.disk.DiskFragment;
+import com.semisonfire.cloudgallery.ui.main.trash.TrashFragment;
 import com.semisonfire.cloudgallery.utils.BottomBarUtils;
 import com.semisonfire.cloudgallery.utils.FragmentUtils;
 
@@ -27,15 +28,12 @@ public class MainActivity extends BaseActivity implements MainContract.View {
     private static final String STATE_TITLE = "STATE_TITLE";
     private static final String STATE_CURRENT_FRAGMENT = "STATE_CURRENT_FRAGMENT";
 
-    //Toolbar
     private Toolbar mToolbar;
     private String mTitle;
 
-    //Navigation
     private BottomNavigationView mBottomNavigationView;
     private BaseFragment mFragment;
 
-    //Presenter
     private MainPresenter<MainContract.View> mMainPresenter;
 
     @Override
@@ -60,15 +58,11 @@ public class MainActivity extends BaseActivity implements MainContract.View {
 
     @Override
     public void bind() {
-
-        //Presenter
         mMainPresenter = new MainPresenter<>(new DiskPreferences(this));
         mMainPresenter.attachView(this);
 
-        //Toolbar
         mToolbar = findViewById(R.id.toolbar);
 
-        //Navigation
         mBottomNavigationView = findViewById(R.id.nav_bottom);
         addBottomNavigation();
     }
@@ -102,6 +96,7 @@ public class MainActivity extends BaseActivity implements MainContract.View {
             //Recreate api with new token
             DiskClient.getInstance().createApi(this, token);
 
+            //Save new token
             mMainPresenter.setCachedToken(token);
         }
     }
@@ -119,6 +114,7 @@ public class MainActivity extends BaseActivity implements MainContract.View {
                     break;
                 case R.id.nav_trash:
                     mToolbar.setTitle(R.string.msg_trash);
+                    mFragment = new TrashFragment();
                     break;
                 case R.id.nav_settings:
                     mToolbar.setTitle(R.string.msg_settings);
