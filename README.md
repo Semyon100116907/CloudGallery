@@ -1,1 +1,1 @@
-# YaGallery
+# CloudGallery
