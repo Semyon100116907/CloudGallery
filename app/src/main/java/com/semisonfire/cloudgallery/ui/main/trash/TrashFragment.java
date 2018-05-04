@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.ui.main.trash;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,13 +29,15 @@ import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
+import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
+import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.PhotoAdapter;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrashFragment extends BaseFragment implements TrashContract.View {
+public class TrashFragment extends BaseFragment implements TrashContract.View, DialogListener {
 
     private static final String TAG = TrashFragment.class.getSimpleName();
 
@@ -215,7 +219,11 @@ public class TrashFragment extends BaseFragment implements TrashContract.View {
                 if (isSelectable && getSelectedPhotos().size() != mTrashList.size()) {
                     mTrashPresenter.deletePhotos(getSelectedPhotos());
                 } else {
-                    mTrashPresenter.clear();
+                    if (!mTrashList.isEmpty() || !getSelectedPhotos().isEmpty()) {
+                        showDialog(getString(R.string.msg_clear_trash),
+                                getString(R.string.msg_clear_trash_description),
+                                getResources().getColor(R.color.colorAccent));
+                    }
                 }
                 break;
         }
@@ -316,5 +324,30 @@ public class TrashFragment extends BaseFragment implements TrashContract.View {
         if (mTrashPresenter != null) {
             mTrashPresenter.dispose();
         }
+    }
+
+    private void showDialog(String title, String message, int color) {
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity != null) {
+            AlertDialogFragment mAlertDialog = AlertDialogFragment.newInstance(title, message, color);
+            mAlertDialog.setTargetFragment(this, 0);
+            mAlertDialog.show(activity.getSupportFragmentManager(), "alert");
+        }
+    }
+
+    @Override
+    public void onPositiveClick(DialogInterface dialogInterface) {
+        mTrashPresenter.clear();
+        dialogInterface.cancel();
+    }
+
+    @Override
+    public void onNegativeClick(DialogInterface dialogInterface) {
+        dialogInterface.cancel();
+    }
+
+    @Override
+    public void onItemClick(DialogInterface dialogInterface, View view) {
+
     }
 }

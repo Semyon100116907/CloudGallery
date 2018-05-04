@@ -11,6 +11,8 @@
     <string name="msg_uploading">Uploading</string>
     <string name="msg_wait">Connection waiting</string>
     <string name="msg_of">of</string>
+    <string name="msg_clear_trash_description">The contents of the Recycle Bin will be permanently deleted. Are you sure?</string>
+    <string name="msg_clear_trash">Clear trash</string>
 
     <!--Permission messages-->
     <string name="msg_request_permission">Request permission</string>
