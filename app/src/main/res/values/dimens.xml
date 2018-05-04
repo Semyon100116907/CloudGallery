@@ -4,9 +4,17 @@
     <dimen name="first_keyline">16dp</dimen>
     <dimen name="second_keyline">72dp</dimen>
     <dimen name="toolbar_horizontal_padding">4dp</dimen>
+
     <!--RecyclerView item decoration-->
     <dimen name="disk_grid_space">5dp</dimen>
     <dimen name="disk_linear_space">8dp</dimen>
     <dimen name="photo_detail_space">2dp</dimen>
     <dimen name="upload_linear_space">4dp</dimen>
+
+    <!--CardView elevation-->
+    <dimen name="elevation">2dp</dimen>
+
+    <!--Photo size-->
+    <dimen name="photo_min_height">100dp</dimen>
+    <dimen name="photo_min_width">100dp</dimen>
 </resources>

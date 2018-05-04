@@ -4,11 +4,16 @@
         <item name="android:colorBackground">@color/gray</item>
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryDark">@color/black</item>
+        <item name="cardViewStyle">@style/CardView</item>
         <item name="android:textColorPrimary">@color/black</item>
-        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:textColorSecondary">@color/black</item>
         <item name="android:textColorHint">@color/black</item>
         <item name="coordinatorLayoutStyle">@style/Widget.Design.CoordinatorLayout</item>
         <item name="android:colorControlHighlight" tools:targetApi="lollipop">@android:color/darker_gray</item>
+    </style>
+
+    <style name="Custom.FullScreen" parent="Custom.NoActionBar">
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="Custom.NoActionBar" parent="Theme.AppCompat.Light.DarkActionBar">

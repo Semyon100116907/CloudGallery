@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.utils;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.v4.content.FileProvider;
 
 import com.semisonfire.cloudgallery.BuildConfig;
@@ -11,7 +12,8 @@ import java.io.File;
 public class ExternalFileProvider extends FileProvider {
 
     private Context mContext;
-    private File mDirectory;
+    private File mPrivateDirectory;
+    private File mPublicDirectory;
 
     public ExternalFileProvider() {
         super();
@@ -23,7 +25,7 @@ public class ExternalFileProvider extends FileProvider {
     }
 
     public File getFile(Uri uri) {
-        return new File(getDirectory(), uri.getLastPathSegment());
+        return new File(getPrivateDirectory(), uri.getLastPathSegment());
     }
 
     public Uri getUri(File file) {
@@ -34,11 +36,15 @@ public class ExternalFileProvider extends FileProvider {
         return getUriForFile(mContext, authority, file);
     }
 
-    public void setDirectory(File directory, String name) {
-        mDirectory = new File(directory, name);
+    public void setPrivateDirectory(File directory, String name) {
+        mPrivateDirectory = new File(directory, name);
     }
 
-    public File getDirectory() {
-        return mDirectory;
+    public File getPrivateDirectory() {
+        return mPrivateDirectory;
+    }
+
+    public File getPublicDirectory() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
     }
 }

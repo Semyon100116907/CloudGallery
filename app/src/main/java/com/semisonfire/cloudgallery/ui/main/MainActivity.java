@@ -50,6 +50,7 @@ public class MainActivity extends BaseActivity implements MainContract.View {
             mTitle = savedInstanceState.getString(STATE_TITLE);
             mToolbar.setTitle(mTitle);
         } else {
+            mTitle = getString(R.string.msg_disk);
             mFragment = new DiskFragment();
         }
         setSupportActionBar(mToolbar);
@@ -93,8 +94,8 @@ public class MainActivity extends BaseActivity implements MainContract.View {
                 return;
             }
 
-            //Recreate api with new token
-            DiskClient.getInstance().createApi(this, token);
+            //Update token
+            DiskClient.getInstance().getAuthInterceptor().setToken(token);
 
             //Save new token
             mMainPresenter.setCachedToken(token);
@@ -108,9 +109,6 @@ public class MainActivity extends BaseActivity implements MainContract.View {
                 case R.id.nav_disk:
                     mToolbar.setTitle(R.string.msg_disk);
                     mFragment = new DiskFragment();
-                    break;
-                case R.id.nav_offline:
-                    mToolbar.setTitle(R.string.msg_offline);
                     break;
                 case R.id.nav_trash:
                     mToolbar.setTitle(R.string.msg_trash);
@@ -129,7 +127,6 @@ public class MainActivity extends BaseActivity implements MainContract.View {
         mBottomNavigationView.setOnNavigationItemReselectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.nav_disk:
-                case R.id.nav_offline:
                 case R.id.nav_trash:
                 case R.id.nav_settings:
                     mFragment.scrollToTop();

@@ -26,7 +26,7 @@ public class DiskClient {
 
     //Rest api url
     public static final String BASE_URL = "https://cloud-api.yandex.net" + "/v1/";
-    //App id
+    //App client id
     public static final String CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f";
     //Yandex oauth url
     public static final String OAUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=" + CLIENT_ID;
@@ -34,12 +34,18 @@ public class DiskClient {
     public static final int DISK_CACHE_SIZE = 10 * 1024 * 1024;
 
     //Max items per request
-    public static final int LIMIT = 20;
+    public static final int MAX_LIMIT = 15;
 
     private static DiskClient instance;
     private static ConnectivityManager connectivityManager;
     private static DiskApi api;
     private static String token;
+
+    private AuthInterceptor authInterceptor;
+
+    public AuthInterceptor getAuthInterceptor() {
+        return authInterceptor;
+    }
 
     private DiskClient() {
     }
@@ -73,8 +79,12 @@ public class DiskClient {
         //Auth token
         DiskClient.token = token;
 
+        //Add authenticator
+        authInterceptor = new AuthInterceptor();
+        authInterceptor.setToken(token);
+
         //Create http client
-        OkHttpClient httpClient = createHttpClient(context.getCacheDir(), "response-cache", token);
+        OkHttpClient httpClient = createHttpClient(context.getCacheDir(), "response-cache");
 
         //Create gson object
         Gson gson = new GsonBuilder()
@@ -91,9 +101,6 @@ public class DiskClient {
 
         //Create api
         api = retrofit.create(DiskApi.class);
-
-        //Create picasso
-        createPicasso(context);
     }
 
     /**
@@ -103,28 +110,22 @@ public class DiskClient {
     public void createPicasso(Context context) {
 
         //Create http client for picasso downloader
-        OkHttpClient picassoClient = createHttpClient(context.getCacheDir(), "picasso-cache", token);
+        OkHttpClient picassoClient = createHttpClient(context.getCacheDir(), "picasso-cache");
 
         //Build picasso instance
         Picasso picasso = new Picasso.Builder(context)
                 .indicatorsEnabled(BuildConfig.DEBUG)
                 .loggingEnabled(BuildConfig.DEBUG)
                 .downloader(new OkHttp3Downloader(picassoClient))
-                .listener((picasso1, uri, exception) -> exception.printStackTrace())
+                .listener((pic, uri, exception) -> exception.printStackTrace())
                 .build();
 
         Picasso.setSingletonInstance(picasso);
     }
 
     /** Create http client {@link OkHttpClient}. */
-    private OkHttpClient createHttpClient(File cacheDir, String cacheName, String token) {
+    private OkHttpClient createHttpClient(File cacheDir, String cacheName) {
 
-        //Add logging
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        //Add authenticator
-        AuthInterceptor authInterceptor = new AuthInterceptor(token);
         NetworkConnectionInterceptor networkConnectionInterceptor = new NetworkConnectionInterceptor() {
             @Override
             public boolean isInternetAvailable() {
@@ -141,7 +142,10 @@ public class DiskClient {
                 .addInterceptor(authInterceptor)
                 .addInterceptor(networkConnectionInterceptor);
 
+        //Add logging in debug
         if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             builder.addInterceptor(loggingInterceptor);
         }
 

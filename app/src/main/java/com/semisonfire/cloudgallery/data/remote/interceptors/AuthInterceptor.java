@@ -11,13 +11,17 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class AuthInterceptor implements Interceptor {
+public final class AuthInterceptor implements Interceptor {
 
-    private String token;
+    private volatile String token;
 
-    public AuthInterceptor(String token) {
+    public void setToken(String token) {
         this.token = token;
     }
+
+    /*public AuthInterceptor(String token) {
+        this.token = token;
+    }*/
 
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
@@ -39,7 +43,6 @@ public class AuthInterceptor implements Interceptor {
         if (unauthorized) {
             throw new UnauthorizedException(response.code(), response.message());
         }
-        //Log.e("RESPONSE", "authenticate: " + response.message());
         return response;
     }
 }

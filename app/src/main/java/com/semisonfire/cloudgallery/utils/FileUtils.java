@@ -17,7 +17,8 @@ public class FileUtils {
     private static FileUtils instance;
     private ExternalFileProvider fileProvider;
 
-    private FileUtils() {}
+    private FileUtils() {
+    }
 
     public static void initInstance(ExternalFileProvider fileProvider) {
         if (instance == null) {
@@ -36,19 +37,52 @@ public class FileUtils {
 
     public Uri createShareFile(Bitmap bitmap) {
         Uri uri = getLocalFileUri("share_image_" + System.currentTimeMillis());
-        saveBitmapIntoFile(uri, bitmap);
+        saveFile(uri, bitmap);
         return uri;
     }
 
-    public void saveBitmapIntoFile(Uri uri, Bitmap bitmap) {
-        saveBitmapIntoFile(getFile(uri), bitmap);
+    public String savePublicFile(Bitmap bitmap, String fileName) {
+        File publicDirectory = new File(fileProvider.getPublicDirectory(), "CloudGallery");
+        if (!publicDirectory.exists()) {
+            publicDirectory.mkdir();
+        }
+        int index = fileName.lastIndexOf('.');
+        String name = fileName.substring(0, index);
+        String extension = fileName.substring(index);
+        File file = createPublicFile(publicDirectory, name, extension, 0);
+        saveFile(file, bitmap);
+        return file.getAbsolutePath();
     }
 
-    public void saveBitmapIntoFile(File file, Bitmap bitmap) {
+    private File createPublicFile(File directory, String name, String extension, int counter) {
+
+        String newName = name;
+        if (counter != 0) {
+            newName = name + "(" + String.valueOf(counter) + ")";
+        }
+
+        File file = new File(directory, newName + extension);
+        if (file.exists()) {
+            counter++;
+            return createPublicFile(directory, name, extension, counter);
+        }
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
+    public void saveFile(Uri uri, Bitmap bitmap) {
+        saveFile(getFile(uri), bitmap);
+    }
+
+    public void saveFile(File file, Bitmap bitmap) {
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 90, fileOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -64,6 +98,7 @@ public class FileUtils {
 
     /**
      * Get local file
+     *
      * @param uri - uri with content:// scheme
      * @return - file
      */
@@ -73,6 +108,7 @@ public class FileUtils {
 
     /**
      * Get local file uri with today`s date name
+     *
      * @return - file uri
      */
     public Uri getLocalFileUri() {
@@ -81,6 +117,7 @@ public class FileUtils {
 
     /**
      * Get local file uri with {@param date}
+     *
      * @param date - file creation date
      * @return - file uri
      */
@@ -91,12 +128,13 @@ public class FileUtils {
 
     /**
      * Get local file uri
+     *
      * @param name - file name
      * @return - file uri
      */
     public Uri getLocalFileUri(String name) {
 
-        File mediaStorageDir = fileProvider.getDirectory();
+        File mediaStorageDir = fileProvider.getPrivateDirectory();
         if (!mediaStorageDir.exists()) {
             mediaStorageDir.mkdir();
         }
