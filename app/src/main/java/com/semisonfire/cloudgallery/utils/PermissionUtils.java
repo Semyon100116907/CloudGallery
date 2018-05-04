@@ -18,15 +18,15 @@ public class PermissionUtils {
         return !useRunTimePermissions() || activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void requestPermission(Activity activity, String permission, int requestCode) {
+    public static void requestPermissions(Activity activity, String[] permission, int requestCode) {
         if (useRunTimePermissions()) {
-            activity.requestPermissions(new String[]{permission}, requestCode);
+            activity.requestPermissions(permission, requestCode);
         }
     }
 
-    public static void requestPermission(Fragment fragment, String permission, int requestCode) {
+    public static void requestPermissions(Fragment fragment, String[] permission, int requestCode) {
         if (useRunTimePermissions()) {
-            fragment.requestPermissions(new String[]{permission}, requestCode);
+            fragment.requestPermissions(permission, requestCode);
         }
     }
 
