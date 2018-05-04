@@ -3,8 +3,8 @@ package com.semisonfire.cloudgallery.ui.photo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.ui.base.BasePresenter;
 import com.semisonfire.cloudgallery.utils.FileUtils;

@@ -5,8 +5,8 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.semisonfire.cloudgallery.data.local.LocalDataSource;
-import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException;

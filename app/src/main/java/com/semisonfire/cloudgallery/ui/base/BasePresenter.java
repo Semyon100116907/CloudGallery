@@ -1,7 +1,5 @@
 package com.semisonfire.cloudgallery.ui.base;
 
-import android.util.Log;
-
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 
 import io.reactivex.Single;

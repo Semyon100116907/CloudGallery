@@ -19,7 +19,6 @@ import android.widget.ProgressBar;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.model.Photo;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;

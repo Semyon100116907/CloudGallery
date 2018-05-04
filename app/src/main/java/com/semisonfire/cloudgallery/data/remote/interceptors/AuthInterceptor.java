@@ -1,7 +1,6 @@
 package com.semisonfire.cloudgallery.data.remote.interceptors;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException;
 

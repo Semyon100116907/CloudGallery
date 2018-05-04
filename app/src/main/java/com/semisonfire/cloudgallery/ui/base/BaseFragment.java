@@ -26,8 +26,8 @@ import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException;
 import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException;
-import com.semisonfire.cloudgallery.ui.custom.StateView;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
+import com.semisonfire.cloudgallery.ui.custom.StateView;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
 
 import java.util.ArrayList;
