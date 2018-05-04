@@ -1,6 +1,8 @@
 package com.semisonfire.cloudgallery.ui.base;
 
-import com.semisonfire.cloudgallery.data.prefs.DiskPreferences;
+import android.util.Log;
+
+import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -30,6 +32,7 @@ public class BasePresenter<T extends MvpView> implements MvpPresenter<T> {
     public void getCachedToken() {
         getCompositeDisposable().add(
                 Single.fromCallable(() -> mDiskPreferences.getPrefToken())
+                        .onErrorReturnItem("")
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(token -> getMvpView().onTokenLoaded(token)));

@@ -26,10 +26,6 @@ public class Photo implements Parcelable {
     @ColumnInfo(name = "preview")
     private String preview;
 
-    @SerializedName("file")
-    @ColumnInfo(name = "file")
-    private String file;
-
     @ColumnInfo(name = "removed")
     private boolean isRemoved;
 
@@ -37,10 +33,7 @@ public class Photo implements Parcelable {
     private boolean isOffline;
 
     @ColumnInfo(name = "upload")
-    private boolean isUpload;
-
-    @ColumnInfo(name = "uploading")
-    private boolean isUploading;
+    private boolean isUploaded;
 
     @ColumnInfo(name = "local_path")
     private String localPath;
@@ -53,9 +46,17 @@ public class Photo implements Parcelable {
     @Ignore
     private String mediaType;
 
-    @SerializedName("created")
-    @ColumnInfo(name = "created_at")
-    private String createdAt;
+    //Only trash
+    @SerializedName("origin_path")
+    @Ignore
+    private String originPath;
+
+    @SerializedName("modified")
+    @ColumnInfo(name = "modified_at")
+    private String modifiedAt;
+
+    @Ignore
+    private boolean isSelected;
 
     public Photo() {}
 
@@ -84,14 +85,6 @@ public class Photo implements Parcelable {
         preview = imageUri;
     }
 
-    public String getFile() {
-        return file;
-    }
-
-    public void setFile(String file) {
-        this.file = file;
-    }
-
     public boolean isRemoved() {
         return isRemoved;
     }
@@ -108,20 +101,12 @@ public class Photo implements Parcelable {
         isOffline = offline;
     }
 
-    public boolean isUpload() {
-        return isUpload;
+    public boolean isUploaded() {
+        return isUploaded;
     }
 
-    public void setUpload(boolean upload) {
-        isUpload = upload;
-    }
-
-    public boolean isUploading() {
-        return isUploading;
-    }
-
-    public void setUploading(boolean uploading) {
-        isUploading = uploading;
+    public void setUploaded(boolean uploaded) {
+        isUploaded = uploaded;
     }
 
     public String getLocalPath() {
@@ -148,12 +133,20 @@ public class Photo implements Parcelable {
         this.mediaType = mediaType;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
+    public String getModifiedAt() {
+        return modifiedAt;
     }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setModifiedAt(String modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 
     @Override
@@ -167,21 +160,19 @@ public class Photo implements Parcelable {
         return super.equals(obj);
     }
 
-    //region ParcelImpl
-    @Ignore
     protected Photo(Parcel in) {
         id = in.readString();
         name = in.readString();
         preview = in.readString();
-        file = in.readString();
         isRemoved = in.readByte() != 0;
         isOffline = in.readByte() != 0;
-        isUpload = in.readByte() != 0;
-        isUploading = in.readByte() != 0;
+        isUploaded = in.readByte() != 0;
+        isSelected = in.readByte() != 0;
         localPath = in.readString();
         remotePath = in.readString();
         mediaType = in.readString();
-        createdAt = in.readString();
+        originPath = in.readString();
+        modifiedAt = in.readString();
     }
 
     @Override
@@ -189,15 +180,15 @@ public class Photo implements Parcelable {
         dest.writeString(id);
         dest.writeString(name);
         dest.writeString(preview);
-        dest.writeString(file);
         dest.writeByte((byte) (isRemoved ? 1 : 0));
         dest.writeByte((byte) (isOffline ? 1 : 0));
-        dest.writeByte((byte) (isUpload ? 1 : 0));
-        dest.writeByte((byte) (isUploading ? 1 : 0));
+        dest.writeByte((byte) (isUploaded ? 1 : 0));
+        dest.writeByte((byte) (isSelected ? 1 : 0));
         dest.writeString(localPath);
         dest.writeString(remotePath);
         dest.writeString(mediaType);
-        dest.writeString(createdAt);
+        dest.writeString(originPath);
+        dest.writeString(modifiedAt);
     }
 
     @Override
@@ -216,5 +207,5 @@ public class Photo implements Parcelable {
             return new Photo[size];
         }
     };
-    //endregion
+
 }

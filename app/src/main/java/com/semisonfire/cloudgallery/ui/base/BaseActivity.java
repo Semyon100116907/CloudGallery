@@ -8,11 +8,6 @@ public abstract class BaseActivity extends AppCompatActivity implements MvpView 
     private static final String TAG = BaseActivity.class.getSimpleName();
 
     @Override
-    public void onSuccess(String message) {
-
-    }
-
-    @Override
     public void onTokenLoaded(String token) {
 
     }
