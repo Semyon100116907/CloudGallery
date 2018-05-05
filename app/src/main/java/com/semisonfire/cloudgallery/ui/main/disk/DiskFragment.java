@@ -285,9 +285,11 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         getActionBar().setDisplayHomeAsUpEnabled(enabled);
         getActionBar().setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
                 : getResources().getColor(R.color.white)));
+
         if (!enabled) {
             getSelectedPhotos().clear();
             getActionBar().setTitle(R.string.msg_disk);
+            mDiskAdapter.setSelection(false);
         }
     }
 
@@ -299,7 +301,6 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             mPhotoList.addAll(photos);
             mDiskAdapter.addPhotos(photos);
             getStateView().hideStateView();
-            scrollToTop();
         } else {
             if (mPhotoList.isEmpty()) {
                 getStateView().showEmptyView(R.drawable.ic_yandex_disk,
@@ -329,8 +330,10 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
                         mPhotos.add(getLocalPhoto(imageUri));
                     }
 
-                    mDiskAdapter.addUploadPhotos(mPhotos);
-                    mDiskPresenter.uploadPhotos(mPhotos);
+                    if (mPhotos != null) {
+                        mDiskAdapter.addUploadPhotos(mPhotos);
+                        mDiskPresenter.uploadPhotos(mPhotos);
+                    }
                     break;
                 case CAMERA_REQUEST:
                     if (mCameraFileUri != null) {
@@ -365,7 +368,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         isLastPage = false;
         isLoading = true;
         mPhotoList.clear();
-        mDiskAdapter.setPhotos(mPhotoList);
+        mDiskAdapter.clear();
         if (!mUploadingList.isEmpty()) {
             mDiskAdapter.addUploadPhotos(mUploadingList);
         }
@@ -394,9 +397,10 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
     @Override
     public void onPhotoDeleted(Photo photo) {
-        updateDataSet();
+        //updateDataSet();
         setEnabledSelection(false);
         mDiskAdapter.setSelection(false);
+        mDiskAdapter.removePhoto(photo);
         Toast.makeText(getContext(), photo.getName(), Toast.LENGTH_LONG).show();
     }
 

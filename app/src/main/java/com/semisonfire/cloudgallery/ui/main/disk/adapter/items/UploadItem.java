@@ -40,11 +40,6 @@ public class UploadItem extends DiskItem {
         return TYPE_UPLOAD;
     }
 
-    @Override
-    public String getDate() {
-        return null;
-    }
-
     public int getVisibility() {
         return visibility;
     }

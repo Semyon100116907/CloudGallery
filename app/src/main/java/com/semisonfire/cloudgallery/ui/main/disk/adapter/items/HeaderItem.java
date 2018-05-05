@@ -5,7 +5,6 @@ public class HeaderItem extends DiskItem {
     private String date;
     private int count;
 
-    @Override
     public String getDate() {
         return date;
     }

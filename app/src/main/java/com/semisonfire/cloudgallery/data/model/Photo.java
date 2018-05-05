@@ -7,11 +7,12 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "photo")
-public class Photo implements Parcelable {
+public class Photo implements Parcelable, Comparable {
 
     @SerializedName("resource_id")
     @PrimaryKey
@@ -37,6 +38,10 @@ public class Photo implements Parcelable {
 
     @ColumnInfo(name = "local_path")
     private String localPath;
+
+    @SerializedName("file")
+    @ColumnInfo(name = "file")
+    private String file;
 
     @SerializedName("path")
     @ColumnInfo(name = "remote_path")
@@ -77,8 +82,16 @@ public class Photo implements Parcelable {
         this.name = name;
     }
 
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
     public String getPreview() {
-        return preview;
+        return preview != null ? preview : file;
     }
 
     public void setPreview(String imageUri) {
@@ -154,10 +167,16 @@ public class Photo implements Parcelable {
 
         if (obj instanceof Photo) {
             Photo p = (Photo) obj;
-            return id.equals(p.getId());
+            return name.equals(p.getName()) && getPreview().equals(p.getPreview());
         }
 
         return super.equals(obj);
+    }
+
+    @Override
+    public int compareTo(@NonNull Object o) {
+        Photo photo = (Photo) o;
+        return name.compareTo(photo.getName());
     }
 
     protected Photo(Parcel in) {
@@ -207,5 +226,4 @@ public class Photo implements Parcelable {
             return new Photo[size];
         }
     };
-
 }

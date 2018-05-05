@@ -93,8 +93,7 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void setPhotos(List<Photo> items) {
-        mMap.clear();
-        mDiskItems.clear();
+        clear();
         Map<String, List<Photo>> map = toMap(items);
         updateItems(map);
     }
@@ -102,6 +101,13 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void addPhotos(List<Photo> items) {
         Map<String, List<Photo>> map = toMap(items);
         updateItems(map);
+    }
+
+    public void clear() {
+        int currentSize = getItemCount();
+        mMap.clear();
+        mDiskItems.clear();
+        notifyItemRangeRemoved(0, currentSize);
     }
 
     private Map<String, List<Photo>> toMap(List<Photo> photos) {
@@ -130,13 +136,16 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (headerPos == -1) {
                     headerPos = mDiskItems.get(0) instanceof UploadItem ? 1 : 0;
                     mDiskItems.add(headerPos, headerItem);
+                    notifyItemInserted(headerPos);
                 }
                 galleryItem = (GalleryItem) mDiskItems.get(headerPos + 1);
-                galleryItem.setDate(date);
                 galleryItem.getPhotos().addAll(map.get(date));
+                mDiskItems.set(headerPos + 1, galleryItem);
+                notifyItemChanged(headerPos + 1);
 
                 headerItem.setCount(galleryItem.getPhotos().size());
                 mDiskItems.set(headerPos, headerItem);
+                notifyItemChanged(headerPos);
             } else {
                 values = new ArrayList<>(map.get(date));
                 mMap.put(date, values);
@@ -144,13 +153,11 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 mDiskItems.add(headerItem);
 
                 galleryItem = new GalleryItem();
-                galleryItem.setDate(date);
                 galleryItem.setPhotos(values);
                 mDiskItems.add(galleryItem);
+                notifyItemRangeInserted(getItemCount(), 2);
             }
         }
-
-        notifyDataSetChanged();
     }
 
     public void addPhoto(Photo photo) {
@@ -160,8 +167,6 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         headerItem.setDate(date);
 
         GalleryItem galleryItem = new GalleryItem();
-        galleryItem.setDate(date);
-
         List<Photo> values = mMap.get(date);
 
         int headerPos = mDiskItems.size() > 0 ?
@@ -175,14 +180,17 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             galleryItem.setPhotos(values);
             mDiskItems.add(headerPos + 1, galleryItem);
-            notifyItemInserted(headerPos + 1);
+            notifyItemRangeInserted(headerPos, 2);
         }
 
-        values.add(0, photo);
+        galleryItem = (GalleryItem) mDiskItems.get(headerPos + 1);
+        galleryItem.getPhotos().add(0, photo);
+        mDiskItems.set(headerPos + 1, galleryItem);
+
         headerItem.setCount(values.size());
         mDiskItems.set(headerPos, headerItem);
 
-        notifyDataSetChanged();
+        notifyItemRangeChanged(headerPos, 2);
     }
 
     public void addUploadPhotos(List<Photo> photos) {
@@ -226,6 +234,20 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void setSelection(boolean selected) {
         this.selected = selected;
         notifyDataSetChanged();
+    }
+
+    public void removePhoto(Photo photo) {
+        for (int i = 0; i < getItemCount(); i++) {
+            DiskItem diskItem = mDiskItems.get(i);
+            if (diskItem instanceof GalleryItem) {
+                List<Photo> items = ((GalleryItem) diskItem).getPhotos();
+                if (items.contains(photo)) {
+                    items.remove(photo);
+                    notifyItemChanged(i);
+                    break;
+                }
+            }
+        }
     }
 
     //region ViewHolders

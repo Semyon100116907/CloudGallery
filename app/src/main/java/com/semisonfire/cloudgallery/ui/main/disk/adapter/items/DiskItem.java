@@ -7,6 +7,4 @@ public abstract class DiskItem {
 
     /** Item type. */
     public abstract int getType();
-
-    public abstract String getDate();
 }

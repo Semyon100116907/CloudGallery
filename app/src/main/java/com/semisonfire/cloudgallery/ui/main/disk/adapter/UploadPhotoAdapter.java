@@ -1,6 +1,7 @@
 package com.semisonfire.cloudgallery.ui.main.disk.adapter;
 
 import android.support.annotation.NonNull;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.model.Photo;
+import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -35,9 +37,12 @@ public class UploadPhotoAdapter extends RecyclerView.Adapter<UploadPhotoAdapter.
     }
 
     public void setItems(List<Photo> items) {
+        PhotoDiffUtil diffUtilCallback = new PhotoDiffUtil(items, mPhotoList);
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffUtilCallback);
         mPhotoList.clear();
         mPhotoList.addAll(items);
-        notifyDataSetChanged();
+        diffResult.dispatchUpdatesTo(this);
+        //notifyDataSetChanged();
     }
 
     public void addItem(Photo item) {

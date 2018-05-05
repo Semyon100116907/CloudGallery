@@ -7,7 +7,6 @@ import java.util.List;
 
 public class GalleryItem extends DiskItem {
 
-    private String date;
     private List<Photo> photos;
 
     public GalleryItem() {
@@ -25,14 +24,5 @@ public class GalleryItem extends DiskItem {
     @Override
     public int getType() {
         return TYPE_GALLERY;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    @Override
-    public String getDate() {
-        return date;
     }
 }

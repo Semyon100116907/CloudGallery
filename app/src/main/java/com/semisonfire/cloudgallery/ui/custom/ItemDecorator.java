@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.DiskItem;
@@ -45,7 +46,9 @@ public class ItemDecorator extends RecyclerView.ItemDecoration {
         } else {
             outRect.top = position == 0 ? space : 0;
             outRect.bottom = space;
-            if (adapter.getItemViewType(position) == DiskItem.TYPE_HEADER) {
+            if (position == -1) {
+                outRect.bottom = 0;
+            } else if (adapter.getItemViewType(position) == DiskItem.TYPE_HEADER) {
                 outRect.bottom = 0;
             }
         }
