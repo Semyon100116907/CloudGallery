@@ -8,11 +8,13 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -28,6 +30,7 @@ import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -44,7 +47,13 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
     public static final int FROM_DISK = 0;
     public static final int FROM_TRASH = 1;
 
+    //STATE
+    private static final String STATE_CURRENT_POS = "STATE_CURRENT_POS";
+    private static final String STATE_PHOTO_LIST = "STATE_PHOTO_LIST";
+    private static final String STATE_FROM = "STATE_PHOTO_LIST";
+
     //EXTRAS
+    public static final String EXTRA_CHANGED = "EXTRA_CHANGED";
     public static final String EXTRA_CURRENT_PHOTO = "EXTRA_CURRENT_PHOTO";
     public static final String EXTRA_PHOTOS = "EXTRA_PHOTOS";
     public static final String EXTRA_FROM = "EXTRA_FROM";
@@ -81,8 +90,14 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
             mCurrentPosition = intent.getIntExtra(EXTRA_CURRENT_PHOTO, -1);
             mPhotoList = intent.getParcelableArrayListExtra(EXTRA_PHOTOS);
             mFrom = intent.getIntExtra(EXTRA_FROM, -1);
-            bind();
+        } else if (savedInstanceState != null) {
+            mCurrentPosition = savedInstanceState.getInt(STATE_CURRENT_POS, -1);
+            mPhotoList = savedInstanceState.getParcelableArrayList(STATE_PHOTO_LIST);
+            mFrom = savedInstanceState.getInt(EXTRA_FROM, -1);
         }
+        Log.e(TAG, "onCreate: " + mCurrentPosition);
+        Log.e(TAG, "onCreate: " + mPhotoList.size());
+        bind();
     }
 
     @Override
@@ -175,10 +190,9 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
 
     private void createReturnIntent() {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("isChanged", isDataChanged);
+        returnIntent.putExtra(EXTRA_CHANGED, isDataChanged);
         setResult(Activity.RESULT_OK, returnIntent);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -277,8 +291,15 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_CURRENT_POS, mCurrentPosition);
+        outState.putInt(STATE_FROM, mFrom);
+        outState.putParcelableArrayList(STATE_PHOTO_LIST, (ArrayList<? extends Parcelable>) mPhotoList);
+    }
+
+    @Override
     protected void onDestroy() {
-        mPhotoList.clear();
         if (mPhotoDetailPresenter != null) {
             mPhotoDetailPresenter.dispose();
         }

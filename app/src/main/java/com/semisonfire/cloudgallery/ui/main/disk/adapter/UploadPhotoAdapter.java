@@ -42,17 +42,6 @@ public class UploadPhotoAdapter extends RecyclerView.Adapter<UploadPhotoAdapter.
         mPhotoList.clear();
         mPhotoList.addAll(items);
         diffResult.dispatchUpdatesTo(this);
-        //notifyDataSetChanged();
-    }
-
-    public void addItem(Photo item) {
-        mPhotoList.add(item);
-        notifyItemInserted(mPhotoList.size());
-    }
-
-    public void removeItem(Photo item) {
-        mPhotoList.remove(item);
-        notifyItemRemoved(0);
     }
 
     @Override
@@ -62,8 +51,8 @@ public class UploadPhotoAdapter extends RecyclerView.Adapter<UploadPhotoAdapter.
 
     class UploadViewHolder extends RecyclerView.ViewHolder {
 
-        int targetHeight;
-        int targetWidth;
+        private int targetHeight;
+        private int targetWidth;
         private ImageView mPhoto;
 
         UploadViewHolder(View itemView) {

@@ -1,28 +1,19 @@
 package com.semisonfire.cloudgallery.ui.main.disk.adapter;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,18 +46,11 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
     }
 
     public void setPhotos(List<Photo> items) {
-        PhotoDiffUtil diffUtilCallback = new PhotoDiffUtil(items, mPhotoList);
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffUtilCallback);
+        final PhotoDiffUtil diffUtilCallback = new PhotoDiffUtil(items, mPhotoList);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffUtilCallback);
         mPhotoList.clear();
         mPhotoList.addAll(items);
         diffResult.dispatchUpdatesTo(this);
-        /*
-        notifyDataSetChanged();*/
-    }
-
-    public void addPhoto(Photo item) {
-        mPhotoList.add(item);
-        notifyItemInserted(getItemCount());
     }
 
     public void addPhotos(List<Photo> photos) {
@@ -94,6 +78,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
     class PhotoViewHolder extends RecyclerView.ViewHolder {
 
+        private int targetHeight;
+        private int targetWidth;
         private ImageView mPhoto;
         private ImageView mSelect;
 
@@ -101,6 +87,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
             super(itemView);
             mPhoto = itemView.findViewById(R.id.image_photo);
             mSelect = itemView.findViewById(R.id.image_selected);
+            targetWidth = itemView.getContext().getResources().getDimensionPixelOffset(R.dimen.photo_max_width);
+            targetHeight = itemView.getContext().getResources().getDimensionPixelOffset(R.dimen.photo_max_height);
         }
 
         void bind(Photo photo) {
@@ -120,9 +108,10 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
             mPhoto.setImageDrawable(null);
             Picasso.get().load(photo.getPreview())
-                    .resize(600, 600)
+                    .resize(targetWidth, targetHeight)
                     .centerCrop()
-                    .placeholder(R.drawable.empty)
+                    .placeholder(R.color.black)
+                    .error(R.drawable.ic_gallery)
                     .into(mPhoto);
 
             mPhoto.setOnClickListener(onItemClick);
@@ -140,25 +129,6 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
                 }
                 return false;
             });
-        }
-
-        private void select(Bitmap bitmap) {
-
-            Canvas canvas = new Canvas(bitmap);
-
-            Paint paint = new Paint();
-            paint.setColor(Color.TRANSPARENT);
-            paint.setStyle(Paint.Style.FILL);
-            float left = 50;
-            float top =  50;
-            float right =  150;
-            float bottom =  150;
-            canvas.drawRect(left, top, right, bottom, paint);
-
-            paint.setStrokeWidth(10);
-            paint.setColor(Color.BLACK);
-            paint.setStyle(Paint.Style.STROKE);
-            canvas.drawRect(left, top, right, bottom, paint);
         }
     }
 }

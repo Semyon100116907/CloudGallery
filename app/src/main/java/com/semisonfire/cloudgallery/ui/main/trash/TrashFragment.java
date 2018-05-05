@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +27,7 @@ import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
+import com.semisonfire.cloudgallery.ui.custom.PaginationScrollListener;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
@@ -138,37 +138,40 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         //RecyclerView
         mTrashRecyclerView.setAdapter(mTrashPhotoAdapter);
 
-        //Layout manager
         int orientation = getResources().getConfiguration().orientation;
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),
                 orientation == Configuration.ORIENTATION_LANDSCAPE ? 4 : 3);
         mTrashRecyclerView.setLayoutManager(gridLayoutManager);
 
-        //ItemDecoration
         ItemDecorator mItemDecorator = new ItemDecorator(getResources().getDimensionPixelOffset(R.dimen.disk_grid_space));
         mTrashRecyclerView.addItemDecoration(mItemDecorator);
 
-        //Paging
+        //Paging recycler view
+        mTrashRecyclerView.addOnScrollListener(new PaginationScrollListener(DiskClient.MAX_LIMIT) {
+            @Override
+            public void loadNext() {
+                isLoading = true;
+                mCurrentPage++;
+                mTrashPresenter.getPhotos(mCurrentPage);
+            }
+
+            @Override
+            public boolean isLoading() {
+                return isLoading;
+            }
+
+            @Override
+            public boolean isLastPage() {
+                return isLastPage;
+            }
+        });
         mTrashRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
-                    getSwipeRefreshLayout().setEnabled(true);
-                } else {
-                    getSwipeRefreshLayout().setEnabled(false);
-                }
-
-                int position = layoutManager.findLastVisibleItemPosition();
-                int limit = DiskClient.MAX_LIMIT;
-                int updatePosition = recyclerView.getAdapter().getItemCount() - 1 - limit / 2;
-
-                if (!isLoading && !isLastPage && position >= updatePosition) {
-                    isLoading = true;
-                    mCurrentPage++;
-                    mTrashPresenter.getPhotos(mCurrentPage);
-                }
+                int topRowVerticalPosition =
+                        recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
+                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0);
             }
         });
 
@@ -247,7 +250,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     @Override
     public void onInternetUnavailable() {
         if (mTrashList.isEmpty()) {
-            showEmpty();
+            getStateView().showEmptyView(R.drawable.ic_delete,
+                    getString(R.string.msg_yandex_failed_retrieve),
+                    getString(R.string.action_yandex_check_connection));
         }
     }
 

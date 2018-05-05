@@ -103,6 +103,7 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         updateItems(map);
     }
 
+    /** Clear data set*/
     public void clear() {
         int currentSize = getItemCount();
         mMap.clear();
@@ -124,6 +125,7 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return map;
     }
 
+    /** Update adapter data set */
     private void updateItems(Map<String, List<Photo>> map) {
         for (String date : map.keySet()) {
             List<Photo> values = mMap.get(date);
@@ -138,14 +140,14 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     mDiskItems.add(headerPos, headerItem);
                     notifyItemInserted(headerPos);
                 }
-                galleryItem = (GalleryItem) mDiskItems.get(headerPos + 1);
+                int galleryPos = headerPos + 1;
+                galleryItem = (GalleryItem) mDiskItems.get(galleryPos);
                 galleryItem.getPhotos().addAll(map.get(date));
-                mDiskItems.set(headerPos + 1, galleryItem);
-                notifyItemChanged(headerPos + 1);
+                mDiskItems.set(galleryPos, galleryItem);
 
                 headerItem.setCount(galleryItem.getPhotos().size());
                 mDiskItems.set(headerPos, headerItem);
-                notifyItemChanged(headerPos);
+                notifyItemRangeChanged(headerPos, 2);
             } else {
                 values = new ArrayList<>(map.get(date));
                 mMap.put(date, values);
@@ -160,37 +162,69 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /** Add photo inside gallery item sorted by date */
     public void addPhoto(Photo photo) {
         String date = DateUtils.getDateString(photo.getModifiedAt(), DateUtils.ONLY_DATE_FORMAT);
 
         HeaderItem headerItem = new HeaderItem();
         headerItem.setDate(date);
-
-        GalleryItem galleryItem = new GalleryItem();
         List<Photo> values = mMap.get(date);
 
         int headerPos = mDiskItems.size() > 0 ?
                 mDiskItems.indexOf(headerItem) == -1 ? 1 : mDiskItems.indexOf(headerItem) : 0;
+        int galleryPos = headerPos + 1;
 
         if (values == null) {
             values = new ArrayList<>();
             mMap.put(date, values);
-
             mDiskItems.add(headerPos, headerItem);
 
+            GalleryItem galleryItem = new GalleryItem();
             galleryItem.setPhotos(values);
-            mDiskItems.add(headerPos + 1, galleryItem);
+            mDiskItems.add(galleryPos, galleryItem);
             notifyItemRangeInserted(headerPos, 2);
         }
 
-        galleryItem = (GalleryItem) mDiskItems.get(headerPos + 1);
+        GalleryItem galleryItem = (GalleryItem) mDiskItems.get(galleryPos);
         galleryItem.getPhotos().add(0, photo);
-        mDiskItems.set(headerPos + 1, galleryItem);
+        mDiskItems.set(galleryPos, galleryItem);
 
         headerItem.setCount(values.size());
         mDiskItems.set(headerPos, headerItem);
-
         notifyItemRangeChanged(headerPos, 2);
+    }
+
+    public void setSelection(boolean selected) {
+        this.selected = selected;
+        notifyDataSetChanged();
+    }
+
+    /** Remove photo from gallery item */
+    public void removePhoto(Photo photo) {
+        for (int i = 0; i < getItemCount(); i++) {
+            DiskItem diskItem = mDiskItems.get(i);
+            if (diskItem instanceof GalleryItem) {
+                int headerPos = i - 1;
+                HeaderItem headerItem = (HeaderItem) mDiskItems.get(headerPos);
+                List<Photo> items = ((GalleryItem) diskItem).getPhotos();
+                if (items.contains(photo)) {
+                    items.remove(photo);
+                    if (items.isEmpty()) {
+                        mDiskItems.remove(diskItem);
+                        mDiskItems.remove(headerPos);
+                        notifyItemRemoved(i);
+                        return;
+                    }
+                    notifyItemChanged(i);
+
+                    if (headerItem != null) {
+                        headerItem.setCount(items.size());
+                        notifyItemChanged(headerPos);
+                    }
+                    return;
+                }
+            }
+        }
     }
 
     public void addUploadPhotos(List<Photo> photos) {
@@ -216,6 +250,9 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (uploadItem.getUploadPhotos().size() == 0) {
             uploadItem.setVisibility(View.GONE);
             uploadItem.resetUploadCount();
+            mDiskItems.remove(0);
+            notifyItemRemoved(0);
+            return;
         }
         notifyItemChanged(0);
     }
@@ -229,25 +266,6 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
         return mDiskItems.get(position) != null ? mDiskItems.get(position).getType() : -1;
-    }
-
-    public void setSelection(boolean selected) {
-        this.selected = selected;
-        notifyDataSetChanged();
-    }
-
-    public void removePhoto(Photo photo) {
-        for (int i = 0; i < getItemCount(); i++) {
-            DiskItem diskItem = mDiskItems.get(i);
-            if (diskItem instanceof GalleryItem) {
-                List<Photo> items = ((GalleryItem) diskItem).getPhotos();
-                if (items.contains(photo)) {
-                    items.remove(photo);
-                    notifyItemChanged(i);
-                    break;
-                }
-            }
-        }
     }
 
     //region ViewHolders
@@ -290,14 +308,15 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             mAdapter = new PhotoAdapter(mPhotoClickListener);
             mPhotoRecyclerView = itemView.findViewById(R.id.rv_photos);
             mPhotoRecyclerView.setAdapter(mAdapter);
+            mPhotoRecyclerView.setNestedScrollingEnabled(false);
+            mPhotoRecyclerView.setFocusable(false);
             mPhotoRecyclerView.setLayoutManager(gridLayoutManager);
             mPhotoRecyclerView.addItemDecoration(mItemDecorator);
         }
 
-        void bind(GalleryItem diskItem) {
+        void bind(GalleryItem item) {
             mAdapter.setSelection(selected);
-            //mAdapter.setMultipleSelection(multipleSelection);
-            mAdapter.setPhotos(diskItem.getPhotos());
+            mAdapter.setPhotos(item.getPhotos());
         }
     }
 
@@ -315,13 +334,12 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             mTitle = itemView.findViewById(R.id.text_upload_title);
             mState = itemView.findViewById(R.id.text_upload_state);
             mUploadRecyclerView = itemView.findViewById(R.id.rv_uploads);
-
             mAdapter = new UploadPhotoAdapter();
-
             mLinearLayoutManager = new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false);
-            mUploadRecyclerView.setLayoutManager(mLinearLayoutManager);
-
             mItemDecorator = new ItemDecorator(itemView.getContext().getResources().getDimensionPixelOffset(R.dimen.upload_linear_space));
+
+            mUploadRecyclerView.setAdapter(mAdapter);
+            mUploadRecyclerView.setLayoutManager(mLinearLayoutManager);
             mUploadRecyclerView.addItemDecoration(mItemDecorator);
         }
 
@@ -333,7 +351,7 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             if (item.getVisibility() == View.VISIBLE) {
                 mAdapter.setItems(item.getUploadPhotos());
-                mUploadRecyclerView.setAdapter(mAdapter);
+
                 String state = TextUtils.isEmpty(item.getState()) ?
                         String.format(Locale.getDefault(), "%d %s %d",
                                 item.getUploadCount(),

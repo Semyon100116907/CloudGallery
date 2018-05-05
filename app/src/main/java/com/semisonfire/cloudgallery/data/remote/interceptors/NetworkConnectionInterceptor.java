@@ -14,6 +14,8 @@ public abstract class NetworkConnectionInterceptor implements Interceptor {
 
     public abstract boolean isInternetAvailable();
 
+    private static final int MAX_STALE = 60 * 60 * 24; //24 hours
+
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
 
@@ -21,7 +23,7 @@ public abstract class NetworkConnectionInterceptor implements Interceptor {
 
         if (!isInternetAvailable()) {
             request = request.newBuilder()
-                    .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24)
+                    .header("Cache-Control", "public, only-if-cached, max-stale=" + MAX_STALE)
                     .build();
 
             Response response = chain.proceed(request);

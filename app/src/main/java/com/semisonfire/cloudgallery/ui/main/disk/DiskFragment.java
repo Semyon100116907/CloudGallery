@@ -34,6 +34,7 @@ import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
+import com.semisonfire.cloudgallery.ui.custom.PaginationScrollListener;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.BottomDialogFragment;
@@ -191,6 +192,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         mDiskAdapter = new DiskAdapter(this);
         mDiskAdapter.setPhotos(mPhotoList);
         mDiskRecyclerView.setAdapter(mDiskAdapter);
+        mDiskRecyclerView.getItemAnimator().setChangeDuration(0);
 
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getContext());
         mDiskRecyclerView.setLayoutManager(mLinearLayoutManager);
@@ -198,35 +200,36 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         ItemDecorator mItemDecorator = new ItemDecorator(getResources().getDimensionPixelOffset(R.dimen.disk_linear_space));
         mDiskRecyclerView.addItemDecoration(mItemDecorator);
 
+        mDiskRecyclerView.addOnScrollListener(new PaginationScrollListener(DiskClient.MAX_LIMIT) {
+            @Override
+            public void loadNext() {
+                isLoading = true;
+                mCurrentPage++;
+                mDiskPresenter.getPhotos(mCurrentPage);
+            }
+
+            @Override
+            public boolean isLoading() {
+                return isLoading;
+            }
+
+            @Override
+            public boolean isLastPage() {
+                return isLastPage;
+            }
+        });
+
         //Paging recycler view
         mDiskRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
-                    getSwipeRefreshLayout().setEnabled(true);
-                } else {
-                    getSwipeRefreshLayout().setEnabled(false);
-                }
-
-                int position = layoutManager.findLastVisibleItemPosition();
-                int limit = DiskClient.MAX_LIMIT;
-                int updatePosition = recyclerView.getAdapter().getItemCount() - 1 - (limit / 2);
-
-                if (!isLoading && !isLastPage && position >= updatePosition) {
-                    isLoading = true;
-                    mCurrentPage++;
-                    mDiskPresenter.getPhotos(mCurrentPage);
-                }
+                int topRowVerticalPosition =
+                        recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
+                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0);
             }
         });
 
-        setupSwipeRefresh();
-    }
-
-    private void setupSwipeRefresh() {
         getSwipeRefreshLayout().setOnRefreshListener(() -> {
             getSwipeRefreshLayout().setRefreshing(true);
             updateDataSet();
@@ -246,16 +249,14 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                setEnabledSelection(false);
-                mDiskAdapter.setSelection(false);
+                cancelSelection();
                 break;
             case R.id.menu_download:
                 if (checkPermission(MEMORY_REQUEST,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     mDiskPresenter.downloadPhotos(getSelectedPhotos());
-                    setEnabledSelection(false);
-                    mDiskAdapter.setSelection(false);
+                    cancelSelection();
                 }
                 break;
             case R.id.menu_delete:
@@ -266,30 +267,144 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     }
 
     @Override
-    public void onInternetUnavailable() {
-        if (mPhotoList.isEmpty()) {
-            getStateView().showEmptyView(R.drawable.ic_yandex_disk,
-                    getString(R.string.msg_yandex_failed_retrieve),
-                    getString(R.string.action_yandex_check_connection));
-        }
-    }
-
-    @Override
     public void setEnabledSelection(boolean enabled) {
         isSelectable = enabled;
         SelectableHelper.setMultipleSelection(enabled);
         menu.findItem(R.id.menu_delete).setVisible(enabled);
         menu.findItem(R.id.menu_download).setVisible(enabled);
         getFloatButton().setVisibility(enabled ? View.GONE : View.VISIBLE);
-        getSwipeRefreshLayout().setEnabled(!enabled);
         getActionBar().setDisplayHomeAsUpEnabled(enabled);
         getActionBar().setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
                 : getResources().getColor(R.color.white)));
+        getSwipeRefreshLayout().setEnabled(!enabled);
 
         if (!enabled) {
             getSelectedPhotos().clear();
             getActionBar().setTitle(R.string.msg_disk);
             mDiskAdapter.setSelection(false);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            List<Photo> mPhotos = new ArrayList<>();
+            switch (requestCode) {
+                case GALLERY_IMAGE_REQUEST:
+                    extractFromGallery(data, mPhotos);
+                    mDiskAdapter.addUploadPhotos(mPhotos);
+                    mDiskPresenter.uploadPhotos(mPhotos);
+                    break;
+                case CAMERA_REQUEST:
+                    if (mCameraFileUri != null) {
+                        Photo photo = getLocalPhoto(mCameraFileUri);
+                        if (photo != null) {
+                            mPhotos.add(photo);
+                            mDiskAdapter.addUploadPhotos(mPhotos);
+                            mDiskPresenter.uploadPhoto(photo);
+                        }
+                    }
+                    break;
+                case PhotoDetailActivity.DETAIL_REQUEST:
+                    boolean isDataChanged = data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false);
+                    if (isDataChanged) {
+                        updateDataSet();
+                    }
+                    return;
+            }
+            mUploadingList.addAll(mPhotos);
+
+            mResultIntent = null;
+            getStateView().hideStateView();
+            scrollToTop();
+        }
+    }
+
+    private void updateDataSet() {
+        mCurrentPage = 1;
+        isLastPage = false;
+        isLoading = true;
+        mPhotoList.clear();
+        mDiskAdapter.clear();
+        if (!mUploadingList.isEmpty()) {
+            mDiskAdapter.addUploadPhotos(mUploadingList);
+        }
+        mDiskPresenter.getPhotos(mCurrentPage);
+    }
+
+    private void extractFromGallery(Intent data, List<Photo> mPhotos) {
+        if (data.getClipData() == null) {
+            if (data.getData() == null) {
+                return;
+            }
+            Uri imageUri = data.getData();
+            mPhotos.add(getLocalPhoto(imageUri));
+            return;
+        }
+        for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+            Uri imageUri = data.getClipData().getItemAt(i).getUri();
+            mPhotos.add(getLocalPhoto(imageUri));
+        }
+    }
+
+    /** Get local file path. */
+    private Photo getLocalPhoto(Uri contentUri) {
+        if (getActivity() != null) {
+            String path = contentUri.toString();
+
+            Cursor cursor = getActivity().getContentResolver().query(contentUri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
+                if (idx != -1) {
+                    path = cursor.getString(idx);
+                    cursor.close();
+                } else {
+                    path = FileUtils.getInstance().getFile(contentUri).getPath();
+                }
+            }
+
+            Photo photo = new Photo();
+            photo.setUploaded(false);
+            photo.setPreview(contentUri.toString());
+            photo.setLocalPath(path);
+            photo.setName(path.substring(path.lastIndexOf('/') + 1));
+            if (mPhotoList.contains(photo)) {
+                int index = photo.getName().lastIndexOf('.');
+                String name = photo.getName().substring(0, index);
+                String extension = photo.getName().substring(index);
+                photo.setName(copyName(name, extension, 0));
+            }
+            return photo;
+        }
+        return null;
+    }
+
+    /** Check file for duplicates. */
+    private String copyName(String name, String extension, int counter) {
+        Photo photo = new Photo();
+
+        String newName = name;
+        if (counter != 0) {
+            newName = name + "(" + String.valueOf(counter) + ")";
+        }
+        newName += extension;
+        photo.setName(newName);
+
+        if (mPhotoList.contains(photo)) {
+            counter++;
+            return copyName(name, extension, counter);
+        }
+
+        return newName;
+    }
+
+    @Override
+    public void onInternetUnavailable() {
+        if (mPhotoList.isEmpty()) {
+            getStateView().showEmptyView(R.drawable.ic_yandex_disk,
+                    getString(R.string.msg_yandex_failed_retrieve),
+                    getString(R.string.action_yandex_check_connection));
         }
     }
 
@@ -312,76 +427,12 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         isLoading = false;
     }
 
-    //region REFACTOR
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            List<Photo> mPhotos = new ArrayList<>();
-            switch (requestCode) {
-                case GALLERY_IMAGE_REQUEST:
-                    if (data.getClipData() != null) {
-                        for (int i = 0; i < data.getClipData().getItemCount(); i++) {
-                            Uri imageUri = data.getClipData().getItemAt(i).getUri();
-                            mPhotos.add(getLocalPhoto(imageUri));
-                        }
-                    } else if (data.getData() != null) {
-                        Uri imageUri = data.getData();
-                        mPhotos.add(getLocalPhoto(imageUri));
-                    }
-
-                    if (mPhotos != null) {
-                        mDiskAdapter.addUploadPhotos(mPhotos);
-                        mDiskPresenter.uploadPhotos(mPhotos);
-                    }
-                    break;
-                case CAMERA_REQUEST:
-                    if (mCameraFileUri != null) {
-                        Photo photo = new Photo();
-                        photo.setUploaded(false);
-                        photo.setPreview(mCameraFileUri.toString());
-                        photo.setName(mCameraFileUri.getLastPathSegment());
-                        photo.setLocalPath(FileUtils.getInstance().getFile(mCameraFileUri).getPath());
-                        mPhotos.add(photo);
-                        mDiskAdapter.addUploadPhotos(mPhotos);
-                        mDiskPresenter.uploadPhoto(photo);
-                    }
-                    break;
-                case PhotoDetailActivity.DETAIL_REQUEST:
-                    boolean isDataChanged = data.getBooleanExtra("isChanged", false);
-                    if (isDataChanged) {
-                        updateDataSet();
-                    }
-                    return;
-            }
-            mUploadingList.addAll(mPhotos);
-
-            mResultIntent = null;
-            getStateView().hideStateView();
-            scrollToTop();
-        }
-    }
-    //endregion
-
-    private void updateDataSet() {
-        mCurrentPage = 1;
-        isLastPage = false;
-        isLoading = true;
-        mPhotoList.clear();
-        mDiskAdapter.clear();
-        if (!mUploadingList.isEmpty()) {
-            mDiskAdapter.addUploadPhotos(mUploadingList);
-        }
-        mDiskPresenter.getPhotos(mCurrentPage);
-    }
-
     @Override
     public void onPhotoUploaded(Photo photo) {
         String uploadState = null;
         if (photo != null) {
             mPhotoList.add(photo);
             mDiskAdapter.addPhoto(photo);
-
             mUploadingList.remove(photo);
             mDiskAdapter.removeUploadedPhoto(photo);
         } else {
@@ -397,37 +448,57 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
     @Override
     public void onPhotoDeleted(Photo photo) {
-        //updateDataSet();
-        setEnabledSelection(false);
-        mDiskAdapter.setSelection(false);
+        cancelSelection();
+        mPhotoList.remove(photo);
         mDiskAdapter.removePhoto(photo);
         Toast.makeText(getContext(), photo.getName(), Toast.LENGTH_LONG).show();
     }
 
-    /** Get local file path. */
-    private Photo getLocalPhoto(Uri contentUri) {
-        if (getActivity() != null) {
-            String path;
-            Cursor cursor = getActivity().getContentResolver().query(contentUri, null, null, null, null);
-            if (cursor == null) {
-                path = contentUri.getPath();
-            } else {
-                cursor.moveToFirst();
-                int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
-                path = cursor.getString(idx);
-                cursor.close();
-            }
-
-            Photo photo = new Photo();
-            photo.setUploaded(false);
-            photo.setPreview(contentUri.toString());
-            photo.setLocalPath(path);
-            photo.setName(path.substring(path.lastIndexOf('/') + 1));
-            return photo;
-        }
-        return null;
+    private void cancelSelection() {
+        setEnabledSelection(false);
+        mDiskAdapter.setSelection(false);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        int color = getResources().getColor(R.color.colorAccent);
+        String title = getString(R.string.msg_request_permission);
+        String body;
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case CAMERA_REQUEST:
+                    createCameraIntent();
+                    break;
+                case GALLERY_IMAGE_REQUEST:
+                    createGalleryIntent();
+                    break;
+                case MEMORY_REQUEST:
+                    mDiskPresenter.downloadPhotos(getSelectedPhotos());
+                    cancelSelection();
+                    break;
+            }
+        } else {
+            switch (requestCode) {
+                case CAMERA_REQUEST:
+                    body = getString(R.string.msg_camera_permission);
+                    break;
+                case GALLERY_IMAGE_REQUEST:
+                case MEMORY_REQUEST:
+                    body = getString(R.string.msg_memory_permission);
+                    break;
+                default:
+                    body = null;
+                    break;
+            }
+            if (!PermissionUtils.shouldShowRational(getActivity(), permissions[0])) {
+                permissionDialog(title, body, color);
+            }
+        }
+    }
+
+    //region Dialogs
     private void setBottomDialog() {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
@@ -452,49 +523,6 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-        int color = getResources().getColor(R.color.colorAccent);
-        String title = getString(R.string.msg_request_permission);
-        String body;
-
-        switch (requestCode) {
-            case CAMERA_REQUEST:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    createCameraIntent();
-                } else {
-                    if (!PermissionUtils.shouldShowRational(getActivity(), permissions[0])) {
-                        body = getString(R.string.msg_camera_permission);
-                        permissionDialog(title, body, color);
-                    }
-                }
-                break;
-            case GALLERY_IMAGE_REQUEST:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    createGalleryIntent();
-                } else {
-                    if (!PermissionUtils.shouldShowRational(getActivity(), permissions[0])) {
-                        body = getString(R.string.msg_memory_permission);
-                        permissionDialog(title, body, color);
-                    }
-                }
-                break;
-            case MEMORY_REQUEST:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mDiskPresenter.downloadPhotos(getSelectedPhotos());
-                    setEnabledSelection(false);
-                    mDiskAdapter.setSelection(false);
-                } else {
-                    if (!PermissionUtils.shouldShowRational(getActivity(), permissions[0])) {
-                        body = getString(R.string.msg_memory_permission);
-                        permissionDialog(title, body, color);
-                    }
-                }
-                break;
-        }
     }
 
     @Override
@@ -549,6 +577,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
                 getString(R.string.msg_image_chooser)),
                 GALLERY_IMAGE_REQUEST);
     }
+    //endregion
 
     @Override
     public void onDestroyView() {

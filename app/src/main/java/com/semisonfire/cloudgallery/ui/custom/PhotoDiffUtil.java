@@ -8,8 +8,8 @@ import java.util.List;
 
 public class PhotoDiffUtil extends DiffUtil.Callback {
 
-    List<Photo> newList;
-    List<Photo> oldList;
+    private final List<Photo> newList;
+    private final List<Photo> oldList;
 
     public PhotoDiffUtil(List<Photo> newList, List<Photo> oldList) {
         this.newList = newList;
@@ -30,7 +30,7 @@ public class PhotoDiffUtil extends DiffUtil.Callback {
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
         Photo newItem = newList.get(newItemPosition);
         Photo oldItem = oldList.get(oldItemPosition);
-        return oldItem.compareTo(newItem) == 0;
+        return oldItem.equals(newItem);
     }
 
     @Override

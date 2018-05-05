@@ -48,11 +48,11 @@ public class MainActivity extends BaseActivity implements MainContract.View {
         if (savedInstanceState != null) {
             mFragment = (BaseFragment) getSupportFragmentManager().getFragment(savedInstanceState, STATE_CURRENT_FRAGMENT);
             mTitle = savedInstanceState.getString(STATE_TITLE);
-            mToolbar.setTitle(mTitle);
         } else {
-            mTitle = getString(R.string.msg_disk);
             mFragment = new DiskFragment();
+            mTitle = getString(R.string.msg_disk);
         }
+        mToolbar.setTitle(mTitle);
         setSupportActionBar(mToolbar);
         FragmentUtils.changeFragment(getSupportFragmentManager(), mFragment, R.id.frame_fragment);
     }

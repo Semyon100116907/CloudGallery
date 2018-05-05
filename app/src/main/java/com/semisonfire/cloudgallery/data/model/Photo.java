@@ -7,7 +7,6 @@ import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -167,7 +166,7 @@ public class Photo implements Parcelable, Comparable {
 
         if (obj instanceof Photo) {
             Photo p = (Photo) obj;
-            return name.equals(p.getName()) && getPreview().equals(p.getPreview());
+            return name.equals(p.getName());
         }
 
         return super.equals(obj);

@@ -13,12 +13,14 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
@@ -44,6 +46,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private BasePresenter<MvpView> mBasePresenter;
 
+    private String token;
     private List<Photo> mSelectedPhotos;
     private int mFrom;
 
@@ -133,7 +136,8 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
 
     @Override
     public void onTokenLoaded(String token) {
-        if (token == null) {
+        this.token = token;
+        if (TextUtils.isEmpty(token)) {
             refreshToken();
         }
     }
@@ -164,7 +168,10 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
             }
 
             if (throwable instanceof InternetUnavailableException) {
-                onInternetUnavailable();
+                if (!TextUtils.isEmpty(token)) {
+                    onInternetUnavailable();
+                }
+                Toast.makeText(getContext(), "Error. Turn on internet.", Toast.LENGTH_SHORT).show();
                 return;
             }
             Log.e(TAG, "onError: " + throwable.getMessage(), throwable);

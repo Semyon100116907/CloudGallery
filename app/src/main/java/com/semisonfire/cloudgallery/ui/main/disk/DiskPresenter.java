@@ -2,7 +2,6 @@ package com.semisonfire.cloudgallery.ui.main.disk;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import com.semisonfire.cloudgallery.data.local.LocalDataSource;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
@@ -112,7 +111,7 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
 
     private void createUploadSubj() {
         getCompositeDisposable().add(
-                mUploadSubject.subscribeOn(Schedulers.io())
+                mUploadSubject
                         .concatMap(photo -> getUploadFlowable(photo).toObservable())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(photo -> getMvpView().onPhotoUploaded(photo),
@@ -122,13 +121,13 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     private Flowable<Photo> getUploadFlowable(Photo p) {
         return Flowable.just(p)
                 /*add local rows*/
+                .subscribeOn(Schedulers.io())
                 .concatMap(photo -> Flowable.just(photo).delay(100, TimeUnit.MILLISECONDS))
                 .flatMap(photo -> mRemoteDataSource.getUploadLink(photo))
                 .flatMap(link -> mRemoteDataSource.savePhoto(link.getPhoto(), link))
                 .retryWhen(error -> error.flatMap(throwable -> {
                     mUploadSubjectInformer.onNext(new Photo());
                     if (throwable instanceof InternetUnavailableException) {
-                        Log.d(TAG, "getUploadFlowable: Retrying...");
                         return Flowable.timer(5, TimeUnit.SECONDS);
                     }
                     return Flowable.error(throwable);
