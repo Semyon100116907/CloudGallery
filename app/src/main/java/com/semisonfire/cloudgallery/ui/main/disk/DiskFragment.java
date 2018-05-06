@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,6 +42,7 @@ import com.semisonfire.cloudgallery.ui.main.dialogs.BottomDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.DiskAdapter;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
+import com.semisonfire.cloudgallery.utils.ColorUtils;
 import com.semisonfire.cloudgallery.utils.FileUtils;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
 
@@ -226,7 +228,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
                 int topRowVerticalPosition =
                         recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
-                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0);
+                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0 && !isSelectable);
             }
         });
 
@@ -241,7 +243,6 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         super.onCreateOptionsMenu(menu, inflater);
         this.menu = menu;
         setEnabledSelection(isSelectable);
-        mDiskAdapter.setSelection(isSelectable);
         updateTitle();
     }
 
@@ -249,14 +250,14 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                cancelSelection();
+                setEnabledSelection(false);
                 break;
             case R.id.menu_download:
                 if (checkPermission(MEMORY_REQUEST,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     mDiskPresenter.downloadPhotos(getSelectedPhotos());
-                    cancelSelection();
+                    setEnabledSelection(false);
                 }
                 break;
             case R.id.menu_delete:
@@ -268,20 +269,16 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
     @Override
     public void setEnabledSelection(boolean enabled) {
+        super.setEnabledSelection(enabled);
         isSelectable = enabled;
-        SelectableHelper.setMultipleSelection(enabled);
+        mDiskAdapter.setSelection(enabled);
         menu.findItem(R.id.menu_delete).setVisible(enabled);
         menu.findItem(R.id.menu_download).setVisible(enabled);
         getFloatButton().setVisibility(enabled ? View.GONE : View.VISIBLE);
-        getActionBar().setDisplayHomeAsUpEnabled(enabled);
-        getActionBar().setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
-                : getResources().getColor(R.color.white)));
-        getSwipeRefreshLayout().setEnabled(!enabled);
 
         if (!enabled) {
             getSelectedPhotos().clear();
             getActionBar().setTitle(R.string.msg_disk);
-            mDiskAdapter.setSelection(false);
         }
     }
 
@@ -433,16 +430,11 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
     @Override
     public void onPhotoDeleted(Photo photo) {
-        cancelSelection();
+        setEnabledSelection(false);
         mPhotoList.remove(photo);
         mDiskAdapter.removePhoto(photo);
         Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.action_delete).toLowerCase(), Toast.LENGTH_LONG).show();
-    }
-
-    private void cancelSelection() {
-        setEnabledSelection(false);
-        mDiskAdapter.setSelection(false);
+                + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(), Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -462,7 +454,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
                     break;
                 case MEMORY_REQUEST:
                     mDiskPresenter.downloadPhotos(getSelectedPhotos());
-                    cancelSelection();
+                    setEnabledSelection(false);
                     break;
             }
         } else {

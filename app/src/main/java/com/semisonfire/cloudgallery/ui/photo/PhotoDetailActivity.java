@@ -27,6 +27,7 @@ import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
+import com.semisonfire.cloudgallery.utils.ColorUtils;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
 
 import java.util.ArrayList;
@@ -207,19 +208,8 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
                 restore.setVisible(true);
                 break;
         }
-        setMenuIconsColor(menu, R.color.white);
+        ColorUtils.setMenuIconsColor(menu, getResources().getColor(R.color.white));
         return super.onCreateOptionsMenu(menu);
-    }
-
-    /** Change menu items icon color */
-    private void setMenuIconsColor(Menu menu, @ColorRes int color) {
-        for (int i = 0; i < menu.size(); i++) {
-            Drawable drawable = menu.getItem(i).getIcon();
-            if (drawable != null) {
-                drawable.mutate();
-                drawable.setColorFilter(getResources().getColor(color), PorterDuff.Mode.SRC_IN);
-            }
-        }
     }
 
     @Override

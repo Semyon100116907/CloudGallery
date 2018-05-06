@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.ui.base;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -13,8 +14,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +32,7 @@ import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
 import com.semisonfire.cloudgallery.ui.custom.StateView;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
+import com.semisonfire.cloudgallery.utils.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     private static final String TAG = BaseFragment.class.getSimpleName();
 
     private ActionBar mActionBar;
+    private Toolbar mToolbar;
     private ViewGroup mScrollView;
     private FloatingActionButton mFloatButton;
     private StateView mStateView;
@@ -49,12 +52,11 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     private String token;
     private List<Photo> mSelectedPhotos;
     private int mFrom;
+    private Menu menu;
 
     public abstract void bind();
 
     public abstract void onInternetUnavailable();
-
-    public abstract void setEnabledSelection(boolean enabled);
 
     @Override
     public void onAttach(Context context) {
@@ -73,6 +75,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
             mFloatButton = getActivity().findViewById(R.id.btn_add_new);
             mSwipeRefreshLayout = getActivity().findViewById(R.id.swipe_refresh);
             mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            mToolbar = getActivity().findViewById(R.id.toolbar);
             if (mActionBar != null) {
                 mActionBar.setHomeAsUpIndicator(R.drawable.ic_close);
             }
@@ -86,6 +89,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_fragment, menu);
+        this.menu = menu;
     }
 
     public void scrollToTop() {
@@ -108,6 +112,19 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
             intent.putExtra(PhotoDetailActivity.EXTRA_FROM, mFrom);
             startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST);
         }
+    }
+
+    public void setEnabledSelection(boolean enabled) {
+        SelectableHelper.setMultipleSelection(enabled);
+
+        int secondaryColor = enabled ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black);
+        mActionBar.setDisplayHomeAsUpEnabled(enabled);
+        mActionBar.setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
+                : getResources().getColor(R.color.white)));
+        mToolbar.setTitleTextColor(secondaryColor);
+        ColorUtils.setMenuIconsColor(menu, secondaryColor);
+
+        mSwipeRefreshLayout.setEnabled(!enabled);
     }
 
     @Override

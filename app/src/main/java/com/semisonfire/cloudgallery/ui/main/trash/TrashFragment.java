@@ -169,7 +169,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
                 super.onScrolled(recyclerView, dx, dy);
                 int topRowVerticalPosition =
                         recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
-                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0);
+                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0 && !isSelectable);
             }
         });
 
@@ -207,7 +207,6 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         switch (item.getItemId()) {
             case android.R.id.home:
                 setEnabledSelection(false);
-                mTrashPhotoAdapter.setSelection(false);
                 break;
             case R.id.menu_restore_all:
                 if (isSelectable && getSelectedPhotos().size() != mTrashList.size()) {
@@ -233,12 +232,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
 
     @Override
     public void setEnabledSelection(boolean enabled) {
+        super.setEnabledSelection(enabled);
         isSelectable = enabled;
-        SelectableHelper.setMultipleSelection(enabled);
-        getSwipeRefreshLayout().setEnabled(!enabled);
-        getActionBar().setDisplayHomeAsUpEnabled(enabled);
-        getActionBar().setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
-                : getResources().getColor(R.color.white)));
+        mTrashPhotoAdapter.setSelection(enabled);
         if (!enabled) {
             getSelectedPhotos().clear();
             getActionBar().setTitle(R.string.msg_trash);
@@ -276,10 +272,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashPhotoAdapter.remove(photo);
 
         Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.action_restore).toLowerCase(), Toast.LENGTH_LONG).show();
+                + photo.getName() + " " + getString(R.string.msg_restored).toLowerCase(), Toast.LENGTH_LONG).show();
 
         setEnabledSelection(false);
-        mTrashPhotoAdapter.setSelection(false);
         if (mTrashList.isEmpty()) {
             showEmpty();
         }
@@ -291,10 +286,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashPhotoAdapter.remove(photo);
 
         Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.action_delete).toLowerCase(), Toast.LENGTH_LONG).show();
+                + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(), Toast.LENGTH_LONG).show();
 
         setEnabledSelection(false);
-        mTrashPhotoAdapter.setSelection(false);
         if (mTrashList.isEmpty()) {
             showEmpty();
         }
@@ -305,7 +299,6 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashList.clear();
         mTrashPhotoAdapter.setPhotos(new ArrayList<>());
         setEnabledSelection(false);
-        mTrashPhotoAdapter.setSelection(false);
         showEmpty();
     }
 

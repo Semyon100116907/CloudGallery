@@ -13,6 +13,10 @@
     <string name="msg_clear_trash_description">The contents of the Trash will be permanently deleted. Are you sure?</string>
     <string name="msg_clear_trash">Clear trash</string>
     <string name="msg_file_saved">File saved in</string>
+    <string name="msg_deleted">Deleted</string>
+    <string name="msg_uploaded">Uploaded</string>
+    <string name="msg_restored">Restored</string>
+
 
     <!--Permission messages-->
     <string name="msg_request_permission">Request permission</string>
@@ -37,6 +41,7 @@
 
     <!--Common actions-->
     <string name="action_delete">Delete</string>
+
     <string name="action_download">Download</string>
     <string name="action_make_photo">New image</string>
     <string name="action_restore">Restore</string>
