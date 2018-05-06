@@ -34,11 +34,7 @@ public class RemoteDataSource implements DataSource {
     @Override
     public Flowable<Photo> deletePhoto(Photo photo) {
         return mDiskApi.deleteImage(photo.getRemotePath())
-                .andThen(Flowable.just(photo)
-                        .map(p -> {
-                            p.setRemoved(true);
-                            return p;
-                        }));
+                .andThen(Flowable.just(photo));
     }
 
     public Flowable<Link> getUploadLink(Photo photo) {
@@ -89,6 +85,7 @@ public class RemoteDataSource implements DataSource {
                 .andThen(Flowable.just(photo));
     }
 
+    @Override
     public Completable clearTrash() {
         return mDiskApi.deletePermanently(null);
     }
