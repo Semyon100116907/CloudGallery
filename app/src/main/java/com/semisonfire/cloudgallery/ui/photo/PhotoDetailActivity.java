@@ -67,7 +67,6 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
 
     //Orientation
     private int mOrientation;
-    private boolean isDataChanged;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -161,7 +160,7 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
 
     @Override
     public void onPhotoDownloaded(String path) {
-        Toast.makeText(this, path, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.msg_file_saved) + " " + path, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -174,8 +173,7 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
 
     @Override
     public void onFilesChanged(Photo photo) {
-        isDataChanged = true;
-        createReturnIntent();
+        createReturnIntent(true);
         mPhotoList.remove(photo);
         if (mPhotoList.size() == 0) {
             finish();
@@ -185,7 +183,7 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         updateToolbarTitle(mCurrentPosition);
     }
 
-    private void createReturnIntent() {
+    private void createReturnIntent(boolean isDataChanged) {
         Intent returnIntent = new Intent();
         returnIntent.putExtra(EXTRA_CHANGED, isDataChanged);
         setResult(Activity.RESULT_OK, returnIntent);

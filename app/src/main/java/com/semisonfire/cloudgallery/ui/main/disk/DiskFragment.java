@@ -428,7 +428,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
     @Override
     public void onPhotoDownloaded(String path) {
-        Toast.makeText(getContext(), path, Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), getString(R.string.msg_file_saved) + " " + path, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -436,7 +436,8 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         cancelSelection();
         mPhotoList.remove(photo);
         mDiskAdapter.removePhoto(photo);
-        Toast.makeText(getContext(), photo.getName(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
+                + photo.getName() + " " + getString(R.string.action_delete).toLowerCase(), Toast.LENGTH_LONG).show();
     }
 
     private void cancelSelection() {

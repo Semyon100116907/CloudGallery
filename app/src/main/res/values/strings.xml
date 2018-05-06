@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">CloudGallery</string>
+    <string name="app_name" translatable="false">CloudGallery</string>
 
     <!--Common messages-->
-    <string name="msg_create">Create</string>
     <string name="msg_disk">Disk</string>
     <string name="msg_photo">Photo</string>
     <string name="msg_settings">Settings</string>
@@ -11,8 +10,9 @@
     <string name="msg_uploading">Uploading</string>
     <string name="msg_wait">Connection waiting</string>
     <string name="msg_of">of</string>
-    <string name="msg_clear_trash_description">The contents of the Recycle Bin will be permanently deleted. Are you sure?</string>
+    <string name="msg_clear_trash_description">The contents of the Trash will be permanently deleted. Are you sure?</string>
     <string name="msg_clear_trash">Clear trash</string>
+    <string name="msg_file_saved">File saved in</string>
 
     <!--Permission messages-->
     <string name="msg_request_permission">Request permission</string>
@@ -24,9 +24,9 @@
     <string name="msg_share_chooser">Share image using</string>
 
     <!--Yandex.Disk messages-->
-    <string name="msg_yandex_account">Link your Yandex account</string>
+    <string name="msg_yandex_account">Link your account</string>
     <string name="msg_yandex_failed_retrieve">Failed to retrieve data</string>
-    <string name="msg_yandex_ready">Yandex.Disk is ready</string>
+    <string name="msg_yandex_ready">Yandex.Disk is ready!</string>
     <string name="msg_yandex_start">Get started with Yandex.Disk</string>
     <string name="msg_yandex_trash_empty">Trash empty</string>
 
@@ -38,11 +38,12 @@
     <!--Common actions-->
     <string name="action_delete">Delete</string>
     <string name="action_download">Download</string>
-    <string name="action_make_photo">Photograph</string>
+    <string name="action_make_photo">New image</string>
     <string name="action_restore">Restore</string>
     <string name="action_share">Share</string>
     <string name="action_upload">Upload</string>
-    <string name="action_upload_from_gallery">Upload image</string>
+    <string name="action_upload_from_gallery">Image from gallery</string>
     <string name="action_delete_all">Delete all</string>
     <string name="action_restore_all">Restore all</string>
+    <string name="msg_internet_disable">Could not load new data</string>
 </resources>

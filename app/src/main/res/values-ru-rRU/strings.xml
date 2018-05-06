@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CloudGallery</string>
+
+    <string name="msg_create">Создать</string>
+    <string name="msg_disk">Диск</string>
+    <string name="msg_photo">Фото</string>
+    <string name="msg_settings">Настройки</string>
+    <string name="msg_trash">Корзина</string>
+    <string name="msg_warning">Внимание</string>
+    <string name="msg_uploading">Загрузка</string>
+    <string name="msg_wait">Ожидание подключения</string>
+    <string name="msg_of">из</string>
+    <string name="msg_clear_trash_description">Содержимое корзины будет удалено. Вы уверены?</string>
+    <string name="msg_clear_trash">Очистить корзину</string>
+    <string name="msg_file_saved">Файл сохранен в</string>
+
+    <string name="msg_request_permission">Запрос прав</string>
+    <string name="msg_camera_permission">Разрешите доступ к камере в настройках</string>
+    <string name="msg_memory_permission">Разрешите доступ к памяти в настройках</string>
+    <string name="msg_image_chooser">Выбор изображения</string>
+    <string name="msg_share_chooser">Поделиться изображением</string>
+
+    <string name="msg_yandex_account">Привяжите свой аккаунт</string>
+    <string name="msg_yandex_failed_retrieve">Не удалось получить данные</string>
+    <string name="msg_yandex_ready">Яндекс.Диск готов к работе!</string>
+    <string name="msg_yandex_start">Начините работу с Яндекс.Диском</string>
+    <string name="msg_yandex_trash_empty">Корзина пуста</string>
+
+    <string name="action_yandex_add_items">Добавьте ваши фотографии</string>
+    <string name="action_yandex_check_connection">Проверьте ваше подключение</string>
+    <string name="action_yandex_link_account">Привязать</string>
+
+    <string name="action_delete">Удалить</string>
+    <string name="action_download">Скачать</string>
+    <string name="action_restore">Восстановить</string>
+    <string name="action_share">Поделиться</string>
+    <string name="action_upload">Загрузить</string>
+    <string name="action_upload_from_gallery">Изображение из галлереи</string>
+    <string name="action_delete_all">Очистить корзину</string>
+    <string name="action_restore_all">Восстановить объекты</string>
+    <string name="action_make_photo">Новое изображение</string>
+    <string name="msg_internet_disable">Не удалось загрузить новые данные</string>
+</resources>

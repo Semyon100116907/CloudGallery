@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
@@ -277,6 +278,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashList.remove(photo);
         mTrashPhotoAdapter.remove(photo);
 
+        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
+                + photo.getName() + " " + getString(R.string.action_restore).toLowerCase(), Toast.LENGTH_LONG).show();
+
         setEnabledSelection(false);
         mTrashPhotoAdapter.setSelection(false);
         if (mTrashList.isEmpty()) {
@@ -288,6 +292,9 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     public void onPhotoDeleted(Photo photo) {
         mTrashList.remove(photo);
         mTrashPhotoAdapter.remove(photo);
+
+        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
+                + photo.getName() + " " + getString(R.string.action_delete).toLowerCase(), Toast.LENGTH_LONG).show();
 
         setEnabledSelection(false);
         mTrashPhotoAdapter.setSelection(false);
@@ -309,25 +316,10 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == PhotoDetailActivity.DETAIL_REQUEST) {
-            boolean isDataChanged = data.getBooleanExtra("isChanged", false);
+            boolean isDataChanged = data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false);
             if (isDataChanged) {
                 updateDataSet();
             }
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mTrashRecyclerView.setAdapter(null);
-        mTrashRecyclerView = null;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mTrashPresenter != null) {
-            mTrashPresenter.dispose();
         }
     }
 
@@ -354,5 +346,20 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     @Override
     public void onItemClick(DialogInterface dialogInterface, View view) {
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mTrashRecyclerView.setAdapter(null);
+        mTrashRecyclerView = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mTrashPresenter != null) {
+            mTrashPresenter.dispose();
+        }
     }
 }
