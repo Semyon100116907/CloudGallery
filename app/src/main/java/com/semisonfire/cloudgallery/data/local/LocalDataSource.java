@@ -4,7 +4,9 @@ import com.semisonfire.cloudgallery.data.model.Photo;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 
 public class LocalDataSource {
 
@@ -14,29 +16,23 @@ public class LocalDataSource {
         mLocalDatabase = localDatabase;
     }
 
-    public Flowable<List<Photo>> getPhotos() {
-        return mLocalDatabase.getPhotoDao().getAllPhotos();
+    public Flowable<List<Photo>> getUploadingPhotos() {
+        return mLocalDatabase.getPhotoDao().getUploadingPhotos().toFlowable();
     }
 
-    public Flowable<Photo> savePhoto(Photo photo) {
-        return Flowable.just(photo)
-                .map(p -> {
-                    mLocalDatabase.getPhotoDao().insertPhoto(p);
-                    return p;
-                });
-    }
-
-    public void updatePhoto(Photo photo) {
-        mLocalDatabase.getPhotoDao().updatePhoto(photo);
-    }
-
-    public void saveUploadingPhoto(Photo photo) {
+    public Flowable<Photo> saveUploadingPhoto(Photo photo) {
         photo.setUploaded(false);
-        savePhoto(photo);
+        return savePhoto(photo);
     }
 
-    public void updateUploadingPhoto(Photo photo) {
+    public Flowable<Photo> updateUploadingPhoto(Photo photo) {
         photo.setUploaded(true);
-        updatePhoto(photo);
+        return savePhoto(photo);
+    }
+
+    private Flowable<Photo> savePhoto(Photo photo) {
+        return Completable.fromAction(() -> mLocalDatabase.getPhotoDao().insertPhoto(photo))
+                .subscribeOn(Schedulers.io())
+                .andThen(Flowable.just(photo));
     }
 }

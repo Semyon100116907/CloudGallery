@@ -8,7 +8,7 @@ import android.content.Context;
 import com.semisonfire.cloudgallery.data.local.dao.PhotoDao;
 import com.semisonfire.cloudgallery.data.model.Photo;
 
-@Database(entities = Photo.class, version = 3, exportSchema = false)
+@Database(entities = Photo.class, version = 1, exportSchema = false)
 public abstract class LocalDatabase extends RoomDatabase {
 
     public abstract PhotoDao getPhotoDao();

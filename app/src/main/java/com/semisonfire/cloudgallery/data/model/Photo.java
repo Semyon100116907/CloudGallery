@@ -13,24 +13,15 @@ import com.google.gson.annotations.SerializedName;
 @Entity(tableName = "photo")
 public class Photo implements Parcelable, Comparable {
 
-    @SerializedName("resource_id")
-    @PrimaryKey
-    @NonNull
-    private String id = "";
-
     @SerializedName("name")
+    @NonNull
+    @PrimaryKey
     @ColumnInfo(name = "name")
-    private String name;
+    private String name = "";
 
     @SerializedName("preview")
     @ColumnInfo(name = "preview")
     private String preview;
-
-    @ColumnInfo(name = "removed")
-    private boolean isRemoved;
-
-    @ColumnInfo(name = "offline")
-    private boolean isOffline;
 
     @ColumnInfo(name = "upload")
     private boolean isUploaded;
@@ -50,11 +41,6 @@ public class Photo implements Parcelable, Comparable {
     @Ignore
     private String mediaType;
 
-    //Only trash
-    @SerializedName("origin_path")
-    @Ignore
-    private String originPath;
-
     @SerializedName("modified")
     @ColumnInfo(name = "modified_at")
     private String modifiedAt;
@@ -65,19 +51,11 @@ public class Photo implements Parcelable, Comparable {
     public Photo() {}
 
     @NonNull
-    public String getId() {
-        return id;
-    }
-
-    public void setId(@NonNull String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NonNull String name) {
         this.name = name;
     }
 
@@ -95,22 +73,6 @@ public class Photo implements Parcelable, Comparable {
 
     public void setPreview(String imageUri) {
         preview = imageUri;
-    }
-
-    public boolean isRemoved() {
-        return isRemoved;
-    }
-
-    public void setRemoved(boolean removed) {
-        isRemoved = removed;
-    }
-
-    public boolean isOffline() {
-        return isOffline;
-    }
-
-    public void setOffline(boolean offline) {
-        isOffline = offline;
     }
 
     public boolean isUploaded() {
@@ -139,10 +101,6 @@ public class Photo implements Parcelable, Comparable {
 
     public String getMediaType() {
         return mediaType;
-    }
-
-    public void setMediaType(String mediaType) {
-        this.mediaType = mediaType;
     }
 
     public String getModifiedAt() {
@@ -179,33 +137,25 @@ public class Photo implements Parcelable, Comparable {
     }
 
     protected Photo(Parcel in) {
-        id = in.readString();
         name = in.readString();
         preview = in.readString();
-        isRemoved = in.readByte() != 0;
-        isOffline = in.readByte() != 0;
         isUploaded = in.readByte() != 0;
         isSelected = in.readByte() != 0;
         localPath = in.readString();
         remotePath = in.readString();
         mediaType = in.readString();
-        originPath = in.readString();
         modifiedAt = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id);
         dest.writeString(name);
         dest.writeString(preview);
-        dest.writeByte((byte) (isRemoved ? 1 : 0));
-        dest.writeByte((byte) (isOffline ? 1 : 0));
         dest.writeByte((byte) (isUploaded ? 1 : 0));
         dest.writeByte((byte) (isSelected ? 1 : 0));
         dest.writeString(localPath);
         dest.writeString(remotePath);
         dest.writeString(mediaType);
-        dest.writeString(originPath);
         dest.writeString(modifiedAt);
     }
 
