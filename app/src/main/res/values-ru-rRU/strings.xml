@@ -14,6 +14,13 @@
     <string name="msg_clear_trash_description">Содержимое корзины будет удалено. Вы уверены?</string>
     <string name="msg_clear_trash">Очистить корзину</string>
     <string name="msg_file_saved">Файл сохранен в</string>
+    <string name="msg_deleted">Удален</string>
+    <string name="msg_uploaded">Загружен</string>
+    <string name="msg_restored">Восстановлен</string>
+    <string name="msg_about">О программе</string>
+    <string name="msg_additional">Дополнительно</string>
+    <string name="msg_version">Версия</string>
+
 
     <string name="msg_request_permission">Запрос прав</string>
     <string name="msg_camera_permission">Разрешите доступ к камере в настройках</string>

@@ -12,6 +12,7 @@ import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.main.disk.DiskFragment;
+import com.semisonfire.cloudgallery.ui.main.settings.SettingsFragment;
 import com.semisonfire.cloudgallery.ui.main.trash.TrashFragment;
 import com.semisonfire.cloudgallery.utils.BottomBarUtils;
 import com.semisonfire.cloudgallery.utils.FragmentUtils;
@@ -110,6 +111,7 @@ public class MainActivity extends BaseActivity implements MainContract.View {
                     break;
                 case R.id.nav_settings:
                     mToolbar.setTitle(R.string.msg_settings);
+                    mFragment = new SettingsFragment();
                     break;
             }
             if (mFragment != null) {
@@ -122,8 +124,9 @@ public class MainActivity extends BaseActivity implements MainContract.View {
             switch (item.getItemId()) {
                 case R.id.nav_disk:
                 case R.id.nav_trash:
-                case R.id.nav_settings:
                     mFragment.scrollToTop();
+                    break;
+                case R.id.nav_settings:
                     break;
             }
         });
