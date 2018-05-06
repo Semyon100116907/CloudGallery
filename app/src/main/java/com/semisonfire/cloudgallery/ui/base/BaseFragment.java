@@ -171,10 +171,8 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
                 if (!TextUtils.isEmpty(token)) {
                     onInternetUnavailable();
                 }
-                Toast.makeText(getContext(), "Error. Turn on internet.", Toast.LENGTH_SHORT).show();
-                return;
+                Toast.makeText(getContext(), R.string.msg_internet_disable, Toast.LENGTH_LONG).show();
             }
-            Log.e(TAG, "onError: " + throwable.getMessage(), throwable);
         }
     }
 

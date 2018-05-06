@@ -32,10 +32,6 @@ public class ExternalFileProvider extends FileProvider {
         return getUriForFile(mContext, BuildConfig.APPLICATION_ID + ".provider", file);
     }
 
-    public Uri getUri(String authority, File file) {
-        return getUriForFile(mContext, authority, file);
-    }
-
     public void setPrivateDirectory(File directory, String name) {
         mPrivateDirectory = new File(directory, name);
     }

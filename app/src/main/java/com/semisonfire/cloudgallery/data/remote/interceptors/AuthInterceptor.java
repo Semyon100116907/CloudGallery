@@ -18,10 +18,6 @@ public final class AuthInterceptor implements Interceptor {
         this.token = token;
     }
 
-    /*public AuthInterceptor(String token) {
-        this.token = token;
-    }*/
-
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
 

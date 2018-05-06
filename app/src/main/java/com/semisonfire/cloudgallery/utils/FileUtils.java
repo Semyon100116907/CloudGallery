@@ -35,6 +35,7 @@ public class FileUtils {
         return instance;
     }
 
+    /** Create temp file to share. */
     public Uri createShareFile(Bitmap bitmap) {
         Uri uri = getLocalFileUri("share_image_" + System.currentTimeMillis());
         saveFile(uri, bitmap);
@@ -54,6 +55,7 @@ public class FileUtils {
         return file.getAbsolutePath();
     }
 
+    /** Create file in public external directory. */
     private File createPublicFile(File directory, String name, String extension, int counter) {
 
         String newName = name;
@@ -96,42 +98,23 @@ public class FileUtils {
         }
     }
 
-    /**
-     * Get local file
-     *
-     * @param uri - uri with content:// scheme
-     * @return - file
-     */
+    /** Get local file */
     public File getFile(Uri uri) {
         return fileProvider.getFile(uri);
     }
 
-    /**
-     * Get local file uri with today`s date name
-     *
-     * @return - file uri
-     */
+    /** Get local file uri with today`s date name */
     public Uri getLocalFileUri() {
         return getLocalFileUri(new Date());
     }
 
-    /**
-     * Get local file uri with {@param date}
-     *
-     * @param date - file creation date
-     * @return - file uri
-     */
+    /** Get local file uri with {@param date} */
     public Uri getLocalFileUri(Date date) {
         String time = "IMG_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(date);
         return getLocalFileUri(time);
     }
 
-    /**
-     * Get local file uri
-     *
-     * @param name - file name
-     * @return - file uri
-     */
+    /** Get local file uri */
     public Uri getLocalFileUri(String name) {
 
         File mediaStorageDir = fileProvider.getPrivateDirectory();

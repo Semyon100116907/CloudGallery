@@ -111,6 +111,9 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyItemRangeRemoved(0, currentSize);
     }
 
+    /**
+     * Transform {@link List}<{@link Photo}> into map which will used inside {@link #updateItems(Map)}
+     */
     private Map<String, List<Photo>> toMap(List<Photo> photos) {
         Map<String, List<Photo>> map = new LinkedHashMap<>();
         for (Photo photo : photos) {

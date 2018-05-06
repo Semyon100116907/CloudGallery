@@ -9,8 +9,6 @@ public class DiskResponse {
 
     @SerializedName("items")
     private List<Photo> photos = null;
-    @SerializedName("limit")
-    private Integer limit;
 
     public List<Photo> getPhotos() {
         return photos;
@@ -18,14 +16,6 @@ public class DiskResponse {
 
     public void setPhotos(List<Photo> photos) {
         this.photos = photos;
-    }
-
-    public Integer getLimit() {
-        return limit;
-    }
-
-    public void setLimit(Integer limit) {
-        this.limit = limit;
     }
 
 }

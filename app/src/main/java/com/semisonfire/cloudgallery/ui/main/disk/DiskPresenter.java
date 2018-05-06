@@ -40,7 +40,7 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     //Upload
     private PublishSubject<Photo> mUploadSubject = PublishSubject.create();
     private PublishSubject<Photo> mUploadSubjectInformer = PublishSubject.create();
-    private Queue<Photo> mPhotos = new LinkedList<>();
+    private Queue<Photo> mUploadingPhotos = new LinkedList<>();
 
     public DiskPresenter(DiskPreferences mDiskPreferences, RemoteDataSource remoteDataSource, LocalDataSource localDataSource) {
         super(mDiskPreferences);
@@ -99,22 +99,25 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
 
     @Override
     public void uploadPhoto(Photo photo) {
-        mPhotos.add(photo);
+        mUploadingPhotos.add(photo);
         uploadNext();
     }
 
     @Override
     public void uploadPhotos(List<Photo> photos) {
-        mPhotos.addAll(photos);
+        mUploadingPhotos.addAll(photos);
         uploadNext();
     }
 
     private void uploadNext() {
-        while (!mPhotos.isEmpty()) {
-            mUploadSubject.onNext(mPhotos.remove());
+        while (!mUploadingPhotos.isEmpty()) {
+            mUploadSubject.onNext(mUploadingPhotos.remove());
         }
     }
 
+    /**
+     * Subject which inform android main thread about error
+     */
     private void createInformerSubject() {
         getCompositeDisposable().add(
                 mUploadSubjectInformer
@@ -132,6 +135,9 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
                                 throwable -> getMvpView().onError(throwable)));
     }
 
+    /**
+     * Upload one photo at the time.
+     */
     private Flowable<Photo> getUploadFlowable(Photo p) {
         String beginName = p.getName();
         return Flowable.just(p)

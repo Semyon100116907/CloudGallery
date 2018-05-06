@@ -69,9 +69,6 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         //Create remote data manager
         RemoteDataSource remoteDataSource = new RemoteDataSource(DiskClient.getApi());
 
-        //Create local data manager
-        //LocalDataSource localDataSource = new LocalDataSource(LocalDatabase.getInstance(context));
-
         //Create presenter
         mTrashPresenter = new TrashPresenter<>(new DiskPreferences(context), remoteDataSource);
         mTrashPresenter.attachView(this);
