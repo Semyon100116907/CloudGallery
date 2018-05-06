@@ -12,6 +12,8 @@ public interface DiskContract {
 
         void onPhotosLoaded(List<Photo> photos);
 
+        void onUploadingPhotos(List<Photo> photos);
+
         void onPhotoUploaded(Photo photo);
 
         void onPhotoDownloaded(String path);

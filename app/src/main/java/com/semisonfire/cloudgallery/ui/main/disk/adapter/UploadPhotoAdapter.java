@@ -13,6 +13,7 @@ import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class UploadPhotoAdapter extends RecyclerView.Adapter<UploadPhotoAdapter.
 
         void bind(Photo photo) {
             Picasso.get()
-                    .load(photo.getPreview())
+                    .load(new File(photo.getLocalPath()))
                     .resize(targetWidth, targetHeight)
                     .onlyScaleDown()
                     .centerCrop()

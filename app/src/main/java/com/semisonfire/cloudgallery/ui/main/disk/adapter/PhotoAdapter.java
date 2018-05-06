@@ -12,7 +12,6 @@ import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

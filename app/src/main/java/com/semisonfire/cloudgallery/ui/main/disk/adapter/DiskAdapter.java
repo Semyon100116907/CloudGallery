@@ -258,9 +258,11 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public void changeUploadState(String state) {
-        UploadItem uploadItem = (UploadItem) mDiskItems.get(0);
-        uploadItem.setState(state);
-        notifyItemChanged(0);
+        DiskItem diskItem = mDiskItems.get(0);
+        if (diskItem instanceof UploadItem) {
+            ((UploadItem)diskItem).setState(state);
+            notifyItemChanged(0);
+        }
     }
 
     @Override

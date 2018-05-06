@@ -49,8 +49,6 @@ public class PhotoDetailAdapter extends PagerAdapter {
         mOrientation = orientation;
     }
 
-
-
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {

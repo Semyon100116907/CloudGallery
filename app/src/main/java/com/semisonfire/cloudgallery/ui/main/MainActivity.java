@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
@@ -77,13 +76,8 @@ public class MainActivity extends BaseActivity implements MainContract.View {
         if (matcher.find()) {
             final String token = matcher.group(1);
             if (!TextUtils.isEmpty(token)) {
-                Log.d(TAG, "login: token: " + token);
                 saveToken(token);
-            } else {
-                Log.w(TAG, "success: empty token");
             }
-        } else {
-            Log.w(TAG, "login: token not found");
         }
     }
 

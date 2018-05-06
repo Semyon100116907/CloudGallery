@@ -25,6 +25,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
+import retrofit2.HttpException;
 
 
 public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
@@ -53,13 +54,20 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     public void getPhotos(int page) {
         Disposable result =
                 mRemoteDataSource.getPhotos(DiskClient.MAX_LIMIT, page)
-                        /*.flatMapIterable(photos -> photos)
-                        .toList()*/
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(photos -> getMvpView().onPhotosLoaded(photos),
                                 throwable -> getMvpView().onError(throwable));
         getCompositeDisposable().add(result);
+    }
+
+    public void getUploadingPhotos() {
+        getCompositeDisposable().add(
+                mLocalDataSource.getUploadingPhotos()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(photos -> getMvpView().onUploadingPhotos(photos),
+                                throwable -> getMvpView().onError(throwable)));
     }
 
     public void downloadPhotos(List<Photo> photos) {
@@ -101,6 +109,12 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
         uploadNext();
     }
 
+    private void uploadNext() {
+        while (!mPhotos.isEmpty()) {
+            mUploadSubject.onNext(mPhotos.remove());
+        }
+    }
+
     private void createInformerSubject() {
         getCompositeDisposable().add(
                 mUploadSubjectInformer
@@ -112,37 +126,57 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     private void createUploadSubj() {
         getCompositeDisposable().add(
                 mUploadSubject
+                        .flatMap(photo -> mLocalDataSource.saveUploadingPhoto(photo).toObservable())
                         .concatMap(photo -> getUploadFlowable(photo).toObservable())
-                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(photo -> getMvpView().onPhotoUploaded(photo),
                                 throwable -> getMvpView().onError(throwable)));
     }
 
     private Flowable<Photo> getUploadFlowable(Photo p) {
+        String beginName = p.getName();
         return Flowable.just(p)
-                /*add local rows*/
                 .subscribeOn(Schedulers.io())
-                .concatMap(photo -> Flowable.just(photo).delay(100, TimeUnit.MILLISECONDS))
+                .concatMap(photo -> Flowable.just(photo).delay(1000, TimeUnit.MILLISECONDS))
                 .flatMap(photo -> mRemoteDataSource.getUploadLink(photo))
                 .flatMap(link -> mRemoteDataSource.savePhoto(link.getPhoto(), link))
                 .retryWhen(error -> error.flatMap(throwable -> {
-                    mUploadSubjectInformer.onNext(new Photo());
                     if (throwable instanceof InternetUnavailableException) {
-                        return Flowable.timer(5, TimeUnit.SECONDS);
+                        mUploadSubjectInformer.onNext(new Photo());
+                        return Flowable.timer(2, TimeUnit.SECONDS);
+                    }
+                    if (throwable instanceof HttpException) {
+                        if (((HttpException) throwable).code() == 409) {
+                            p.setName(rename(p.getName()));
+                            return Flowable.timer(1, TimeUnit.SECONDS);
+                        }
                     }
                     return Flowable.error(throwable);
                 }))
                 .filter(Photo::isUploaded)
-                .map(photo -> {
+                .flatMap(photo -> {
                     photo.setModifiedAt(DateUtils.getCurrentDate());
-                    return photo;
+                    photo.setName(beginName);
+                    return mLocalDataSource.updateUploadingPhoto(photo);
                 })
-                /*update local rows*/;
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
-    private void uploadNext() {
-        while (!mPhotos.isEmpty()) {
-            mUploadSubject.onNext(mPhotos.remove());
+    /** Rename duplicate file. */
+    private String rename(String fullName) {
+        int index = fullName.lastIndexOf('.');
+        String name = fullName.substring(0, index);
+        String extension = fullName.substring(index);
+        String newName;
+        int first = name.indexOf("(") + 1;
+        int last = name.lastIndexOf(")");
+        if (first != -1 && last != -1) {
+            int counter = Integer.parseInt(name.substring(first, last));
+            counter++;
+            newName = name.substring(0, first - 1) + "(" + String.valueOf(counter) + ")";
+        } else {
+            newName = name + "(1)";
         }
+        newName += extension;
+        return newName;
     }
 }

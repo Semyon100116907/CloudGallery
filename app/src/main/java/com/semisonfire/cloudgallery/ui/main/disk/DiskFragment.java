@@ -147,12 +147,6 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
 
         bind();
 
-        //Get uploading photos
-        if (mUploadingList != null && !mUploadingList.isEmpty()) {
-            mDiskAdapter.addUploadPhotos(mUploadingList);
-            mDiskPresenter.uploadPhotos(mUploadingList);
-        }
-
         //Get remote photos
         if (mPhotoList == null || mPhotoList.isEmpty()) {
             isLoading = true;
@@ -224,6 +218,12 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0 && getFloatButton().isShown()) {
+                    getFloatButton().hide();
+                } else if (dy < 0 && getFloatButton().getVisibility() != View.INVISIBLE) {
+                    getFloatButton().show();
+                }
+
                 int topRowVerticalPosition =
                         recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
                 getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0);
@@ -369,34 +369,9 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             photo.setPreview(contentUri.toString());
             photo.setLocalPath(path);
             photo.setName(path.substring(path.lastIndexOf('/') + 1));
-            if (mPhotoList.contains(photo)) {
-                int index = photo.getName().lastIndexOf('.');
-                String name = photo.getName().substring(0, index);
-                String extension = photo.getName().substring(index);
-                photo.setName(copyName(name, extension, 0));
-            }
             return photo;
         }
         return null;
-    }
-
-    /** Check file for duplicates. */
-    private String copyName(String name, String extension, int counter) {
-        Photo photo = new Photo();
-
-        String newName = name;
-        if (counter != 0) {
-            newName = name + "(" + String.valueOf(counter) + ")";
-        }
-        newName += extension;
-        photo.setName(newName);
-
-        if (mPhotoList.contains(photo)) {
-            counter++;
-            return copyName(name, extension, counter);
-        }
-
-        return newName;
     }
 
     @Override
@@ -409,6 +384,15 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     }
 
     @Override
+    public void onUploadingPhotos(List<Photo> photos) {
+        if (photos != null && !photos.isEmpty()) {
+            mUploadingList.addAll(photos);
+            mDiskAdapter.addUploadPhotos(photos);
+            mDiskPresenter.uploadPhotos(photos);
+        }
+    }
+
+    @Override
     public void onPhotosLoaded(List<Photo> photos) {
         getSwipeRefreshLayout().setRefreshing(false);
         if (photos != null && !photos.isEmpty()) {
@@ -416,6 +400,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             mPhotoList.addAll(photos);
             mDiskAdapter.addPhotos(photos);
             getStateView().hideStateView();
+            mDiskPresenter.getUploadingPhotos();
         } else {
             if (mPhotoList.isEmpty()) {
                 getStateView().showEmptyView(R.drawable.ic_yandex_disk,
