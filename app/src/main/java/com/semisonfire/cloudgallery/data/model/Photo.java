@@ -13,11 +13,12 @@ import com.google.gson.annotations.SerializedName;
 @Entity(tableName = "photo")
 public class Photo implements Parcelable, Comparable {
 
+    @PrimaryKey(autoGenerate = true)
+    private long id;
+
     @SerializedName("name")
-    @NonNull
-    @PrimaryKey
     @ColumnInfo(name = "name")
-    private String name = "";
+    private String name;
 
     @SerializedName("preview")
     @ColumnInfo(name = "preview")
@@ -50,12 +51,19 @@ public class Photo implements Parcelable, Comparable {
 
     public Photo() {}
 
-    @NonNull
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
 
-    public void setName(@NonNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
