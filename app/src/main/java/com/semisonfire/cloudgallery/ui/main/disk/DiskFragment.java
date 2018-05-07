@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -148,6 +149,8 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         setScrollView(mDiskRecyclerView);
 
         bind();
+
+        mDiskPresenter.getUploadingPhotos();
 
         //Get remote photos
         if (mPhotoList == null || mPhotoList.isEmpty()) {
@@ -397,7 +400,6 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             mPhotoList.addAll(photos);
             mDiskAdapter.addPhotos(photos);
             getStateView().hideStateView();
-            mDiskPresenter.getUploadingPhotos();
         } else {
             if (mPhotoList.isEmpty()) {
                 getStateView().showEmptyView(R.drawable.ic_yandex_disk,

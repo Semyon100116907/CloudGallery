@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.ui.main.disk;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.semisonfire.cloudgallery.data.local.LocalDataSource;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
@@ -13,6 +14,7 @@ import com.semisonfire.cloudgallery.ui.base.BasePresenter;
 import com.semisonfire.cloudgallery.utils.DateUtils;
 import com.semisonfire.cloudgallery.utils.FileUtils;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -139,7 +141,6 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
      * Upload one photo at the time.
      */
     private Flowable<Photo> getUploadFlowable(Photo p) {
-        String beginName = p.getName();
         return Flowable.just(p)
                 .subscribeOn(Schedulers.io())
                 .concatMap(photo -> Flowable.just(photo).delay(1000, TimeUnit.MILLISECONDS))
@@ -161,8 +162,10 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
                 .filter(Photo::isUploaded)
                 .flatMap(photo -> {
                     photo.setModifiedAt(DateUtils.getCurrentDate());
-                    photo.setName(beginName);
-                    return mLocalDataSource.updateUploadingPhoto(photo);
+                    String absolutePath = "file://" + new File(photo.getLocalPath()).getAbsolutePath();
+                    photo.setPreview(absolutePath);
+                    return mLocalDataSource.removeUploadingPhoto(photo)
+                            .andThen(Flowable.just(photo));
                 })
                 .observeOn(AndroidSchedulers.mainThread());
     }

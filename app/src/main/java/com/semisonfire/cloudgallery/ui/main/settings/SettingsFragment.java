@@ -40,6 +40,11 @@ public class SettingsFragment extends BaseFragment {
     }
 
     @Override
+    public void onTokenLoaded(String token) {
+        /* Not needed */
+    }
+
+    @Override
     public void onInternetUnavailable() {
         /* Not require because data is not requested */
     }

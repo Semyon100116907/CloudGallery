@@ -1,5 +1,7 @@
 package com.semisonfire.cloudgallery.data.local;
 
+import android.util.Log;
+
 import com.semisonfire.cloudgallery.data.model.Photo;
 
 import java.util.List;
@@ -25,13 +27,15 @@ public class LocalDataSource {
         return savePhoto(photo);
     }
 
-    public Flowable<Photo> updateUploadingPhoto(Photo photo) {
-        photo.setUploaded(true);
-        return savePhoto(photo);
+    public Completable removeUploadingPhoto(Photo photo) {
+        return Completable.fromAction(() -> mLocalDatabase.getPhotoDao().deletePhoto(photo));
     }
 
     private Flowable<Photo> savePhoto(Photo photo) {
-        return Completable.fromAction(() -> mLocalDatabase.getPhotoDao().insertPhoto(photo))
+        return Completable.fromCallable(() -> {
+            photo.setId(mLocalDatabase.getPhotoDao().insertPhoto(photo));
+            return photo;
+        })
                 .subscribeOn(Schedulers.io())
                 .andThen(Flowable.just(photo));
     }
