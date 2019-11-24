@@ -362,9 +362,9 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
     }
   }
 
-  override fun onPhotoUploaded(photo: Photo) {
+  override fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
     var uploadState: String? = null
-    if (photo != null) {
+    if (uploaded) {
       photoList.add(photo)
       diskAdapter.addPhoto(photo)
       uploadingList.remove(photo)

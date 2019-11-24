@@ -19,12 +19,14 @@ import java.util.List;
 
 public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder> {
 
-    private SelectableHelper.OnPhotoListener mPhotoClickListener;
-    private List<Photo> mPhotoList;
+    private SelectableHelper.OnPhotoListener photoListener;
+    private List<Photo> photos = new ArrayList<>();
 
-    public PhotoAdapter(SelectableHelper.OnPhotoListener clickListener) {
-        mPhotoClickListener = clickListener;
-        mPhotoList = new ArrayList<>();
+    public PhotoAdapter() {
+    }
+
+    public void setPhotoListener(SelectableHelper.OnPhotoListener photoListener) {
+        this.photoListener = photoListener;
     }
 
     @NonNull
@@ -36,30 +38,30 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
     @Override
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
-        holder.bind(mPhotoList.get(position));
+        holder.bind(photos.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mPhotoList.size();
+        return photos.size();
     }
 
     public void setPhotos(List<Photo> items) {
-        final PhotoDiffUtil diffUtilCallback = new PhotoDiffUtil(items, mPhotoList);
+        final PhotoDiffUtil diffUtilCallback = new PhotoDiffUtil(items, photos);
         final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffUtilCallback);
-        mPhotoList.clear();
-        mPhotoList.addAll(items);
+        photos.clear();
+        photos.addAll(items);
         diffResult.dispatchUpdatesTo(this);
     }
 
     public void addPhotos(List<? extends Photo> photos) {
-        mPhotoList.addAll(photos);
+        this.photos.addAll(photos);
         notifyItemRangeInserted(getItemCount(), photos.size());
     }
 
     public void setSelection(boolean selected) {
         if (!selected) {
-            for (Photo photo : mPhotoList) {
+            for (Photo photo : photos) {
                 if (photo.isSelected()) {
                     photo.setSelected(false);
                 }
@@ -70,8 +72,8 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
     }
 
     public void remove(Photo photo) {
-        int position = mPhotoList.indexOf(photo);
-        mPhotoList.remove(photo);
+        int position = photos.indexOf(photo);
+        photos.remove(photo);
         notifyItemRemoved(position);
     }
 
@@ -79,13 +81,13 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
 
         private int targetHeight;
         private int targetWidth;
-        private ImageView mPhoto;
-        private ImageView mSelect;
+        private ImageView photoImage;
+        private ImageView selectImage;
 
         public PhotoViewHolder(View itemView) {
             super(itemView);
-            mPhoto = itemView.findViewById(R.id.image_photo);
-            mSelect = itemView.findViewById(R.id.image_selected);
+            photoImage = itemView.findViewById(R.id.image_photo);
+            selectImage = itemView.findViewById(R.id.image_selected);
             targetWidth = itemView.getContext().getResources().getDimensionPixelOffset(R.dimen.photo_max_width);
             targetHeight = itemView.getContext().getResources().getDimensionPixelOffset(R.dimen.photo_max_height);
         }
@@ -93,37 +95,37 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         void bind(Photo photo) {
 
             View.OnClickListener onItemClick = v -> {
-                if (mPhotoClickListener != null) {
-                    Photo p = mPhotoList.get(getAdapterPosition());
+                if (photoListener != null) {
+                    Photo p = photos.get(getAdapterPosition());
                     if (!SelectableHelper.getMultipleSelection()) {
-                        mPhotoClickListener.onPhotoClick(mPhotoList, getAdapterPosition());
+                        photoListener.onPhotoClick(photos, getAdapterPosition());
                     } else {
                         p.setSelected(!p.isSelected());
                         notifyItemChanged(getAdapterPosition());
-                        mPhotoClickListener.onSelectedPhotoClick(p);
+                        photoListener.onSelectedPhotoClick(p);
                     }
                 }
             };
 
-            mPhoto.setImageDrawable(null);
+            photoImage.setImageDrawable(null);
             Picasso.get().load(photo.getPreview())
                     .resize(targetWidth, targetHeight)
                     .centerCrop()
                     .placeholder(R.color.black)
                     .error(R.drawable.ic_gallery)
-                    .into(mPhoto);
+                    .into(photoImage);
 
-            mPhoto.setOnClickListener(onItemClick);
-            mSelect.setOnClickListener(onItemClick);
-            mSelect.setVisibility(photo.isSelected() ? View.VISIBLE : View.GONE);
+            photoImage.setOnClickListener(onItemClick);
+            selectImage.setOnClickListener(onItemClick);
+            selectImage.setVisibility(photo.isSelected() ? View.VISIBLE : View.GONE);
 
-            mPhoto.setOnLongClickListener(v -> {
-                if (mPhotoClickListener != null && !SelectableHelper.getMultipleSelection()) {
-                    Photo p = mPhotoList.get(getAdapterPosition());
+            photoImage.setOnLongClickListener(v -> {
+                if (photoListener != null && !SelectableHelper.getMultipleSelection()) {
+                    Photo p = photos.get(getAdapterPosition());
                     p.setSelected(true);
                     notifyItemChanged(getAdapterPosition());
-                    mPhotoClickListener.onPhotoLongClick();
-                    mPhotoClickListener.onSelectedPhotoClick(p);
+                    photoListener.onPhotoLongClick();
+                    photoListener.onSelectedPhotoClick(p);
                     return true;
                 }
                 return false;

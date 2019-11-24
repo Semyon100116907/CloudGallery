@@ -122,7 +122,7 @@ public class DiskPresenter extends BasePresenter<DiskContract.View>
         getCompositeDisposable().add(
                 mUploadSubjectInformer
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(photo -> getView().onPhotoUploaded(null),
+                        .subscribe(photo -> getView().onPhotoUploaded(photo, false),
                                 throwable -> getView().onError(throwable)));
     }
 
@@ -131,7 +131,7 @@ public class DiskPresenter extends BasePresenter<DiskContract.View>
                 mUploadSubject
                         .flatMap(photo -> mLocalDataSource.saveUploadingPhoto(photo).toObservable())
                         .concatMap(photo -> getUploadFlowable(photo).toObservable())
-                        .subscribe(photo -> getView().onPhotoUploaded(photo),
+                        .subscribe(photo -> getView().onPhotoUploaded(photo, true),
                                 throwable -> getView().onError(throwable)));
     }
 

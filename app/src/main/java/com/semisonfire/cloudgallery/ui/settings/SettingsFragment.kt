@@ -7,6 +7,14 @@ import com.semisonfire.cloudgallery.core.ui.BaseFragment
 
 interface SettingsView : MvpView
 
+
+enum class AudioStateView {
+  LOADER,
+  CONTENT,
+  EMPTY,
+  ERROR
+}
+
 class SettingsFragment : BaseFragment<SettingsView, SettingsPresenter>() {
 
   override fun bind(view: View) {
