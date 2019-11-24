@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.dialogs;
+package com.semisonfire.cloudgallery.ui.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.ui.main.dialogs.base.BaseDialogFragment;
+import com.semisonfire.cloudgallery.ui.dialogs.base.BaseDialogFragment;
 
 public class BottomDialogFragment extends BaseDialogFragment {
 

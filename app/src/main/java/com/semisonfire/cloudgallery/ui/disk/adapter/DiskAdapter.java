@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.disk.adapter;
+package com.semisonfire.cloudgallery.ui.disk.adapter;
 
 import android.content.res.Configuration;
 import android.support.annotation.NonNull;
@@ -15,10 +15,10 @@ import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.DiskItem;
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.GalleryItem;
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.HeaderItem;
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.UploadItem;
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.DiskItem;
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.GalleryItem;
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.HeaderItem;
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.UploadItem;
 import com.semisonfire.cloudgallery.utils.DateUtils;
 
 import java.util.ArrayList;

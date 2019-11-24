@@ -1,9 +1,8 @@
-package com.semisonfire.cloudgallery.ui.main.trash;
+package com.semisonfire.cloudgallery.ui.trash;
 
 import android.text.TextUtils;
 
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;

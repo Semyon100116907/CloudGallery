@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.disk.adapter;
+package com.semisonfire.cloudgallery.ui.disk.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.util.DiffUtil;

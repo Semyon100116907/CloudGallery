@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.settings;
+package com.semisonfire.cloudgallery.ui.settings;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;

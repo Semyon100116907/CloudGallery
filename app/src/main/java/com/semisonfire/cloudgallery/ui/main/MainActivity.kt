@@ -6,9 +6,9 @@ import android.support.v7.widget.Toolbar
 import android.text.TextUtils
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
-import com.semisonfire.cloudgallery.ui.main.disk.DISK_KEY
-import com.semisonfire.cloudgallery.ui.main.settings.SETTINGS_KEY
-import com.semisonfire.cloudgallery.ui.main.trash.TRASH_KEY
+import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
+import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 

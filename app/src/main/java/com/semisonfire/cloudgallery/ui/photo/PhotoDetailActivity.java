@@ -20,9 +20,7 @@ import android.widget.Toast;
 import com.semisonfire.cloudgallery.R;
 import com.semisonfire.cloudgallery.core.ui.BaseActivity;
 import com.semisonfire.cloudgallery.data.model.Photo;
-import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
-import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
-import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
+import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
 
 import java.util.ArrayList;

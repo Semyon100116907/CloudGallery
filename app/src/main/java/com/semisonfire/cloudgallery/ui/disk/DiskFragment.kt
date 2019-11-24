@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.disk
+package com.semisonfire.cloudgallery.ui.disk
 
 import android.Manifest
 import android.app.Activity
@@ -24,9 +24,9 @@ import com.semisonfire.cloudgallery.core.ui.BaseFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
-import com.semisonfire.cloudgallery.ui.main.dialogs.BottomDialogFragment
-import com.semisonfire.cloudgallery.ui.main.dialogs.base.BottomDialogListener
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.DiskAdapter
+import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
+import com.semisonfire.cloudgallery.ui.dialogs.base.BottomDialogListener
+import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.utils.*
 import java.util.*

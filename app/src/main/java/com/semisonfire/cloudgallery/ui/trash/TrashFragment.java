@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.trash;
+package com.semisonfire.cloudgallery.ui.trash;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,9 +26,9 @@ import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
-import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
-import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.PhotoAdapter;
+import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment;
+import com.semisonfire.cloudgallery.ui.dialogs.base.DialogListener;
+import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
 
 import java.util.ArrayList;

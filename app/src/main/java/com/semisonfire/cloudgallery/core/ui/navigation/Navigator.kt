@@ -5,12 +5,12 @@ import android.support.v4.app.FragmentManager
 import com.semisonfire.cloudgallery.core.ui.navigation.nav.EXAMPLE_KEY
 import com.semisonfire.cloudgallery.core.ui.navigation.nav.ExampleNavigator
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Command
-import com.semisonfire.cloudgallery.ui.main.disk.DISK_KEY
-import com.semisonfire.cloudgallery.ui.main.disk.DiskNavigator
-import com.semisonfire.cloudgallery.ui.main.settings.SETTINGS_KEY
-import com.semisonfire.cloudgallery.ui.main.settings.SettingsNavigator
-import com.semisonfire.cloudgallery.ui.main.trash.TRASH_KEY
-import com.semisonfire.cloudgallery.ui.main.trash.TrashNavigator
+import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.ui.disk.DiskNavigator
+import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
+import com.semisonfire.cloudgallery.ui.settings.SettingsNavigator
+import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
+import com.semisonfire.cloudgallery.ui.trash.TrashNavigator
 import java.util.*
 
 private const val NONE_CONTAINER_ID = -1

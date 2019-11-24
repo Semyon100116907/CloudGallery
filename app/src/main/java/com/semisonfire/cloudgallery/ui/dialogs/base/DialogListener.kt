@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.dialogs.base
+package com.semisonfire.cloudgallery.ui.dialogs.base
 
 import android.content.DialogInterface
 import android.view.View

@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.disk
+package com.semisonfire.cloudgallery.ui.disk
 
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter

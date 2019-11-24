@@ -6,7 +6,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.semisonfire.cloudgallery.ui.main.disk.adapter.items.DiskItem;
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.DiskItem;
 
 public class ItemDecorator extends RecyclerView.ItemDecoration {
 

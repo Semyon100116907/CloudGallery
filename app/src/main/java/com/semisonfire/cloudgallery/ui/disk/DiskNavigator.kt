@@ -1,21 +1,21 @@
-package com.semisonfire.cloudgallery.ui.main.settings
+package com.semisonfire.cloudgallery.ui.disk
 
 import android.support.v4.app.Fragment
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
 
-const val SETTINGS_KEY = "SETTINGS_KEY"
-const val SETTINGS_CONTAINER_ID = R.id.frame_fragment
+const val DISK_KEY = "DISK_KEY"
+const val DISK_CONTAINER_ID = R.id.frame_fragment
 
-class SettingsNavigator: Navigator() {
+class DiskNavigator: Navigator() {
   override val key: String
-    get() = SETTINGS_KEY
+    get() = DISK_KEY
   override val containerId: Int
-    get() = SETTINGS_CONTAINER_ID
+    get() = DISK_CONTAINER_ID
 
   override fun createFragment(key: String, bundle: Any?): Fragment? {
     return when (key) {
-      SETTINGS_KEY -> SettingsFragment()
+      DISK_KEY -> DiskFragment()
       else -> null
     }
   }

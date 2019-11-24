@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.trash
+package com.semisonfire.cloudgallery.ui.trash
 
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter

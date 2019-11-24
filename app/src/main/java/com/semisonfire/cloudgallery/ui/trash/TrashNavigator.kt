@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.main.trash
+package com.semisonfire.cloudgallery.ui.trash
 
 import android.support.v4.app.Fragment
 import com.semisonfire.cloudgallery.R

@@ -1,11 +1,10 @@
-package com.semisonfire.cloudgallery.ui.main.disk;
+package com.semisonfire.cloudgallery.ui.disk;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter;
 import com.semisonfire.cloudgallery.data.local.LocalDataSource;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
