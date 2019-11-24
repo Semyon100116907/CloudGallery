@@ -107,7 +107,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         RemoteDataSource remoteDataSource = new RemoteDataSource(DiskClient.getApi());
 
         //Create local data manager
-        LocalDataSource localDataSource = new LocalDataSource(LocalDatabase.getInstance(context));
+        LocalDataSource localDataSource = new LocalDataSource(LocalDatabase.Companion.getInstance(context));
 
         //Create presenter
         mDiskPresenter = new DiskPresenter<>(preferences, remoteDataSource, localDataSource);

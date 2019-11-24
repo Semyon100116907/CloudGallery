@@ -61,7 +61,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mBasePresenter = new BasePresenter<>(new DiskPreferences(context));
+//        mBasePresenter = new BasePresenter<>(new DiskPreferences(context));
         mBasePresenter.attachView(this);
         mSelectedPhotos = new ArrayList<>();
     }
@@ -163,7 +163,7 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     private void refreshToken() {
         if (mStateView != null) {
             if (mFloatButton != null) {
-                mFloatButton.setVisibility(View.GONE);
+                mFloatButton.hide();
             }
             getStateView().showStateView(R.drawable.ic_cloud_off,
                     getString(R.string.msg_yandex_start),
