@@ -33,9 +33,6 @@ public class DiskClient {
     //10 Mb cache size
     public static final int DISK_CACHE_SIZE = 10 * 1024 * 1024;
 
-    //Max items per request
-    public static final int MAX_LIMIT = 15;
-
     private static DiskClient instance;
     private static ConnectivityManager connectivityManager;
     private static DiskApi api;

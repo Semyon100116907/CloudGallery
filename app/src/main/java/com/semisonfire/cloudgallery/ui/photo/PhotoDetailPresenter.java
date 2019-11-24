@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory;
 
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter;
 import com.semisonfire.cloudgallery.data.model.Photo;
-import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
+import com.semisonfire.cloudgallery.data.remote.RemoteRepository;
 import com.semisonfire.cloudgallery.di.ActivityScope;
 import com.semisonfire.cloudgallery.utils.FileUtils;
 
@@ -22,17 +22,17 @@ import io.reactivex.schedulers.Schedulers;
 public class PhotoDetailPresenter extends BasePresenter<PhotoDetailContract.View>
         implements PhotoDetailContract.Presenter {
 
-    private RemoteDataSource mRemoteDataSource;
+    private RemoteRepository remoteRepository;
 
     @Inject
-    public PhotoDetailPresenter(RemoteDataSource remoteDataSource) {
-        mRemoteDataSource = remoteDataSource;
+    public PhotoDetailPresenter(RemoteRepository remoteRepository) {
+        this.remoteRepository = remoteRepository;
     }
 
     @Override
     public void download(Photo photo) {
         getCompositeDisposable().add(
-                mRemoteDataSource.getDownloadLink(photo)
+                remoteRepository.getDownloadLink(photo)
                         .map(link -> {
                             URL url = new URL(link.getHref());
                             Bitmap bitmap = BitmapFactory
@@ -54,10 +54,10 @@ public class PhotoDetailPresenter extends BasePresenter<PhotoDetailContract.View
 
         switch (from) {
             case PhotoDetailActivity.FROM_DISK:
-                delete = mRemoteDataSource.deletePhoto(photo);
+                delete = remoteRepository.deletePhoto(photo);
                 break;
             case PhotoDetailActivity.FROM_TRASH:
-                delete = mRemoteDataSource.deleteTrashPhoto(photo);
+                delete = remoteRepository.deleteTrashPhoto(photo);
                 break;
             default:
                 delete = Flowable.just(photo);
@@ -75,7 +75,7 @@ public class PhotoDetailPresenter extends BasePresenter<PhotoDetailContract.View
     @Override
     public void restore(Photo photo) {
         getCompositeDisposable().add(
-                mRemoteDataSource.restoreTrashPhoto(photo)
+                remoteRepository.restoreTrashPhoto(photo)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(

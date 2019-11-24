@@ -3,12 +3,8 @@ package com.semisonfire.cloudgallery
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Environment
 import android.support.multidex.MultiDex
-
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences
-import com.semisonfire.cloudgallery.data.remote.api.DiskClient
 import com.semisonfire.cloudgallery.di.AppComponent
 import com.semisonfire.cloudgallery.di.DaggerAppComponent
 import com.semisonfire.cloudgallery.di.module.ContextModule

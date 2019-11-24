@@ -1,7 +1,7 @@
 package com.semisonfire.cloudgallery.ui.disk.di
 
-import com.semisonfire.cloudgallery.data.local.LocalDataSource
-import com.semisonfire.cloudgallery.data.remote.RemoteDataSource
+import com.semisonfire.cloudgallery.data.local.LocalRepository
+import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.di.FragmentScope
 import com.semisonfire.cloudgallery.ui.disk.DiskContract
 import com.semisonfire.cloudgallery.ui.disk.DiskPresenter
@@ -14,9 +14,9 @@ class DiskModule {
   @Provides
   @FragmentScope
   fun provideDiskPresenter(
-    remoteDataSource: RemoteDataSource,
-    localDataSource: LocalDataSource
+    remoteRepository: RemoteRepository,
+    localRepository: LocalRepository
   ): DiskContract.Presenter {
-    return DiskPresenter(remoteDataSource, localDataSource)
+    return DiskPresenter(remoteRepository, localRepository)
   }
 }

@@ -4,8 +4,7 @@ import android.text.TextUtils;
 
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter;
 import com.semisonfire.cloudgallery.data.model.Photo;
-import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
-import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
+import com.semisonfire.cloudgallery.data.remote.RemoteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,27 +13,31 @@ import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.semisonfire.cloudgallery.ui.disk.DiskPresenter.LIMIT;
+
 public class TrashPresenter extends BasePresenter<TrashContract.View>
         implements TrashContract.Presenter {
 
-    private RemoteDataSource mRemoteDataSource;
+    private RemoteRepository remoteRepository;
 
-    public TrashPresenter(RemoteDataSource remoteDataSource) {
-        mRemoteDataSource = remoteDataSource;
+    public TrashPresenter(RemoteRepository remoteRepository) {
+        this.remoteRepository = remoteRepository;
     }
 
     @Override
     public void getPhotos(int page) {
         getCompositeDisposable().add(
-                mRemoteDataSource.getTrashPhotos(DiskClient.MAX_LIMIT, page)
+                remoteRepository.getTrashPhotos(LIMIT, page)
                         .flatMapIterable(photos -> photos)
                         .filter(photo -> !TextUtils.isEmpty(photo.getMediaType()))
                         .filter(photo -> photo.getMediaType().equals("image"))
                         .toList()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(photos -> getView().onTrashLoaded(photos),
-                                throwable -> getView().onError(throwable)));
+                        .subscribe(
+                                photos -> getView().onTrashLoaded(photos),
+                                throwable -> getView().onError(throwable)
+                        ));
     }
 
     @Override
@@ -42,11 +45,13 @@ public class TrashPresenter extends BasePresenter<TrashContract.View>
         List<Photo> items = new ArrayList<>(photos);
         getCompositeDisposable().add(
                 Flowable.fromIterable(items)
-                        .concatMap(photo -> mRemoteDataSource.restoreTrashPhoto(photo))
+                        .concatMap(photo -> remoteRepository.restoreTrashPhoto(photo))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(p -> getView().onPhotoRestored(p),
-                                throwable -> getView().onError(throwable)));
+                        .subscribe(
+                                p -> getView().onPhotoRestored(p),
+                                throwable -> getView().onError(throwable)
+                        ));
     }
 
     @Override
@@ -54,21 +59,25 @@ public class TrashPresenter extends BasePresenter<TrashContract.View>
         List<Photo> items = new ArrayList<>(photos);
         getCompositeDisposable().add(
                 Flowable.fromIterable(items)
-                        .concatMap(photo -> mRemoteDataSource.deleteTrashPhoto(photo))
+                        .concatMap(photo -> remoteRepository.deleteTrashPhoto(photo))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(p -> getView().onPhotoDeleted(p),
-                                throwable -> getView().onError(throwable)));
+                        .subscribe(
+                                p -> getView().onPhotoDeleted(p),
+                                throwable -> getView().onError(throwable)
+                        ));
     }
 
     @Override
     public void clear() {
         getCompositeDisposable().add(
-                mRemoteDataSource.clearTrash()
+                remoteRepository.clearTrash()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(() -> getView().onTrashCleared(),
-                                throwable -> getView().onError(throwable)));
+                        .subscribe(
+                                () -> getView().onTrashCleared(),
+                                throwable -> getView().onError(throwable)
+                        ));
     }
 
 }

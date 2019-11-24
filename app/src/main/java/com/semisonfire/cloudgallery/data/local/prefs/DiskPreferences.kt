@@ -12,8 +12,8 @@ class DiskPreferences @Inject constructor(private val sharedPreferences: SharedP
   var prefToken: String?
     get() = sharedPreferences.getString(PREF_TOKEN, null)
     set(token) {
-      val mEditor = sharedPreferences.edit()
-      mEditor.putString(PREF_TOKEN, token)
-      mEditor.apply()
+      val editor = sharedPreferences.edit()
+      editor.putString(PREF_TOKEN, token)
+      editor.apply()
     }
 }
