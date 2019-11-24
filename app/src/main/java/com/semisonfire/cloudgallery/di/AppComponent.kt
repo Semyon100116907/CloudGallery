@@ -21,6 +21,10 @@ annotation class ActivityContext
 @Scope
 annotation class ActivityScope
 
+@Retention(AnnotationRetention.RUNTIME)
+@Scope
+annotation class FragmentScope
+
 @Singleton
 @Component(
   modules = [
