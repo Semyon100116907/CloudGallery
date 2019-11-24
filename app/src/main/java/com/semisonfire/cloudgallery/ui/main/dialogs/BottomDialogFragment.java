@@ -38,14 +38,14 @@ public class BottomDialogFragment extends BaseDialogFragment {
     }
 
     private void bind(View sheetView) {
-        View.OnClickListener mClickListener = view -> {
+        View.OnClickListener clickListener = view -> {
             if (getDialogListener() != null) getDialogListener().onItemClick(this.getDialog(), view);
         };
 
         ViewGroup mCamera = sheetView.findViewById(R.id.container_camera);
-        mCamera.setOnClickListener(mClickListener);
+        mCamera.setOnClickListener(clickListener);
 
         ViewGroup mGallery = sheetView.findViewById(R.id.container_gallery);
-        mGallery.setOnClickListener(mClickListener);
+        mGallery.setOnClickListener(clickListener);
     }
 }

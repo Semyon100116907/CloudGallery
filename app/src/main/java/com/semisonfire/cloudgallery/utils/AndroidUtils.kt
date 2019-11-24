@@ -2,8 +2,10 @@ package com.semisonfire.cloudgallery.utils
 
 import android.content.Context
 import android.support.annotation.DimenRes
+import android.support.annotation.StringRes
 import android.support.v4.app.Fragment
 import android.view.View
+import android.widget.Toast
 import com.semisonfire.cloudgallery.App
 
 fun background() = App.background.value
@@ -30,3 +32,13 @@ fun Fragment.sp(value: Float): Int = activity!!.sp(value)
 fun Fragment.dimen(@DimenRes resource: Int): Int = activity!!.dimen(resource)
 
 fun Long.toSeconds() = (this / 1000).toInt()
+
+fun Context.shortToast(text: String) =
+  Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+fun Context.shortToast(@StringRes stringId: Int) =
+  Toast.makeText(this, stringId, Toast.LENGTH_SHORT).show()
+
+fun Context.longToast(text: String) =
+  Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+fun Context.longToast(@StringRes stringId: Int) =
+  Toast.makeText(this, stringId, Toast.LENGTH_LONG).show()

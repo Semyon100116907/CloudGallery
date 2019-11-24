@@ -16,7 +16,7 @@ fun Context.colorResDrawable(@ColorRes colorRes: Int): ColorDrawable? {
 }
 
 /** Change menu items icon color  */
-fun setMenuIconsColor(menu: Menu, color: Int) {
+fun setMenuIconsColor(menu: Menu, @ColorInt color: Int) {
     for (i in 0 until menu.size()) {
         val drawable = menu.getItem(i).icon
         if (drawable != null) {

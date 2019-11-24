@@ -26,7 +26,6 @@ import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
-import com.semisonfire.cloudgallery.ui.custom.PaginationScrollListener;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.PhotoAdapter;
@@ -53,10 +52,6 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     private RecyclerView mTrashRecyclerView;
     private PhotoAdapter mTrashPhotoAdapter;
 
-    //Paging
-    private int mCurrentPage = 1;
-    private boolean isLoading = false;
-    private boolean isLastPage = false;
     private boolean isSelectable;
 
     @Override
@@ -75,13 +70,15 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
         super.onCreateView(inflater, container, savedInstanceState);
         setFrom(PhotoDetailActivity.FROM_TRASH);
         if (savedInstanceState != null) {
             mTrashList = savedInstanceState.getParcelableArrayList(STATE_TRASH_LIST);
-            isLoading = savedInstanceState.getBoolean(STATE_LOADING);
-            isLastPage = savedInstanceState.getBoolean(STATE_LAST_PAGE);
             isSelectable = savedInstanceState.getBoolean(STATE_SELECTABLE);
             setSelectableItems();
         }
@@ -95,11 +92,6 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         setScrollView(mTrashRecyclerView);
 
         bind();
-
-        if (mTrashList == null || mTrashList.isEmpty()) {
-            isLoading = true;
-            mTrashPresenter.getPhotos(mCurrentPage);
-        }
     }
 
     private void setSelectableItems() {
@@ -115,9 +107,10 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(STATE_TRASH_LIST, (ArrayList<? extends Parcelable>) mTrashList);
-        outState.putBoolean(STATE_LOADING, isLoading);
-        outState.putBoolean(STATE_LAST_PAGE, isLastPage);
+        outState.putParcelableArrayList(
+                STATE_TRASH_LIST,
+                (ArrayList<? extends Parcelable>) mTrashList
+        );
         outState.putBoolean(STATE_SELECTABLE, isSelectable);
     }
 
@@ -134,41 +127,15 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashRecyclerView.setAdapter(mTrashPhotoAdapter);
 
         int orientation = getResources().getConfiguration().orientation;
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),
-                orientation == Configuration.ORIENTATION_LANDSCAPE ? 4 : 3);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(
+                getContext(),
+                orientation == Configuration.ORIENTATION_LANDSCAPE ? 4 : 3
+        );
         mTrashRecyclerView.setLayoutManager(gridLayoutManager);
 
-        ItemDecorator mItemDecorator = new ItemDecorator(getResources().getDimensionPixelOffset(R.dimen.disk_grid_space));
+        ItemDecorator mItemDecorator =
+                new ItemDecorator(getResources().getDimensionPixelOffset(R.dimen.disk_grid_space));
         mTrashRecyclerView.addItemDecoration(mItemDecorator);
-
-        //Paging recycler view
-        mTrashRecyclerView.addOnScrollListener(new PaginationScrollListener(DiskClient.MAX_LIMIT) {
-            @Override
-            public void loadNext() {
-                isLoading = true;
-                mCurrentPage++;
-                mTrashPresenter.getPhotos(mCurrentPage);
-            }
-
-            @Override
-            public boolean isLoading() {
-                return isLoading;
-            }
-
-            @Override
-            public boolean isLastPage() {
-                return isLastPage;
-            }
-        });
-        mTrashRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                int topRowVerticalPosition =
-                        recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
-                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0 && !isSelectable);
-            }
-        });
 
         getSwipeRefreshLayout().setOnRefreshListener(() -> {
             getSwipeRefreshLayout().setRefreshing(true);
@@ -177,16 +144,16 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     }
 
     private void updateDataSet() {
-        mCurrentPage = 1;
-        isLastPage = false;
-        isLoading = true;
         mTrashList.clear();
         mTrashPhotoAdapter.setPhotos(mTrashList);
-        mTrashPresenter.getPhotos(mCurrentPage);
+//        mTrashPresenter.getPhotos(mCurrentPage);
     }
 
     private void showEmpty() {
-        getStateView().showEmptyView(R.drawable.ic_delete, getString(R.string.msg_yandex_trash_empty), null);
+        getStateView().showEmptyView(R.drawable.ic_delete,
+                getString(R.string.msg_yandex_trash_empty),
+                null
+        );
     }
 
     @Override
@@ -217,9 +184,11 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
                     mTrashPresenter.deletePhotos(getSelectedPhotos());
                 } else {
                     if (!mTrashList.isEmpty() || !getSelectedPhotos().isEmpty()) {
-                        showDialog(getString(R.string.msg_clear_trash),
+                        showDialog(
+                                getString(R.string.msg_clear_trash),
                                 getString(R.string.msg_clear_trash_description),
-                                getResources().getColor(R.color.colorAccent));
+                                getResources().getColor(R.color.colorAccent)
+                        );
                     }
                 }
                 break;
@@ -241,9 +210,11 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     @Override
     public void onInternetUnavailable() {
         if (mTrashList.isEmpty()) {
-            getStateView().showEmptyView(R.drawable.ic_delete,
+            getStateView().showEmptyView(
+                    R.drawable.ic_delete,
                     getString(R.string.msg_yandex_failed_retrieve),
-                    getString(R.string.action_yandex_check_connection));
+                    getString(R.string.action_yandex_check_connection)
+            );
         }
     }
 
@@ -258,9 +229,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
             if (mTrashList.isEmpty()) {
                 showEmpty();
             }
-            isLastPage = true;
         }
-        isLoading = false;
     }
 
     @Override
@@ -268,8 +237,12 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashList.remove(photo);
         mTrashPhotoAdapter.remove(photo);
 
-        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.msg_restored).toLowerCase(), Toast.LENGTH_LONG).show();
+        Toast.makeText(
+                getContext(),
+                getString(R.string.msg_photo) + " "
+                        + photo.getName() + " " + getString(R.string.msg_restored).toLowerCase(),
+                Toast.LENGTH_LONG
+        ).show();
 
         setEnabledSelection(false);
         if (mTrashList.isEmpty()) {
@@ -282,8 +255,12 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         mTrashList.remove(photo);
         mTrashPhotoAdapter.remove(photo);
 
-        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(), Toast.LENGTH_LONG).show();
+        Toast.makeText(
+                getContext(),
+                getString(R.string.msg_photo) + " "
+                        + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(),
+                Toast.LENGTH_LONG
+        ).show();
 
         setEnabledSelection(false);
         if (mTrashList.isEmpty()) {
@@ -313,7 +290,8 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     private void showDialog(String title, String message, int color) {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
-            AlertDialogFragment mAlertDialog = AlertDialogFragment.newInstance(title, message, color);
+            AlertDialogFragment mAlertDialog =
+                    AlertDialogFragment.newInstance(title, message, color);
             mAlertDialog.setTargetFragment(this, 0);
             mAlertDialog.show(activity.getSupportFragmentManager(), "alert");
         }

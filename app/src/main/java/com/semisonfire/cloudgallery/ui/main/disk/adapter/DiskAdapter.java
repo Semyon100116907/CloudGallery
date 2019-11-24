@@ -37,10 +37,13 @@ public class DiskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private boolean selected;
 
 
-    public DiskAdapter(SelectableHelper.OnPhotoListener listener) {
-        mPhotoClickListener = listener;
+    public DiskAdapter() {
         mMap = new LinkedHashMap<>();
         mDiskItems = new ArrayList<>();
+    }
+
+    public void setPhotoClickListener(SelectableHelper.OnPhotoListener listener) {
+        mPhotoClickListener = listener;
     }
 
     @NonNull
