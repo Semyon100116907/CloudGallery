@@ -42,9 +42,6 @@ class App : Application(), HasActivityInjector {
   override fun onCreate() {
     super.onCreate()
 
-    //Init client
-//    DiskClient.initInstance(getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
-
     //Init external file provider
     val fileProvider = ExternalFileProvider(this)
     fileProvider.setPrivateDirectory(

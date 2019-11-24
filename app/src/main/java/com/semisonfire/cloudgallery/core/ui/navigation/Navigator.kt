@@ -5,6 +5,12 @@ import android.support.v4.app.FragmentManager
 import com.semisonfire.cloudgallery.core.ui.navigation.nav.EXAMPLE_KEY
 import com.semisonfire.cloudgallery.core.ui.navigation.nav.ExampleNavigator
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Command
+import com.semisonfire.cloudgallery.ui.main.disk.DISK_KEY
+import com.semisonfire.cloudgallery.ui.main.disk.DiskNavigator
+import com.semisonfire.cloudgallery.ui.main.settings.SETTINGS_KEY
+import com.semisonfire.cloudgallery.ui.main.settings.SettingsNavigator
+import com.semisonfire.cloudgallery.ui.main.trash.TRASH_KEY
+import com.semisonfire.cloudgallery.ui.main.trash.TrashNavigator
 
 private const val NONE_CONTAINER_ID = -1
 
@@ -62,11 +68,13 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
   }
 
   protected fun remove(key: String) {
-    val fragment = createFragment(key) ?: return
-    fragmentManager
-      .beginTransaction()
-      .remove(fragment)
-      .commit()
+    val fragment = fragmentManager.findFragmentByTag(key)
+    if (fragment != null) {
+      fragmentManager
+        .beginTransaction()
+        .remove(fragment)
+        .commit()
+    }
   }
 
   protected fun back() {
@@ -88,11 +96,13 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
 
   private fun getNavigatorByKey(key: String): Navigator {
     val navigatorByKey = navigatorMap[key]
-    if (navigatorByKey != null)
-      return navigatorByKey
+    if (navigatorByKey != null) return navigatorByKey
 
     val navigator = when (key) {
       EXAMPLE_KEY -> ExampleNavigator()
+      DISK_KEY -> DiskNavigator()
+      TRASH_KEY -> TrashNavigator()
+      SETTINGS_KEY -> SettingsNavigator()
       else -> throw RuntimeException("Navigator not found")
     }
     navigatorMap[key] = navigator
