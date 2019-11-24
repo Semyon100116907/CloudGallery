@@ -7,18 +7,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,13 +28,10 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.local.LocalDataSource;
-import com.semisonfire.cloudgallery.data.local.LocalDatabase;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback;
+import com.semisonfire.cloudgallery.core.ui.BaseFragment;
 import com.semisonfire.cloudgallery.data.model.Photo;
-import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
-import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
 import com.semisonfire.cloudgallery.ui.custom.PaginationScrollListener;
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
@@ -43,16 +40,19 @@ import com.semisonfire.cloudgallery.ui.main.dialogs.BottomDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.DiskAdapter;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
-import com.semisonfire.cloudgallery.utils.ColorUtils;
 import com.semisonfire.cloudgallery.utils.FileUtils;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DiskFragment extends BaseFragment implements DiskContract.View, DialogListener {
+import static com.semisonfire.cloudgallery.utils.ColorUtilsKt.setMenuIconsColor;
 
-    private static final String TAG = DiskFragment.class.getSimpleName();
+@SuppressWarnings("unchecked")
+public class DiskFragment extends BaseFragment<DiskContract.View, DiskContract.Presenter> implements
+        DiskContract.View, DialogListener {
 
     //Saved state constants
     private static final String STATE_FILE_URI = "STATE_FILE_URI";
@@ -68,23 +68,19 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     private static final int GALLERY_IMAGE_REQUEST = 1999;
     private static final int MEMORY_REQUEST = 2000;
     private static final int CAMERA_REQUEST = 1888;
-    private int CURRENT_REQUEST;
 
     //Dialog types
     private static final String BOTTOM = "BOTTOM";
     private static final String ALERT = "ALERT";
 
-    //Presenter
-    private DiskPresenter<DiskContract.View> mDiskPresenter;
-
     //RecyclerView
-    private RecyclerView mDiskRecyclerView;
-    private DiskAdapter mDiskAdapter;
-    private List<Photo> mPhotoList;
+    private RecyclerView recyclerView;
+    private DiskAdapter diskAdapter;
+    private List<Photo> photoList;
     private Menu menu;
 
     //Uploading
-    private List<Photo> mUploadingList;
+    private List<Photo> uploadingList;
 
     //Paging
     private int mCurrentPage = 1;
@@ -92,78 +88,50 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     private boolean isLoading = true;
 
     //Camera/gallery request
-    private Uri mCameraFileUri;
-    private Intent mResultIntent;
+    private Uri cameraFileUri;
+    private Intent resultIntent;
     private boolean isSelectable;
+
+    private List<Photo> selectedPhotos = new ArrayList<>();
+    private FloatingActionButton floatingActionButton;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
-        //Shared preference
-        DiskPreferences preferences = new DiskPreferences(context);
-
-        //Get disk api
-        RemoteDataSource remoteDataSource = new RemoteDataSource(DiskClient.getApi());
-
-        //Create local data manager
-        LocalDataSource localDataSource = new LocalDataSource(LocalDatabase.Companion.getInstance(context));
-
-        //Create presenter
-        mDiskPresenter = new DiskPresenter<>(preferences, remoteDataSource, localDataSource);
-        mDiskPresenter.attachView(this);
-
-        mPhotoList = new ArrayList<>();
-        mUploadingList = new ArrayList<>();
+        photoList = new ArrayList<>();
+        uploadingList = new ArrayList<>();
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
         super.onCreateView(inflater, container, savedInstanceState);
-        setFrom(PhotoDetailActivity.FROM_DISK);
         //region SavedInstance
         if (savedInstanceState != null) {
-            mResultIntent = savedInstanceState.getParcelable(STATE_INTENT);
-            mPhotoList = savedInstanceState.getParcelableArrayList(STATE_PHOTOS);
-            mUploadingList = savedInstanceState.getParcelableArrayList(STATE_UPLOADING_PHOTOS);
-            mCameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI);
-            CURRENT_REQUEST = savedInstanceState.getInt(STATE_REQUEST);
+            resultIntent = savedInstanceState.getParcelable(STATE_INTENT);
+            photoList = savedInstanceState.getParcelableArrayList(STATE_PHOTOS);
+            uploadingList = savedInstanceState.getParcelableArrayList(STATE_UPLOADING_PHOTOS);
+            cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI);
             isLoading = savedInstanceState.getBoolean(STATE_LOADING);
             isLastPage = savedInstanceState.getBoolean(STATE_LAST_PAGE);
             isSelectable = savedInstanceState.getBoolean(STATE_SELECTABLE);
-            if (mResultIntent != null) {
-                onActivityResult(CURRENT_REQUEST, Activity.RESULT_OK, mResultIntent);
-            }
 
             setSelectableItems();
         }
         //endregion
-        return inflater.inflate(R.layout.fragment_disk, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        mDiskRecyclerView = view.findViewById(R.id.rv_disk);
-        setScrollView(mDiskRecyclerView);
-
-        bind();
-
-        mDiskPresenter.getUploadingPhotos();
-
-        //Get remote photos
-        if (mPhotoList == null || mPhotoList.isEmpty()) {
-            isLoading = true;
-            mDiskPresenter.getPhotos(mCurrentPage);
-        }
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     private void setSelectableItems() {
-        if (mPhotoList != null) {
-            for (Photo photo : mPhotoList) {
+        if (photoList != null) {
+            for (Photo photo : photoList) {
                 if (photo.isSelected()) {
-                    getSelectedPhotos().add(photo);
+                    selectedPhotos.add(photo);
                 }
             }
         }
@@ -172,39 +140,87 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(STATE_INTENT, mResultIntent);
-        outState.putParcelableArrayList(STATE_PHOTOS, (ArrayList<? extends Parcelable>) mPhotoList);
-        outState.putParcelableArrayList(STATE_UPLOADING_PHOTOS, (ArrayList<? extends Parcelable>) mUploadingList);
-        outState.putParcelable(STATE_FILE_URI, mCameraFileUri);
-        outState.putInt(STATE_REQUEST, CURRENT_REQUEST);
+        outState.putParcelable(STATE_INTENT, resultIntent);
+        outState.putParcelableArrayList(STATE_PHOTOS, (ArrayList<? extends Parcelable>) photoList);
+        outState.putParcelableArrayList(
+                STATE_UPLOADING_PHOTOS,
+                (ArrayList<? extends Parcelable>) uploadingList
+        );
+        outState.putParcelable(STATE_FILE_URI, cameraFileUri);
         outState.putBoolean(STATE_LOADING, isLoading);
         outState.putBoolean(STATE_LAST_PAGE, isLastPage);
         outState.putBoolean(STATE_SELECTABLE, isSelectable);
     }
 
     @Override
-    public void bind() {
+    public void bind(@NotNull View view) {
+        super.bind(view);
+        final FragmentActivity activity = getActivity();
+        if (activity != null) {
+            floatingActionButton = activity.findViewById(R.id.btn_add_new);
+            swipeRefreshLayout = activity.findViewById(R.id.swipe_refresh);
+        }
+        recyclerView = view.findViewById(R.id.rv_disk);
+        presenter.getUploadingPhotos();
 
-        getFloatButton().setVisibility(View.VISIBLE);
-        getFloatButton().setOnClickListener(v -> setBottomDialog());
+        //Get remote photos
+        if (photoList == null || photoList.isEmpty()) {
+            isLoading = true;
+            presenter.getPhotos(mCurrentPage);
+        }
 
-        mDiskAdapter = new DiskAdapter(this);
-        mDiskAdapter.setPhotos(mPhotoList);
-        mDiskRecyclerView.setAdapter(mDiskAdapter);
-        mDiskRecyclerView.getItemAnimator().setChangeDuration(0);
+        floatingActionButton.show();
+        floatingActionButton.setOnClickListener(v -> setBottomDialog());
 
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getContext());
-        mDiskRecyclerView.setLayoutManager(mLinearLayoutManager);
+        diskAdapter = new DiskAdapter(new SelectableHelper.OnPhotoListener() {
+            @Override
+            public void onPhotoClick(List<Photo> photos, int position) {
+                if (getContext() != null) {
+                    Intent intent = new Intent(getContext(), PhotoDetailActivity.class);
+                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position);
+                    intent.putParcelableArrayListExtra(
+                            PhotoDetailActivity.EXTRA_PHOTOS,
+                            (ArrayList<? extends Parcelable>) photoList
+                    );
+                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK);
+                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST);
+                }
+            }
 
-        ItemDecorator mItemDecorator = new ItemDecorator(getResources().getDimensionPixelOffset(R.dimen.disk_linear_space));
-        mDiskRecyclerView.addItemDecoration(mItemDecorator);
+            @Override
+            public void onPhotoLongClick() {
+                setEnabledSelection(true);
+            }
 
-        mDiskRecyclerView.addOnScrollListener(new PaginationScrollListener(DiskClient.MAX_LIMIT) {
+            @Override
+            public void onSelectedPhotoClick(Photo photo) {
+                if (photo.isSelected()) {
+                    selectedPhotos.add(photo);
+                } else {
+                    selectedPhotos.remove(photo);
+                }
+                updateToolbarTitle(String.valueOf(selectedPhotos.size()));
+                if (selectedPhotos.isEmpty()) {
+                    setEnabledSelection(false);
+                }
+            }
+        });
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+
+        recyclerView.setAdapter(diskAdapter);
+        recyclerView.setLayoutManager(layoutManager);
+        ItemDecorator mItemDecorator = new ItemDecorator(getResources()
+                .getDimensionPixelOffset(R.dimen.disk_linear_space));
+        recyclerView.addItemDecoration(mItemDecorator);
+
+        diskAdapter.setPhotos(photoList);
+
+        recyclerView.addOnScrollListener(new PaginationScrollListener(DiskClient.MAX_LIMIT) {
             @Override
             public void loadNext() {
                 isLoading = true;
                 mCurrentPage++;
-                mDiskPresenter.getPhotos(mCurrentPage);
+                presenter.getPhotos(mCurrentPage);
             }
 
             @Override
@@ -219,24 +235,24 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         });
 
         //Paging recycler view
-        mDiskRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NotNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if (dy > 0 && getFloatButton().isShown()) {
-                    getFloatButton().hide();
-                } else if (dy < 0 && getFloatButton().getVisibility() != View.INVISIBLE) {
-                    getFloatButton().show();
+                if (dy > 0 && floatingActionButton.isShown()) {
+                    floatingActionButton.hide();
+                } else if (dy < 0 && floatingActionButton.getVisibility() != View.INVISIBLE) {
+                    floatingActionButton.show();
                 }
 
                 int topRowVerticalPosition =
                         recyclerView.getChildCount() == 0 ? 0 : recyclerView.getChildAt(0).getTop();
-                getSwipeRefreshLayout().setEnabled(topRowVerticalPosition >= 0 && !isSelectable);
+                swipeRefreshLayout.setEnabled(topRowVerticalPosition >= 0 && !isSelectable);
             }
         });
 
-        getSwipeRefreshLayout().setOnRefreshListener(() -> {
-            getSwipeRefreshLayout().setRefreshing(true);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            swipeRefreshLayout.setRefreshing(true);
             updateDataSet();
         });
     }
@@ -246,7 +262,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         super.onCreateOptionsMenu(menu, inflater);
         this.menu = menu;
         setEnabledSelection(isSelectable);
-        updateTitle();
+        updateToolbarTitle(String.valueOf(selectedPhotos.size()));
     }
 
     @Override
@@ -256,32 +272,63 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
                 setEnabledSelection(false);
                 break;
             case R.id.menu_download:
-                if (checkPermission(MEMORY_REQUEST,
+                permissionManager.checkPermissions(
+                        getActivity(),
+                        new PermissionResultCallback() {
+                            @Override
+                            public void onPermissionGranted() {
+                                presenter.downloadPhotos(selectedPhotos);
+                                setEnabledSelection(false);
+                            }
+
+                            @Override
+                            public void onPermissionDenied(@NotNull String[] permissionList) {
+
+                            }
+
+                            @Override
+                            public void onPermissionPermanentlyDenied(@NotNull String permission) {
+
+                            }
+                        },
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    mDiskPresenter.downloadPhotos(getSelectedPhotos());
-                    setEnabledSelection(false);
-                }
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                );
                 break;
             case R.id.menu_delete:
-                mDiskPresenter.deletePhotos(getSelectedPhotos());
+                presenter.deletePhotos(selectedPhotos);
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
     public void setEnabledSelection(boolean enabled) {
-        super.setEnabledSelection(enabled);
+        SelectableHelper.setMultipleSelection(enabled);
+
+        int secondaryColor = enabled ? getResources().getColor(R.color.white) : getResources()
+                .getColor(R.color.black);
+//        actionBar.setDisplayHomeAsUpEnabled(enabled);
+//        actionBar.setBackgroundDrawable(new ColorDrawable(enabled ? getResources()
+//                .getColor(R.color.colorAccent)
+//                : getResources().getColor(R.color.white)));
+//        toolbar.setTitleTextColor(secondaryColor);
+        setMenuIconsColor(menu, secondaryColor);
+
+        swipeRefreshLayout.setEnabled(!enabled);
+
         isSelectable = enabled;
-        mDiskAdapter.setSelection(enabled);
+        diskAdapter.setSelection(enabled);
         menu.findItem(R.id.menu_delete).setVisible(enabled);
         menu.findItem(R.id.menu_download).setVisible(enabled);
-        getFloatButton().setVisibility(enabled ? View.GONE : View.VISIBLE);
+        if (enabled) {
+            floatingActionButton.hide();
+        } else {
+            floatingActionButton.show();
+        }
 
         if (!enabled) {
-            getSelectedPhotos().clear();
-            getActionBar().setTitle(R.string.msg_disk);
+            selectedPhotos.clear();
+            updateToolbarTitle(getString(R.string.msg_disk));
         }
     }
 
@@ -293,31 +340,32 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
             switch (requestCode) {
                 case GALLERY_IMAGE_REQUEST:
                     extractFromGallery(data, mPhotos);
-                    mDiskAdapter.addUploadPhotos(mPhotos);
-                    mDiskPresenter.uploadPhotos(mPhotos);
+                    diskAdapter.addUploadPhotos(mPhotos);
+                    presenter.uploadPhotos(mPhotos);
                     break;
                 case CAMERA_REQUEST:
-                    if (mCameraFileUri != null) {
-                        Photo photo = getLocalPhoto(mCameraFileUri);
+                    if (cameraFileUri != null) {
+                        Photo photo = getLocalPhoto(cameraFileUri);
                         if (photo != null) {
                             mPhotos.add(photo);
-                            mDiskAdapter.addUploadPhotos(mPhotos);
-                            mDiskPresenter.uploadPhoto(photo);
+                            diskAdapter.addUploadPhotos(mPhotos);
+                            presenter.uploadPhoto(photo);
                         }
                     }
                     break;
                 case PhotoDetailActivity.DETAIL_REQUEST:
-                    boolean isDataChanged = data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false);
+                    boolean isDataChanged =
+                            data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false);
                     if (isDataChanged) {
                         updateDataSet();
                     }
                     return;
             }
-            mUploadingList.addAll(mPhotos);
+            uploadingList.addAll(mPhotos);
 
-            mResultIntent = null;
-            getStateView().hideStateView();
-            scrollToTop();
+            resultIntent = null;
+//            getStateView().hideStateView();
+//            scrollToTop();
         }
     }
 
@@ -325,12 +373,12 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         mCurrentPage = 1;
         isLastPage = false;
         isLoading = true;
-        mPhotoList.clear();
-        mDiskAdapter.clear();
-        if (!mUploadingList.isEmpty()) {
-            mDiskAdapter.addUploadPhotos(mUploadingList);
+        photoList.clear();
+        diskAdapter.clear();
+        if (!uploadingList.isEmpty()) {
+            diskAdapter.addUploadPhotos(uploadingList);
         }
-        mDiskPresenter.getPhotos(mCurrentPage);
+        presenter.getPhotos(mCurrentPage);
     }
 
     private void extractFromGallery(Intent data, List<Photo> mPhotos) {
@@ -348,12 +396,15 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         }
     }
 
-    /** Get local file path. */
+    /**
+     * Get local file path.
+     */
     private Photo getLocalPhoto(Uri contentUri) {
         if (getActivity() != null) {
             String path = contentUri.toString();
 
-            Cursor cursor = getActivity().getContentResolver().query(contentUri, null, null, null, null);
+            Cursor cursor =
+                    getActivity().getContentResolver().query(contentUri, null, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
                 int idx = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
                 if (idx != -1) {
@@ -374,37 +425,41 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         return null;
     }
 
+//    @Override
+//    public void onInternetUnavailable() {
+//        if (photoList.isEmpty()) {
+//            getStateView().showEmptyView(
+//                    R.drawable.ic_yandex_disk,
+//                    getString(R.string.msg_yandex_failed_retrieve),
+//                    getString(R.string.action_yandex_check_connection)
+//            );
+//        }
+//    }
+
     @Override
-    public void onInternetUnavailable() {
-        if (mPhotoList.isEmpty()) {
-            getStateView().showEmptyView(R.drawable.ic_yandex_disk,
-                    getString(R.string.msg_yandex_failed_retrieve),
-                    getString(R.string.action_yandex_check_connection));
+    public void onUploadingPhotos(@NotNull List<? extends Photo> photos) {
+        if (!photos.isEmpty()) {
+            uploadingList.addAll(photos);
+            diskAdapter.addUploadPhotos((List<Photo>) photos);
+            presenter.uploadPhotos(photos);
         }
     }
 
     @Override
-    public void onUploadingPhotos(List<Photo> photos) {
-        if (photos != null && !photos.isEmpty()) {
-            mUploadingList.addAll(photos);
-            mDiskAdapter.addUploadPhotos(photos);
-            mDiskPresenter.uploadPhotos(photos);
-        }
-    }
-
-    @Override
-    public void onPhotosLoaded(List<Photo> photos) {
-        getSwipeRefreshLayout().setRefreshing(false);
-        if (photos != null && !photos.isEmpty()) {
-            getFloatButton().setVisibility(View.VISIBLE);
-            mPhotoList.addAll(photos);
-            mDiskAdapter.addPhotos(photos);
-            getStateView().hideStateView();
+    public void onPhotosLoaded(@NotNull List<? extends Photo> photos) {
+        swipeRefreshLayout.setRefreshing(false);
+        if (!photos.isEmpty()) {
+            floatingActionButton.show();
+            photoList.addAll(photos);
+            diskAdapter.addPhotos((List<Photo>) photos);
+//            getStateView().hideStateView();
         } else {
-            if (mPhotoList.isEmpty()) {
-                getStateView().showEmptyView(R.drawable.ic_yandex_disk,
-                        getString(R.string.msg_yandex_ready),
-                        getString(R.string.action_yandex_add_items));
+            if (photoList.isEmpty()) {
+//                getStateView().showEmptyView(
+//                        R.drawable.ic_yandex_disk,
+//                        getString(R.string.msg_yandex_ready),
+//                        getString(R.string.action_yandex_add_items)
+//                );
             }
             isLastPage = true;
         }
@@ -412,35 +467,47 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     }
 
     @Override
-    public void onPhotoUploaded(Photo photo) {
+    public void onPhotoUploaded(@NotNull Photo photo) {
         String uploadState = null;
         if (photo != null) {
-            mPhotoList.add(photo);
-            mDiskAdapter.addPhoto(photo);
-            mUploadingList.remove(photo);
-            mDiskAdapter.removeUploadedPhoto(photo);
+            photoList.add(photo);
+            diskAdapter.addPhoto(photo);
+            uploadingList.remove(photo);
+            diskAdapter.removeUploadedPhoto(photo);
         } else {
             uploadState = getString(R.string.msg_wait);
         }
-        mDiskAdapter.changeUploadState(uploadState);
+        diskAdapter.changeUploadState(uploadState);
     }
 
     @Override
-    public void onPhotoDownloaded(String path) {
-        Toast.makeText(getContext(), getString(R.string.msg_file_saved) + " " + path, Toast.LENGTH_LONG).show();
+    public void onPhotoDownloaded(@NotNull String path) {
+        Toast.makeText(
+                getContext(),
+                getString(R.string.msg_file_saved) + " " + path,
+                Toast.LENGTH_LONG
+        ).show();
     }
 
     @Override
-    public void onPhotoDeleted(Photo photo) {
+    public void onPhotoDeleted(@NotNull Photo photo) {
         setEnabledSelection(false);
-        mPhotoList.remove(photo);
-        mDiskAdapter.removePhoto(photo);
-        Toast.makeText(getContext(), getString(R.string.msg_photo) + " "
-                + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(), Toast.LENGTH_LONG).show();
+        photoList.remove(photo);
+        diskAdapter.removePhoto(photo);
+        Toast.makeText(
+                getContext(),
+                getString(R.string.msg_photo) + " "
+                        + photo.getName() + " " + getString(R.string.msg_deleted).toLowerCase(),
+                Toast.LENGTH_LONG
+        ).show();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
+    ) {
 
         int color = getResources().getColor(R.color.colorAccent);
         String title = getString(R.string.msg_request_permission);
@@ -455,7 +522,7 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
                     createGalleryIntent();
                     break;
                 case MEMORY_REQUEST:
-                    mDiskPresenter.downloadPhotos(getSelectedPhotos());
+                    presenter.downloadPhotos(selectedPhotos);
                     setEnabledSelection(false);
                     break;
             }
@@ -478,31 +545,23 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
         }
     }
 
-    //region Dialogs
     private void setBottomDialog() {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
-            BottomDialogFragment mBottomDialog = new BottomDialogFragment();
-            mBottomDialog.setTargetFragment(this, 0);
-            mBottomDialog.show(activity.getSupportFragmentManager(), BOTTOM);
+            BottomDialogFragment bottomDialog = new BottomDialogFragment();
+            bottomDialog.setTargetFragment(this, 0);
+            bottomDialog.show(activity.getSupportFragmentManager(), BOTTOM);
         }
     }
 
     private void permissionDialog(String title, String message, int color) {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
-            AlertDialogFragment mAlertDialog = AlertDialogFragment.newInstance(title, message, color);
-            mAlertDialog.setTargetFragment(this, 0);
-            mAlertDialog.show(activity.getSupportFragmentManager(), ALERT);
+            AlertDialogFragment alertDialog =
+                    AlertDialogFragment.newInstance(title, message, color);
+            alertDialog.setTargetFragment(this, 0);
+            alertDialog.show(activity.getSupportFragmentManager(), ALERT);
         }
-    }
-
-    private boolean checkPermission(int request, String... permission) {
-        if (!PermissionUtils.hasPermission(getActivity(), permission[0])) {
-            PermissionUtils.requestPermissions(this, permission, request);
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -523,54 +582,87 @@ public class DiskFragment extends BaseFragment implements DiskContract.View, Dia
     public void onItemClick(DialogInterface dialogInterface, View view) {
         int id = view.getId();
         dialogInterface.cancel();
+        final FragmentActivity activity = getActivity();
+        if (activity == null) return;
+
         switch (id) {
             case R.id.container_camera:
-                if (!checkPermission(CAMERA_REQUEST, Manifest.permission.CAMERA)) {
-                    return;
-                }
-                createCameraIntent();
-                CURRENT_REQUEST = CAMERA_REQUEST;
+                permissionManager.checkPermissions(
+                        activity,
+                        new PermissionResultCallback() {
+                            @Override
+                            public void onPermissionGranted() {
+                                createCameraIntent();
+                            }
+
+                            @Override
+                            public void onPermissionDenied(@NotNull String[] permissionList) {
+
+                            }
+
+                            @Override
+                            public void onPermissionPermanentlyDenied(@NotNull String permission) {
+
+                            }
+                        },
+                        Manifest.permission.CAMERA
+                );
                 break;
             case R.id.container_gallery:
-                if (!checkPermission(GALLERY_IMAGE_REQUEST,
+                permissionManager.checkPermissions(
+                        activity,
+                        new PermissionResultCallback() {
+                            @Override
+                            public void onPermissionGranted() {
+                                createGalleryIntent();
+                            }
+
+                            @Override
+                            public void onPermissionDenied(@NotNull String[] permissionList) {
+
+                            }
+
+                            @Override
+                            public void onPermissionPermanentlyDenied(@NotNull String permission) {
+
+                            }
+                        },
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    return;
-                }
-                createGalleryIntent();
-                CURRENT_REQUEST = GALLERY_IMAGE_REQUEST;
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                );
                 break;
         }
     }
 
     private void createCameraIntent() {
-        mResultIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        mCameraFileUri = FileUtils.getInstance().getLocalFileUri();
-        mResultIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCameraFileUri);
-        startActivityForResult(mResultIntent, CAMERA_REQUEST);
+        resultIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraFileUri = FileUtils.getInstance().getLocalFileUri();
+        resultIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraFileUri);
+        startActivityForResult(resultIntent, CAMERA_REQUEST);
     }
 
     private void createGalleryIntent() {
-        mResultIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        mResultIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        startActivityForResult(Intent.createChooser(mResultIntent,
-                getString(R.string.msg_image_chooser)),
-                GALLERY_IMAGE_REQUEST);
+        resultIntent =
+                new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        resultIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(
+                Intent.createChooser(
+                        resultIntent,
+                        getString(R.string.msg_image_chooser)
+                ),
+                GALLERY_IMAGE_REQUEST
+        );
     }
-    //endregion
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mDiskRecyclerView.setAdapter(null);
-        mDiskRecyclerView = null;
+        recyclerView.setAdapter(null);
+        recyclerView = null;
     }
 
     @Override
-    public void onDestroy() {
-        if (mDiskPresenter != null) {
-            mDiskPresenter.dispose();
-        }
-        super.onDestroy();
+    public int layout() {
+        return R.layout.fragment_disk;
     }
 }

@@ -52,7 +52,7 @@ public class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.PhotoViewHol
         diffResult.dispatchUpdatesTo(this);
     }
 
-    public void addPhotos(List<Photo> photos) {
+    public void addPhotos(List<? extends Photo> photos) {
         mPhotoList.addAll(photos);
         notifyItemRangeInserted(getItemCount(), photos.size());
     }

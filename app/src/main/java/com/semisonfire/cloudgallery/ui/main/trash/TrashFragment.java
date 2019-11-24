@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -22,14 +21,12 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator;
 import com.semisonfire.cloudgallery.ui.custom.PaginationScrollListener;
-import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
 import com.semisonfire.cloudgallery.ui.main.dialogs.base.DialogListener;
 import com.semisonfire.cloudgallery.ui.main.disk.adapter.PhotoAdapter;
@@ -49,7 +46,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     private static final String STATE_SELECTABLE = "STATE_SELECTABLE";
 
     //Presenter
-    private TrashPresenter<TrashContract.View> mTrashPresenter;
+    private TrashPresenter mTrashPresenter;
 
     //RecyclerView
     private List<Photo> mTrashList;
@@ -70,7 +67,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
         RemoteDataSource remoteDataSource = new RemoteDataSource(DiskClient.getApi());
 
         //Create presenter
-        mTrashPresenter = new TrashPresenter<>(new DiskPreferences(context), remoteDataSource);
+        mTrashPresenter = new TrashPresenter(remoteDataSource);
         mTrashPresenter.attachView(this);
 
         mTrashList = new ArrayList<>();
@@ -127,7 +124,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     @Override
     public void bind() {
 
-        getFloatButton().setVisibility(View.GONE);
+        getFloatButton().hide();
 
         //Adapter
         mTrashPhotoAdapter = new PhotoAdapter(this);
@@ -251,7 +248,7 @@ public class TrashFragment extends BaseFragment implements TrashContract.View, D
     }
 
     @Override
-    public void onTrashLoaded(List<Photo> photos) {
+    public void onTrashLoaded(List<? extends Photo> photos) {
         getSwipeRefreshLayout().setRefreshing(false);
         if (photos != null && !photos.isEmpty()) {
             mTrashList.addAll(photos);

@@ -18,7 +18,7 @@ import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
-  : Fragment(), MvpView, PermissionResultCallback {
+  : Fragment(), MvpView {
 
   @Inject
   lateinit var permissionManager: PermissionManager
@@ -82,15 +82,6 @@ abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
 
   override fun onError(throwable: Throwable) {
     throwable.printThrowable()
-  }
-
-  override fun onPermissionGranted() {
-  }
-
-  override fun onPermissionDenied(permissionList: Array<String>) {
-  }
-
-  override fun onPermissionPermanentlyDenied(permission: String) {
   }
 
   override fun onDestroyView() {

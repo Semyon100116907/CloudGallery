@@ -24,7 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.core.mvp.MvpView;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException;
@@ -32,26 +32,27 @@ import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper;
 import com.semisonfire.cloudgallery.ui.custom.StateView;
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity;
-import com.semisonfire.cloudgallery.utils.ColorUtils;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseFragment extends Fragment implements MvpView, SelectableHelper.OnPhotoListener {
+import static com.semisonfire.cloudgallery.utils.ColorUtilsKt.setMenuIconsColor;
 
-    private static final String TAG = BaseFragment.class.getSimpleName();
+public abstract class BaseFragment extends Fragment implements MvpView,
+        SelectableHelper.OnPhotoListener {
 
-    private ActionBar mActionBar;
-    private Toolbar mToolbar;
-    private ViewGroup mScrollView;
-    private FloatingActionButton mFloatButton;
-    private StateView mStateView;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private BasePresenter<MvpView> mBasePresenter;
+    private ActionBar actionBar;
+    private Toolbar toolbar;
+    private ViewGroup scrollView;
+    private FloatingActionButton floatingActionButton;
+    private StateView stateView;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private String token;
-    private List<Photo> mSelectedPhotos;
-    private int mFrom;
+    private List<Photo> selectedPhotos;
+    private int from;
     private Menu menu;
 
     public abstract void bind();
@@ -61,27 +62,28 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        mBasePresenter = new BasePresenter<>(new DiskPreferences(context));
-        mBasePresenter.attachView(this);
-        mSelectedPhotos = new ArrayList<>();
+        selectedPhotos = new ArrayList<>();
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
         if (getActivity() != null) {
-            mStateView = new StateView(getActivity().findViewById(R.id.include_inform));
-            mStateView.hideStateView();
-            mFloatButton = getActivity().findViewById(R.id.btn_add_new);
-            mSwipeRefreshLayout = getActivity().findViewById(R.id.swipe_refresh);
-            mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-            mToolbar = getActivity().findViewById(R.id.toolbar);
-            if (mActionBar != null) {
-                mActionBar.setHomeAsUpIndicator(R.drawable.ic_close);
+            stateView = new StateView(getActivity().findViewById(R.id.include_inform));
+            stateView.hideStateView();
+            floatingActionButton = getActivity().findViewById(R.id.btn_add_new);
+            swipeRefreshLayout = getActivity().findViewById(R.id.swipe_refresh);
+            actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            toolbar = getActivity().findViewById(R.id.toolbar);
+            if (actionBar != null) {
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
             }
         }
         setHasOptionsMenu(true);
-        mBasePresenter.getCachedToken();
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -93,13 +95,13 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     }
 
     public void scrollToTop() {
-        if (mScrollView != null) {
-            if (mScrollView instanceof RecyclerView) {
-                RecyclerView mRecyclerView = (RecyclerView) mScrollView;
+        if (scrollView != null) {
+            if (scrollView instanceof RecyclerView) {
+                RecyclerView mRecyclerView = (RecyclerView) scrollView;
                 mRecyclerView.smoothScrollToPosition(0);
                 return;
             }
-            mScrollView.scrollTo(0, 0);
+            scrollView.scrollTo(0, 0);
         }
     }
 
@@ -108,8 +110,11 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
         if (getContext() != null) {
             Intent intent = new Intent(getContext(), PhotoDetailActivity.class);
             intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position);
-            intent.putParcelableArrayListExtra(PhotoDetailActivity.EXTRA_PHOTOS, (ArrayList<? extends Parcelable>) photoList);
-            intent.putExtra(PhotoDetailActivity.EXTRA_FROM, mFrom);
+            intent.putParcelableArrayListExtra(
+                    PhotoDetailActivity.EXTRA_PHOTOS,
+                    (ArrayList<? extends Parcelable>) photoList
+            );
+            intent.putExtra(PhotoDetailActivity.EXTRA_FROM, from);
             startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST);
         }
     }
@@ -117,14 +122,16 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     public void setEnabledSelection(boolean enabled) {
         SelectableHelper.setMultipleSelection(enabled);
 
-        int secondaryColor = enabled ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black);
-        mActionBar.setDisplayHomeAsUpEnabled(enabled);
-        mActionBar.setBackgroundDrawable(new ColorDrawable(enabled ? getResources().getColor(R.color.colorAccent)
+        int secondaryColor = enabled ? getResources().getColor(R.color.white) : getResources()
+                .getColor(R.color.black);
+        actionBar.setDisplayHomeAsUpEnabled(enabled);
+        actionBar.setBackgroundDrawable(new ColorDrawable(enabled ? getResources()
+                .getColor(R.color.colorAccent)
                 : getResources().getColor(R.color.white)));
-        mToolbar.setTitleTextColor(secondaryColor);
-        ColorUtils.setMenuIconsColor(menu, secondaryColor);
+        toolbar.setTitleTextColor(secondaryColor);
+        setMenuIconsColor(menu, secondaryColor);
 
-        mSwipeRefreshLayout.setEnabled(!enabled);
+        swipeRefreshLayout.setEnabled(!enabled);
     }
 
     @Override
@@ -135,97 +142,90 @@ public abstract class BaseFragment extends Fragment implements MvpView, Selectab
     @Override
     public void onSelectedPhotoClick(Photo photo) {
         if (photo.isSelected()) {
-            mSelectedPhotos.add(photo);
+            selectedPhotos.add(photo);
         } else {
-            mSelectedPhotos.remove(photo);
+            selectedPhotos.remove(photo);
         }
         updateTitle();
-        if (mSelectedPhotos.isEmpty()) {
+        if (selectedPhotos.isEmpty()) {
             setEnabledSelection(false);
         }
     }
 
     public void updateTitle() {
-        if (!mSelectedPhotos.isEmpty()) {
-            getActionBar().setTitle(String.valueOf(mSelectedPhotos.size()));
+        if (!selectedPhotos.isEmpty()) {
+            getActionBar().setTitle(String.valueOf(selectedPhotos.size()));
         }
     }
 
-    @Override
-    public void onTokenLoaded(String token) {
-        this.token = token;
-        if (TextUtils.isEmpty(token)) {
-            refreshToken();
-        }
-    }
+//    @Override
+//    public void onTokenLoaded(String token) {
+//        this.token = token;
+//        if (TextUtils.isEmpty(token)) {
+//            refreshToken();
+//        }
+//    }
 
-    /** Show state view with snap button. */
+    /**
+     * Show state view with snap button.
+     */
     private void refreshToken() {
-        if (mStateView != null) {
-            if (mFloatButton != null) {
-                mFloatButton.hide();
+        if (stateView != null) {
+            if (floatingActionButton != null) {
+                floatingActionButton.hide();
             }
             getStateView().showStateView(R.drawable.ic_cloud_off,
                     getString(R.string.msg_yandex_start),
                     getString(R.string.msg_yandex_account),
                     getString(R.string.action_yandex_link_account), v -> {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(DiskClient.OAUTH_URL));
+                        Intent intent =
+                                new Intent(Intent.ACTION_VIEW, Uri.parse(DiskClient.OAUTH_URL));
                         startActivity(intent);
-                    });
+                    }
+            );
         }
     }
 
     @Override
-    public void onError(Throwable throwable) {
-        if (throwable != null) {
-            if (throwable instanceof UnauthorizedException) {
-                mBasePresenter.setCachedToken("");
-                refreshToken();
-                return;
-            }
-
-            if (throwable instanceof InternetUnavailableException) {
-                if (!TextUtils.isEmpty(token)) {
-                    onInternetUnavailable();
-                }
-                Toast.makeText(getContext(), R.string.msg_internet_disable, Toast.LENGTH_LONG).show();
-            }
+    public void onError(@NotNull Throwable throwable) {
+        if (throwable instanceof UnauthorizedException) {
+            refreshToken();
+            return;
         }
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mBasePresenter != null) {
-            mBasePresenter.dispose();
+        if (throwable instanceof InternetUnavailableException) {
+            if (!TextUtils.isEmpty(token)) {
+                onInternetUnavailable();
+            }
+            Toast.makeText(getContext(), R.string.msg_internet_disable, Toast.LENGTH_LONG).show();
         }
     }
 
     public void setFrom(int mFrom) {
-        this.mFrom = mFrom;
+        this.from = mFrom;
     }
 
     public void setScrollView(ViewGroup scrollView) {
-        mScrollView = scrollView;
+        this.scrollView = scrollView;
     }
 
     public List<Photo> getSelectedPhotos() {
-        return mSelectedPhotos;
+        return selectedPhotos;
     }
 
     public StateView getStateView() {
-        return mStateView;
+        return stateView;
     }
 
     public SwipeRefreshLayout getSwipeRefreshLayout() {
-        return mSwipeRefreshLayout;
+        return swipeRefreshLayout;
     }
 
     public FloatingActionButton getFloatButton() {
-        return mFloatButton;
+        return floatingActionButton;
     }
 
     public ActionBar getActionBar() {
-        return mActionBar;
+        return actionBar;
     }
 }

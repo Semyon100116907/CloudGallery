@@ -2,15 +2,14 @@ package com.semisonfire.cloudgallery.ui.main.disk;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
+import com.semisonfire.cloudgallery.core.presentation.BasePresenter;
 import com.semisonfire.cloudgallery.data.local.LocalDataSource;
 import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException;
-import com.semisonfire.cloudgallery.ui.base.BasePresenter;
 import com.semisonfire.cloudgallery.utils.DateUtils;
 import com.semisonfire.cloudgallery.utils.FileUtils;
 
@@ -30,10 +29,8 @@ import io.reactivex.subjects.PublishSubject;
 import retrofit2.HttpException;
 
 
-public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
-        implements DiskContract.Presenter<V> {
-
-    private static final String TAG = DiskPresenter.class.getSimpleName();
+public class DiskPresenter extends BasePresenter<DiskContract.View>
+        implements DiskContract.Presenter {
 
     //Data sources
     private RemoteDataSource mRemoteDataSource;
@@ -44,8 +41,7 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     private PublishSubject<Photo> mUploadSubjectInformer = PublishSubject.create();
     private Queue<Photo> mUploadingPhotos = new LinkedList<>();
 
-    public DiskPresenter(DiskPreferences mDiskPreferences, RemoteDataSource remoteDataSource, LocalDataSource localDataSource) {
-        super(mDiskPreferences);
+    public DiskPresenter(RemoteDataSource remoteDataSource, LocalDataSource localDataSource) {
         mRemoteDataSource = remoteDataSource;
         mLocalDataSource = localDataSource;
         createInformerSubject();
@@ -58,21 +54,23 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
                 mRemoteDataSource.getPhotos(DiskClient.MAX_LIMIT, page)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(photos -> getMvpView().onPhotosLoaded(photos),
-                                throwable -> getMvpView().onError(throwable));
+                        .subscribe(photos -> getView().onPhotosLoaded(photos),
+                                throwable -> getView().onError(throwable));
         getCompositeDisposable().add(result);
     }
 
+    @Override
     public void getUploadingPhotos() {
         getCompositeDisposable().add(
                 mLocalDataSource.getUploadingPhotos()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(photos -> getMvpView().onUploadingPhotos(photos),
-                                throwable -> getMvpView().onError(throwable)));
+                        .subscribe(photos -> getView().onUploadingPhotos(photos),
+                                throwable -> getView().onError(throwable)));
     }
 
-    public void downloadPhotos(List<Photo> photos) {
+    @Override
+    public void downloadPhotos(List<? extends Photo> photos) {
         List<Photo> items = new ArrayList<>(photos);
         getCompositeDisposable().add(
                 Flowable.fromIterable(items)
@@ -84,19 +82,20 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
                         })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(path -> getMvpView().onPhotoDownloaded(path),
-                                throwable -> getMvpView().onError(throwable)));
+                        .subscribe(path -> getView().onPhotoDownloaded(path),
+                                throwable -> getView().onError(throwable)));
     }
 
-    public void deletePhotos(List<Photo> photos) {
+    @Override
+    public void deletePhotos(List<? extends Photo> photos) {
         List<Photo> items = new ArrayList<>(photos);
         getCompositeDisposable().add(
                 Flowable.fromIterable(items)
                         .concatMap(photo -> mRemoteDataSource.deletePhoto(photo))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(p -> getMvpView().onPhotoDeleted(p),
-                                throwable -> getMvpView().onError(throwable)));
+                        .subscribe(p -> getView().onPhotoDeleted(p),
+                                throwable -> getView().onError(throwable)));
     }
 
     @Override
@@ -106,7 +105,7 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
     }
 
     @Override
-    public void uploadPhotos(List<Photo> photos) {
+    public void uploadPhotos(List<? extends Photo> photos) {
         mUploadingPhotos.addAll(photos);
         uploadNext();
     }
@@ -124,8 +123,8 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
         getCompositeDisposable().add(
                 mUploadSubjectInformer
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(photo -> getMvpView().onPhotoUploaded(null),
-                                throwable -> getMvpView().onError(throwable)));
+                        .subscribe(photo -> getView().onPhotoUploaded(null),
+                                throwable -> getView().onError(throwable)));
     }
 
     private void createUploadSubj() {
@@ -133,8 +132,8 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
                 mUploadSubject
                         .flatMap(photo -> mLocalDataSource.saveUploadingPhoto(photo).toObservable())
                         .concatMap(photo -> getUploadFlowable(photo).toObservable())
-                        .subscribe(photo -> getMvpView().onPhotoUploaded(photo),
-                                throwable -> getMvpView().onError(throwable)));
+                        .subscribe(photo -> getView().onPhotoUploaded(photo),
+                                throwable -> getView().onError(throwable)));
     }
 
     /**
@@ -178,7 +177,7 @@ public class DiskPresenter<V extends DiskContract.View> extends BasePresenter<V>
         String newName;
         int first = name.indexOf("(") + 1;
         int last = name.lastIndexOf(")");
-        if (first != -1 && last != -1) {
+        if (last != -1) {
             int counter = Integer.parseInt(name.substring(first, last));
             counter++;
             newName = name.substring(0, first - 1) + "(" + String.valueOf(counter) + ")";

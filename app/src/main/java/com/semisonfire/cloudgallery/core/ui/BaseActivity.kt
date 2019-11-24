@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
-  : AppCompatActivity(), MvpView, HasSupportFragmentInjector, PermissionResultCallback {
+  : AppCompatActivity(), MvpView, HasSupportFragmentInjector {
 
   @Inject
   internal lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
@@ -76,15 +76,6 @@ abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
       permissions,
       grantResults
     )
-  }
-
-  override fun onPermissionGranted() {
-  }
-
-  override fun onPermissionDenied(permissionList: Array<String>) {
-  }
-
-  override fun onPermissionPermanentlyDenied(permission: String) {
   }
 
   override fun onError(throwable: Throwable) {

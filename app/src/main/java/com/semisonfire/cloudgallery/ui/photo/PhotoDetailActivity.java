@@ -4,12 +4,9 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -21,20 +18,22 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.core.ui.BaseActivity;
 import com.semisonfire.cloudgallery.data.model.Photo;
 import com.semisonfire.cloudgallery.data.remote.RemoteDataSource;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
-import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.main.dialogs.AlertDialogFragment;
-import com.semisonfire.cloudgallery.utils.ColorUtils;
 import com.semisonfire.cloudgallery.utils.PermissionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class PhotoDetailActivity extends BaseActivity implements PhotoDetailContract.View {
+import static com.semisonfire.cloudgallery.utils.ColorUtilsKt.setMenuIconsColor;
+
+public class PhotoDetailActivity extends
+        BaseActivity<PhotoDetailContract.View, PhotoDetailContract.Presenter> implements
+        PhotoDetailContract.View {
 
     private static final String TAG = PhotoDetailActivity.class.getSimpleName();
 
@@ -58,7 +57,6 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
     public static final String EXTRA_PHOTOS = "EXTRA_PHOTOS";
     public static final String EXTRA_FROM = "EXTRA_FROM";
 
-    private PhotoDetailPresenter<PhotoDetailContract.View> mPhotoDetailPresenter;
     private int mFrom;
 
     private PhotoDetailAdapter mAdapter;
@@ -71,18 +69,12 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setUpFullScreen();
-        setContentView(R.layout.activity_photo_detail);
+        super.onCreate(savedInstanceState);
 
-        RemoteDataSource remoteDataSource = new RemoteDataSource(DiskClient.getApi());
 
         //Device orientation state
         mOrientation = getResources().getConfiguration().orientation;
-
-        //Create presenter
-        mPhotoDetailPresenter = new PhotoDetailPresenter<>(new DiskPreferences(this), remoteDataSource);
-        mPhotoDetailPresenter.attachView(this);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -94,11 +86,11 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
             mPhotoList = savedInstanceState.getParcelableArrayList(STATE_PHOTO_LIST);
             mFrom = savedInstanceState.getInt(EXTRA_FROM, -1);
         }
-        bind();
     }
 
     @Override
     public void bind() {
+        super.bind();
         setUpViewPager();
         Toolbar mToolbar = findViewById(R.id.toolbar);
         mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
@@ -109,14 +101,20 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         updateToolbarTitle(mCurrentPosition);
     }
 
-    /** Make activity full screen. */
+    /**
+     * Make activity full screen.
+     */
     private void setUpFullScreen() {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+        );
     }
 
-    /** Create view pager. */
+    /**
+     * Create view pager.
+     */
     private void setUpViewPager() {
 
         //View pager adapter
@@ -128,10 +126,15 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         ViewPager mViewPager = findViewById(R.id.vp_detailed_photos);
         mViewPager.setAdapter(mAdapter);
         mViewPager.setCurrentItem(mCurrentPosition, false);
-        mViewPager.setPageMargin(getResources().getDimensionPixelOffset(R.dimen.photo_detail_space));
+        mViewPager
+                .setPageMargin(getResources().getDimensionPixelOffset(R.dimen.photo_detail_space));
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            public void onPageScrolled(
+                    int position,
+                    float positionOffset,
+                    int positionOffsetPixels
+            ) {
             }
 
             @Override
@@ -148,20 +151,24 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         updateToolbarTitle(mCurrentPosition);
     }
 
-    /** Update toolbar title according to item position. */
+    /**
+     * Update toolbar title according to item position.
+     */
     private void updateToolbarTitle(int position) {
         mCurrentPosition = position;
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(
                     String.format(Locale.getDefault(),
                             "%d %s %d",
-                            position + 1, getString(R.string.msg_of), mPhotoList.size()));
+                            position + 1, getString(R.string.msg_of), mPhotoList.size()
+                    ));
         }
     }
 
     @Override
     public void onPhotoDownloaded(String path) {
-        Toast.makeText(this, getString(R.string.msg_file_saved) + " " + path, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.msg_file_saved) + " " + path, Toast.LENGTH_LONG)
+                .show();
     }
 
     @Override
@@ -208,7 +215,7 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
                 restore.setVisible(true);
                 break;
         }
-        ColorUtils.setMenuIconsColor(menu, getResources().getColor(R.color.white));
+        setMenuIconsColor(menu, getResources().getColor(R.color.white));
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -220,27 +227,31 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
                 super.onBackPressed();
                 break;
             case R.id.menu_share:
-                mPhotoDetailPresenter.createShareFile(mAdapter.getCurrentItemBitmap());
+                presenter.createShareFile(mAdapter.getCurrentItemBitmap());
                 break;
             case R.id.menu_download:
-                if (checkPermission(MEMORY_REQUEST,
+                if (checkPermission(
+                        MEMORY_REQUEST,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    mPhotoDetailPresenter.download(mCurrentPhoto);
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )) {
+                    presenter.download(mCurrentPhoto);
                 }
                 break;
             case R.id.menu_delete:
-                mPhotoDetailPresenter.delete(mCurrentPhoto, mFrom);
+                presenter.delete(mCurrentPhoto, mFrom);
                 break;
             case R.id.menu_restore:
-                mPhotoDetailPresenter.restore(mCurrentPhoto);
+                presenter.restore(mCurrentPhoto);
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /** Check permission. */
+    /**
+     * Check permission.
+     */
     private boolean checkPermission(int request, String... permission) {
         if (!PermissionUtils.hasPermission(this, permission[0])) {
             PermissionUtils.requestPermissions(this, permission, request);
@@ -249,29 +260,33 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         return true;
     }
 
-    /** Permission alert dialog. */
+    /**
+     * Permission alert dialog.
+     */
     private void permissionDialog(String title, String message, int color) {
         AlertDialogFragment mAlertDialog = AlertDialogFragment.newInstance(title, message, color);
         mAlertDialog.show(getSupportFragmentManager(), ALERT);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults
+    ) {
 
         int color = getResources().getColor(R.color.colorAccent);
         String title = getString(R.string.msg_request_permission);
         String body = getString(R.string.msg_memory_permission);
 
-        switch (requestCode) {
-            case MEMORY_REQUEST:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mPhotoDetailPresenter.download(mCurrentPhoto);
-                } else {
-                    if (!PermissionUtils.shouldShowRational(this, permissions[0])) {
-                        permissionDialog(title, body, color);
-                    }
+        if (requestCode == MEMORY_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                presenter.download(mCurrentPhoto);
+            } else {
+                if (!PermissionUtils.shouldShowRational(this, permissions[0])) {
+                    permissionDialog(title, body, color);
                 }
-                break;
+            }
         }
     }
 
@@ -280,14 +295,14 @@ public class PhotoDetailActivity extends BaseActivity implements PhotoDetailCont
         super.onSaveInstanceState(outState);
         outState.putInt(STATE_CURRENT_POS, mCurrentPosition);
         outState.putInt(STATE_FROM, mFrom);
-        outState.putParcelableArrayList(STATE_PHOTO_LIST, (ArrayList<? extends Parcelable>) mPhotoList);
+        outState.putParcelableArrayList(
+                STATE_PHOTO_LIST,
+                (ArrayList<? extends Parcelable>) mPhotoList
+        );
     }
 
     @Override
-    protected void onDestroy() {
-        if (mPhotoDetailPresenter != null) {
-            mPhotoDetailPresenter.dispose();
-        }
-        super.onDestroy();
+    public int layout() {
+        return R.layout.activity_photo_detail;
     }
 }
