@@ -7,64 +7,54 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 
 import com.semisonfire.cloudgallery.R;
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences;
+import com.semisonfire.cloudgallery.core.ui.BaseActivity;
 import com.semisonfire.cloudgallery.data.remote.api.DiskClient;
-import com.semisonfire.cloudgallery.ui.base.BaseActivity;
 import com.semisonfire.cloudgallery.ui.base.BaseFragment;
 import com.semisonfire.cloudgallery.ui.main.disk.DiskFragment;
 import com.semisonfire.cloudgallery.ui.main.settings.SettingsFragment;
 import com.semisonfire.cloudgallery.ui.main.trash.TrashFragment;
-import com.semisonfire.cloudgallery.utils.BottomBarUtils;
-import com.semisonfire.cloudgallery.utils.FragmentUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends BaseActivity implements MainContract.View {
-
-    private static final String TAG = MainActivity.class.getSimpleName();
+public class MainActivity extends BaseActivity<MainContract.View, MainContract.Presenter> implements MainContract.View {
 
     //STATE
     private static final String STATE_TITLE = "STATE_TITLE";
     private static final String STATE_CURRENT_FRAGMENT = "STATE_CURRENT_FRAGMENT";
 
-    private Toolbar mToolbar;
-    private String mTitle;
+    private Toolbar toolbar;
+    private String title;
 
-    private BottomNavigationView mBottomNavigationView;
-    private BaseFragment mFragment;
-
-    private MainPresenter<MainContract.View> mMainPresenter;
+    private BottomNavigationView bottomNavigationView;
+    private BaseFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        bind();
         if (getIntent() != null && getIntent().getData() != null) {
             login();
         }
 
         if (savedInstanceState != null) {
-            mFragment = (BaseFragment) getSupportFragmentManager().getFragment(savedInstanceState, STATE_CURRENT_FRAGMENT);
-            mTitle = savedInstanceState.getString(STATE_TITLE);
+            fragment = (BaseFragment) getSupportFragmentManager().getFragment(savedInstanceState, STATE_CURRENT_FRAGMENT);
+            title = savedInstanceState.getString(STATE_TITLE);
         } else {
-            mFragment = new DiskFragment();
-            mTitle = getString(R.string.msg_disk);
+            fragment = new DiskFragment();
+            title = getString(R.string.msg_disk);
         }
-        mToolbar.setTitle(mTitle);
-        setSupportActionBar(mToolbar);
-        FragmentUtils.changeFragment(getSupportFragmentManager(), mFragment, R.id.frame_fragment);
+        toolbar.setTitle(title);
+        setSupportActionBar(toolbar);
+//        FragmentUtils.changeFragment(getSupportFragmentManager(), fragment, R.id.frame_fragment);
     }
 
     @Override
     public void bind() {
-        mMainPresenter = new MainPresenter<>(new DiskPreferences(this));
-        mMainPresenter.attachView(this);
+        super.bind();
 
-        mToolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
 
-        mBottomNavigationView = findViewById(R.id.nav_bottom);
+        bottomNavigationView = findViewById(R.id.nav_bottom);
         addBottomNavigation();
     }
 
@@ -77,75 +67,79 @@ public class MainActivity extends BaseActivity implements MainContract.View {
         if (matcher.find()) {
             final String token = matcher.group(1);
             if (!TextUtils.isEmpty(token)) {
-                saveToken(token);
+//                saveToken(token);
             }
         }
     }
 
     /** Save new token in private. */
-    private void saveToken(String token) {
-        if (token != null) {
-            if (DiskClient.getToken() != null && DiskClient.getToken().equals(token)) {
-                return;
-            }
-
-            //Update token
-            DiskClient.getInstance().getAuthInterceptor().setToken(token);
-
-            //Save new token
-            mMainPresenter.setCachedToken(token);
-        }
-    }
+//    private void saveToken(String token) {
+//        if (token != null) {
+//            if (DiskClient.getToken() != null && DiskClient.getToken().equals(token)) {
+//                return;
+//            }
+//
+//            //Update token
+//            DiskClient.getInstance().getAuthInterceptor().setToken(token);
+//
+//            //Save new token
+//            mMainPresenter.setCachedToken(token);
+//        }
+//    }
 
     /** Create navigation instance. */
     private void addBottomNavigation() {
-        mBottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.nav_disk:
-                    mToolbar.setTitle(R.string.msg_disk);
-                    mFragment = new DiskFragment();
+                    toolbar.setTitle(R.string.msg_disk);
+                    fragment = new DiskFragment();
                     break;
                 case R.id.nav_trash:
-                    mToolbar.setTitle(R.string.msg_trash);
-                    mFragment = new TrashFragment();
+                    toolbar.setTitle(R.string.msg_trash);
+                    fragment = new TrashFragment();
                     break;
                 case R.id.nav_settings:
-                    mToolbar.setTitle(R.string.msg_settings);
-                    mFragment = new SettingsFragment();
+                    toolbar.setTitle(R.string.msg_settings);
+                    fragment = new SettingsFragment();
                     break;
             }
-            if (mFragment != null) {
-                mTitle = mToolbar.getTitle().toString();
-                FragmentUtils.changeFragment(getSupportFragmentManager(), mFragment, R.id.frame_fragment);
+            if (fragment != null) {
+                title = toolbar.getTitle().toString();
+//                FragmentUtils.changeFragment(getSupportFragmentManager(), fragment, R.id.frame_fragment);
             }
             return true;
         });
-        mBottomNavigationView.setOnNavigationItemReselectedListener(item -> {
+        bottomNavigationView.setOnNavigationItemReselectedListener(item -> {
             switch (item.getItemId()) {
                 case R.id.nav_disk:
                 case R.id.nav_trash:
-                    mFragment.scrollToTop();
+                    fragment.scrollToTop();
                     break;
                 case R.id.nav_settings:
                     break;
             }
         });
-        BottomBarUtils.removeShiftingMode(mBottomNavigationView, true);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        getSupportFragmentManager().putFragment(outState, STATE_CURRENT_FRAGMENT, mFragment);
-        outState.putString(STATE_TITLE, mTitle);
+        getSupportFragmentManager().putFragment(outState, STATE_CURRENT_FRAGMENT, fragment);
+        outState.putString(STATE_TITLE, title);
     }
 
     @Override
     public void onBackPressed() {
-        if (mBottomNavigationView.getSelectedItemId() == R.id.nav_disk) {
+        if (bottomNavigationView.getSelectedItemId() == R.id.nav_disk) {
             super.onBackPressed();
         } else {
-            mBottomNavigationView.setSelectedItemId(R.id.nav_disk);
+            bottomNavigationView.setSelectedItemId(R.id.nav_disk);
         }
+    }
+
+    @Override
+    public int layout() {
+        return R.layout.activity_main;
     }
 }
