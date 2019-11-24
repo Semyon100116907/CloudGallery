@@ -11,6 +11,7 @@ import com.semisonfire.cloudgallery.ui.main.settings.SETTINGS_KEY
 import com.semisonfire.cloudgallery.ui.main.settings.SettingsNavigator
 import com.semisonfire.cloudgallery.ui.main.trash.TRASH_KEY
 import com.semisonfire.cloudgallery.ui.main.trash.TrashNavigator
+import java.util.*
 
 private const val NONE_CONTAINER_ID = -1
 
@@ -30,6 +31,11 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
     get() = ""
 
   private val navigatorMap: MutableMap<String, Navigator> = mutableMapOf()
+
+  private val fragmentStack = Stack<String>()
+
+  var currentKey: String = ""
+    private set
 
   override fun applyCommand(command: Command) {
     super.applyCommand(command)
@@ -53,6 +59,8 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
       .add(containerId, fragment, key)
       .addToBackStack(key)
       .commit()
+
+    fragmentStack.push(key)
   }
 
   protected fun replace(key: String, bundle: Any?) {
@@ -79,11 +87,18 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
 
   protected fun back() {
     fragmentManager.popBackStack()
+
+    if (!fragmentStack.empty()) {
+      currentKey = fragmentStack.pop()
+    }
   }
 
   protected fun clear() {
     fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     navigatorMap.clear()
+    fragmentStack.clear()
+
+    currentKey = ""
   }
 
   private fun getContainerIdByKey(key: String): Int {
@@ -95,6 +110,8 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
   }
 
   private fun getNavigatorByKey(key: String): Navigator {
+    currentKey = key
+
     val navigatorByKey = navigatorMap[key]
     if (navigatorByKey != null) return navigatorByKey
 

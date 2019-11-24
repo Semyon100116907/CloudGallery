@@ -9,13 +9,12 @@ import com.semisonfire.cloudgallery.core.ui.BaseActivity
 import com.semisonfire.cloudgallery.ui.main.disk.DISK_KEY
 import com.semisonfire.cloudgallery.ui.main.settings.SETTINGS_KEY
 import com.semisonfire.cloudgallery.ui.main.trash.TRASH_KEY
+import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 
 class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), MainContract.View {
 
   private var toolbar: Toolbar? = null
-  private var title: String = ""
-
   private var bottomNavigationView: BottomNavigationView? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,22 +23,20 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
       login()
     }
 
-    title = if (savedInstanceState != null) {
-
-      savedInstanceState.getString(STATE_TITLE) ?: ""
+    val currentScreenKey: String = if (savedInstanceState != null) {
+      savedInstanceState.getString(STATE_CURRENT_SCREEN) ?: ""
     } else {
-      getString(R.string.msg_disk)
+      DISK_KEY
     }
-    toolbar?.title = title
-    setSupportActionBar(toolbar)
 
-    router.replaceScreen(DISK_KEY)
+    router.replaceScreen(currentScreenKey)
   }
 
   public override fun bind() {
     super.bind()
 
     toolbar = findViewById(R.id.toolbar)
+    setSupportActionBar(toolbar)
 
     bottomNavigationView = findViewById(R.id.nav_bottom)
     addBottomNavigation()
@@ -76,26 +73,26 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
 
   /** Create navigation instance.  */
   private fun addBottomNavigation() {
-    bottomNavigationView!!.setOnNavigationItemSelectedListener { item ->
+    bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
+      val title: String
       val key = when (item.itemId) {
         R.id.nav_disk -> {
-          toolbar?.setTitle(R.string.msg_disk)
+          title = string(R.string.msg_disk)
           DISK_KEY
         }
         R.id.nav_trash -> {
-          toolbar?.setTitle(R.string.msg_trash)
+          title = string(R.string.msg_trash)
           TRASH_KEY
         }
         R.id.nav_settings -> {
-          toolbar?.setTitle(R.string.msg_settings)
+          title = string(R.string.msg_settings)
           SETTINGS_KEY
         }
-        else -> {
-          null
-        }
+        else -> return@setOnNavigationItemSelectedListener false
       }
-      key?.let {
-        title = toolbar?.title.toString()
+
+      key.let {
+        toolbar?.title = title
         router.replaceScreen(key)
       }
       true
@@ -111,7 +108,7 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    outState.putString(STATE_TITLE, title)
+    outState.putString(STATE_CURRENT_SCREEN, router.getCurrentScreenKey())
   }
 
   override fun onBackPressed() {
@@ -128,6 +125,6 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
 
   companion object {
     //STATE
-    private const val STATE_TITLE = "STATE_TITLE"
+    private const val STATE_CURRENT_SCREEN = "STATE_CURRENT_SCREEN"
   }
 }

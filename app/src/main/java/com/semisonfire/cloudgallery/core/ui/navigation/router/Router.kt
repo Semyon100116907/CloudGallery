@@ -1,6 +1,7 @@
 package com.semisonfire.cloudgallery.core.ui.navigation.router
 
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
+import com.semisonfire.cloudgallery.core.ui.navigation.NavigatorImpl
 import com.semisonfire.cloudgallery.di.ActivityScope
 import javax.inject.Inject
 
@@ -15,6 +16,12 @@ sealed class Command {
 
 @ActivityScope
 class Router @Inject constructor(private val navigator: Navigator) {
+
+  fun getCurrentScreenKey(): String {
+
+    if (navigator is NavigatorImpl) return navigator.currentKey
+    return ""
+  }
 
   fun navigateTo(key: String, bundle: Any? = null) {
     val command = Command.Add(key, bundle)
