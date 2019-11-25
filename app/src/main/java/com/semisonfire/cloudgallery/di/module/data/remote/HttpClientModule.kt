@@ -65,9 +65,8 @@ class HttpClientModule {
   @Singleton
   fun provideNetworkConnectionInterceptor(connectivityManager: ConnectivityManager): NetworkConnectionInterceptor {
     return object : NetworkConnectionInterceptor() {
-      override fun isInternetAvailable(): Boolean {
-        return this@HttpClientModule.isInternetAvailable(connectivityManager)
-      }
+      override val isInternetAvailable: Boolean
+        get() = this@HttpClientModule.isInternetAvailable(connectivityManager)
     }
   }
 

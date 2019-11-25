@@ -101,7 +101,7 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
           intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
           intent.putParcelableArrayListExtra(
             PhotoDetailActivity.EXTRA_PHOTOS,
-            photoList as ArrayList<out Parcelable>?
+            photoList as ArrayList<out Parcelable>
           )
           intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
           startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)

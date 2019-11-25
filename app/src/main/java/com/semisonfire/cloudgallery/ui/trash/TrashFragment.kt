@@ -87,7 +87,7 @@ class TrashFragment :
           intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
           intent.putParcelableArrayListExtra(
             PhotoDetailActivity.EXTRA_PHOTOS,
-            trashPhotoList as ArrayList<out Parcelable>?
+            trashPhotoList as ArrayList<out Parcelable>
           )
           intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
           startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)

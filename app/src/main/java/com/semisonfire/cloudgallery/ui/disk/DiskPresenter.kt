@@ -62,6 +62,7 @@ class DiskPresenter(
     compositeDisposable.add(
       Flowable.fromIterable(items)
         .concatMap { remoteRepository.getDownloadLink(it) }
+        .filter { !it.href.isNullOrEmpty() }
         .map {
           val url = URL(it.href)
           val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
