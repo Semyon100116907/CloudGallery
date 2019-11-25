@@ -1,6 +1,6 @@
-package com.semisonfire.cloudgallery.di.builder
+package com.semisonfire.cloudgallery.core.di.builder
 
-import com.semisonfire.cloudgallery.di.FragmentScope
+import com.semisonfire.cloudgallery.core.di.FragmentScope
 import com.semisonfire.cloudgallery.ui.disk.DiskFragment
 import com.semisonfire.cloudgallery.ui.disk.di.DiskModule
 import com.semisonfire.cloudgallery.ui.settings.SettingsFragment

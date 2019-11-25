@@ -1,7 +1,7 @@
-package com.semisonfire.cloudgallery.di.module
+package com.semisonfire.cloudgallery.core.di.module
 
 import android.content.Context
-import com.semisonfire.cloudgallery.di.AppContext
+import com.semisonfire.cloudgallery.core.di.AppContext
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

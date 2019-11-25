@@ -1,9 +1,9 @@
-package com.semisonfire.cloudgallery.di
+package com.semisonfire.cloudgallery.core.di
 
 import android.content.Context
 import com.semisonfire.cloudgallery.App
-import com.semisonfire.cloudgallery.di.builder.ActivityProvider
-import com.semisonfire.cloudgallery.di.module.AppModule
+import com.semisonfire.cloudgallery.core.di.builder.ActivityProvider
+import com.semisonfire.cloudgallery.core.di.module.AppModule
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector

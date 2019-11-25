@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.RemoteRepository
-import com.semisonfire.cloudgallery.di.ActivityScope
+import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground

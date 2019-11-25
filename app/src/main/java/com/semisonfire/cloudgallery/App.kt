@@ -5,10 +5,10 @@ import android.app.Application
 import android.content.Context
 import android.os.Environment
 import android.support.multidex.MultiDex
-import com.semisonfire.cloudgallery.di.AppComponent
-import com.semisonfire.cloudgallery.di.DaggerAppComponent
-import com.semisonfire.cloudgallery.di.module.ContextModule
-import com.semisonfire.cloudgallery.di.module.data.local.RoomModule
+import com.semisonfire.cloudgallery.core.di.AppComponent
+import com.semisonfire.cloudgallery.core.di.DaggerAppComponent
+import com.semisonfire.cloudgallery.core.di.module.ContextModule
+import com.semisonfire.cloudgallery.core.di.module.data.local.RoomModule
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
 import dagger.android.AndroidInjector

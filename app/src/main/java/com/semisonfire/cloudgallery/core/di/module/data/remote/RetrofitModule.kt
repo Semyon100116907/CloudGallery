@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.di.module.data.remote
+package com.semisonfire.cloudgallery.core.di.module.data.remote
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

@@ -1,6 +1,6 @@
-package com.semisonfire.cloudgallery.di.builder
+package com.semisonfire.cloudgallery.core.di.builder
 
-import com.semisonfire.cloudgallery.di.ActivityScope
+import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.ui.main.MainActivity
 import com.semisonfire.cloudgallery.ui.main.di.MainModule
 import dagger.Module

@@ -1,10 +1,10 @@
-package com.semisonfire.cloudgallery.di.module.data.remote
+package com.semisonfire.cloudgallery.core.di.module.data.remote
 
 import android.content.Context
 import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
-import com.semisonfire.cloudgallery.di.AppContext
+import com.semisonfire.cloudgallery.core.di.AppContext
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
