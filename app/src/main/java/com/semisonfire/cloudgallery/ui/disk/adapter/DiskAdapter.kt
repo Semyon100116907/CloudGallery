@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
@@ -20,7 +21,7 @@ import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 import kotlin.collections.ArrayList
 
-class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
 
   private val map = mutableMapOf<String, List<Photo>>()
   private val diskItemList = mutableListOf<DiskItem>()
@@ -35,7 +36,7 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): RecyclerView.ViewHolder {
+  ): BaseViewHolder<out DiskItem> {
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
       TYPE_HEADER -> {
@@ -55,24 +56,24 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
   }
 
   override fun onBindViewHolder(
-    holder: RecyclerView.ViewHolder,
+    holder: BaseViewHolder<out DiskItem>,
     position: Int
   ) {
     when (getItemViewType(position)) {
       TYPE_HEADER -> {
         val headerItem = diskItemList[position] as HeaderItem
         val headerViewHolder = holder as HeaderViewHolder
-        headerViewHolder.bind(headerItem)
+        headerViewHolder.bindItem(headerItem)
       }
       TYPE_GALLERY -> {
         val galleryItem = diskItemList[position] as GalleryItem
         val galleryViewHolder = holder as GalleryViewHolder
-        galleryViewHolder.bind(galleryItem)
+        galleryViewHolder.bindItem(galleryItem)
       }
       TYPE_UPLOAD -> {
         val uploadItem = diskItemList[position] as UploadItem
         val uploadViewHolder = holder as UploadViewHolder
-        uploadViewHolder.bind(uploadItem)
+        uploadViewHolder.bindItem(uploadItem)
       }
       else -> throw IllegalStateException("unsupported item type")
     }
@@ -290,13 +291,17 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     return item?.type ?: -1
   }
 
+  override fun getItemCount(): Int {
+    return diskItemList.size
+  }
+
   internal inner class HeaderViewHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+    BaseViewHolder<HeaderItem>(itemView) {
 
     private val dateTextView = itemView.findViewById<TextView>(R.id.text_upload_date)
     private val countTextView = itemView.findViewById<TextView>(R.id.text_photo_count)
 
-    fun bind(item: HeaderItem) {
+    override fun bindItem(item: HeaderItem) {
       val text = "${item.count} ${itemView.context.string(R.string.msg_photo).toLowerCase(Locale.ROOT)}"
       countTextView.text = text
       dateTextView.text = item.date
@@ -304,13 +309,13 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
   }
 
   internal inner class GalleryViewHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+    BaseViewHolder<GalleryItem>(itemView) {
 
     private val adapter = PhotoAdapter()
 
-    fun bind(item: GalleryItem) {
+    override fun bindItem(item: GalleryItem) {
       adapter.setSelection(selected)
-      adapter.setPhotos(item.photos)
+      adapter.updateDataSet(item.photos)
     }
 
     init {
@@ -338,7 +343,7 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
   }
 
   internal inner class UploadViewHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+    BaseViewHolder<UploadItem>(itemView) {
 
     private val stateTextView = itemView.findViewById<TextView>(R.id.text_upload_state)
     private val titleTextView = itemView.findViewById<TextView>(R.id.text_upload_title)
@@ -346,7 +351,7 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val adapter = UploadPhotoAdapter()
 
-    fun bind(item: UploadItem) {
+    override fun bindItem(item: UploadItem) {
 
       val visibility = item.visibility
       titleTextView.visibility = visibility
@@ -354,7 +359,7 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
       recyclerView.visibility = visibility
 
       if (visibility == View.VISIBLE) {
-        adapter.setItems(item.getUploadPhotos())
+        adapter.updateDataSet(item.getUploadPhotos())
         val itemState = item.state
         val state = if (itemState.isNullOrEmpty()) {
           "${item.uploadCount} ${itemView.context.string(R.string.msg_of)} ${item.size}"
@@ -377,9 +382,5 @@ class DiskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
       recyclerView.layoutManager = layoutManager
       recyclerView.addItemDecoration(itemDecorator)
     }
-  }
-
-  override fun getItemCount(): Int {
-    return diskItemList.size
   }
 }

@@ -110,7 +110,7 @@ class TrashFragment :
         }
       }
     })
-    photoAdapter.setPhotos(trashPhotoList)
+    photoAdapter.updateDataSet(trashPhotoList)
     //RecyclerView
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.rv_trash)
@@ -133,7 +133,7 @@ class TrashFragment :
 
   private fun updateDataSet() {
     trashPhotoList.clear()
-    photoAdapter.setPhotos(trashPhotoList)
+    photoAdapter.updateDataSet(trashPhotoList)
     //        mTrashPresenter.getPhotos(mCurrentPage);
   }
 
@@ -219,7 +219,7 @@ class TrashFragment :
     swipeRefreshLayout?.isRefreshing = false
     if (photos.isNotEmpty()) {
       trashPhotoList.addAll(photos)
-      photoAdapter.addPhotos(photos)
+      photoAdapter.addItems(photos)
 //      getStateView().hideStateView()
     } else {
       if (trashPhotoList.isEmpty()) {
@@ -230,7 +230,7 @@ class TrashFragment :
 
   override fun onPhotoRestored(photo: Photo) {
     trashPhotoList.remove(photo)
-    photoAdapter.remove(photo)
+    photoAdapter.removeItem(photo)
 
     context?.let {
       val action = it.string(R.string.msg_restored).toLowerCase(Locale.ROOT)
@@ -244,7 +244,7 @@ class TrashFragment :
 
   override fun onPhotoDeleted(photo: Photo) {
     trashPhotoList.remove(photo)
-    photoAdapter.remove(photo)
+    photoAdapter.removeItem(photo)
 
     context?.let {
       val action = it.string(R.string.msg_deleted).toLowerCase(Locale.ROOT)
@@ -258,7 +258,7 @@ class TrashFragment :
 
   override fun onTrashCleared() {
     trashPhotoList.clear()
-    photoAdapter.setPhotos(ArrayList())
+    photoAdapter.updateDataSet(ArrayList())
     setEnabledSelection(false)
     showEmpty()
   }

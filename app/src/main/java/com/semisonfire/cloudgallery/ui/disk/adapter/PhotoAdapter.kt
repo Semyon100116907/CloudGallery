@@ -2,11 +2,11 @@ package com.semisonfire.cloudgallery.ui.disk.adapter
 
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
+import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
@@ -15,24 +15,22 @@ import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter.PhotoViewHolder
 import com.semisonfire.cloudgallery.utils.dimen
 import com.squareup.picasso.Picasso
 
-class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
+class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
 
-  private val photos = mutableListOf<Photo>()
   private var photoListener: OnPhotoListener? = null
 
   fun setPhotoListener(photoListener: OnPhotoListener) {
     this.photoListener = photoListener
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
-    val view = LayoutInflater.from(parent.context).inflate(
-      R.layout.item_photo,
-      parent,
-      false
-    )
-    val photoViewHolder = PhotoViewHolder(view)
-    addClickListener(photoViewHolder)
-    return photoViewHolder
+  override fun layoutId(): Int {
+    return R.layout.item_photo
+  }
+
+  override fun createViewHolder(view: View): PhotoViewHolder {
+    val viewHolder = PhotoViewHolder(view)
+    addClickListener(viewHolder)
+    return viewHolder
   }
 
   private fun addClickListener(photoViewHolder: PhotoViewHolder) {
@@ -40,9 +38,9 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
       val adapterPosition = photoViewHolder.adapterPosition
       if (adapterPosition == RecyclerView.NO_POSITION) return@OnClickListener
 
-      val photo = photos[adapterPosition]
+      val photo = items[adapterPosition]
       if (!SelectableHelper.getMultipleSelection()) {
-        photoListener?.onPhotoClick(photos, adapterPosition)
+        photoListener?.onPhotoClick(items, adapterPosition)
       } else {
         photo.isSelected = !photo.isSelected
         notifyItemChanged(adapterPosition)
@@ -57,7 +55,7 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
       if (adapterPosition == RecyclerView.NO_POSITION) return@setOnLongClickListener false
 
       if (photoListener != null && !SelectableHelper.getMultipleSelection()) {
-        val photo = photos[adapterPosition]
+        val photo = items[adapterPosition]
         photo.isSelected = true
         notifyItemChanged(adapterPosition)
 
@@ -69,30 +67,17 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
     }
   }
 
-  override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-    holder.bind(photos[position])
-  }
-
-  override fun getItemCount(): Int {
-    return photos.size
-  }
-
-  fun setPhotos(items: List<Photo>) {
-    val diffUtilCallback = PhotoDiffUtil(items, photos)
+  override fun updateDataSet(newItems: List<Photo>) {
+    val diffUtilCallback = PhotoDiffUtil(newItems, items)
     val diffResult = DiffUtil.calculateDiff(diffUtilCallback)
-    photos.clear()
-    photos.addAll(items)
+    items.clear()
+    items.addAll(items)
     diffResult.dispatchUpdatesTo(this)
-  }
-
-  fun addPhotos(photos: List<Photo>) {
-    this.photos.addAll(photos)
-    notifyItemRangeInserted(itemCount, photos.size)
   }
 
   fun setSelection(selected: Boolean) {
     if (!selected) {
-      for (photo in photos) {
+      for (photo in items) {
         if (photo.isSelected) {
           photo.isSelected = false
         }
@@ -102,15 +87,8 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
     notifyDataSetChanged()
   }
 
-  fun remove(photo: Photo) {
-    val position = photos.indexOf(photo)
-    photos.remove(photo)
-
-    notifyItemRemoved(position)
-  }
-
   inner class PhotoViewHolder(itemView: View) :
-    RecyclerView.ViewHolder(itemView) {
+    BaseViewHolder<Photo>(itemView) {
 
     val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
     val selectImage: ImageView = itemView.findViewById(R.id.image_selected)
@@ -118,16 +96,15 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoViewHolder>() {
     private val targetHeight = itemView.context.dimen(R.dimen.photo_max_height)
     private val targetWidth = itemView.context.dimen(R.dimen.photo_max_width)
 
-    fun bind(photo: Photo) {
-
+    override fun bindItem(item: Photo) {
       photoImage.setImageDrawable(null)
-      Picasso.get().load(photo.preview)
+      Picasso.get().load(item.preview)
         .resize(targetWidth, targetHeight)
         .centerCrop()
         .placeholder(R.color.black)
         .error(R.drawable.ic_gallery)
         .into(photoImage)
-      selectImage.visibility = if (photo.isSelected) View.VISIBLE else View.GONE
+      selectImage.visibility = if (item.isSelected) View.VISIBLE else View.GONE
     }
   }
 }
