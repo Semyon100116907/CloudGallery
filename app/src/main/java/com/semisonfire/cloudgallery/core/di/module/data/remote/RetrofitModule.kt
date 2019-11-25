@@ -11,6 +11,14 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
+
+//Rest api url
+const val BASE_URL = "https://cloud-api.yandex.net" + "/v1/"
+//App client id
+const val CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f"
+//Yandex oauth url
+const val OAUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=$CLIENT_ID"
+
 @Module(
   includes = [
     HttpClientModule::class,
@@ -18,13 +26,6 @@ import javax.inject.Singleton
   ]
 )
 class RetrofitModule {
-
-  //Rest api url
-  private val BASE_URL = "https://cloud-api.yandex.net" + "/v1/"
-  //App client id
-  private val CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f"
-  //Yandex oauth url
-  private val OAUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=$CLIENT_ID"
 
   private val dateFormat = "dd.MM.yyyy"
 

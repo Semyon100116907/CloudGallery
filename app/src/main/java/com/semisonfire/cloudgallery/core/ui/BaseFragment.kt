@@ -17,6 +17,7 @@ import dagger.android.support.AndroidSupportInjection
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
+@Suppress("UNCHECKED_CAST")
 abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
   : Fragment(), MvpView {
 
@@ -57,6 +58,20 @@ abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
 
   }
 
+  override fun onResume() {
+    super.onResume()
+    presenter.attachView(getMvpView())
+  }
+
+  override fun onPause() {
+    super.onPause()
+    presenter.detachView()
+  }
+
+  private fun getMvpView(): V {
+    return this as V
+  }
+
   protected fun updateToolbarTitle(title: String) {
     val activity = activity
     if (activity is AppCompatActivity) {
@@ -80,13 +95,11 @@ abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
     }
   }
 
-  override fun onError(throwable: Throwable) {
-    throwable.printThrowable()
-  }
-
   override fun onDestroyView() {
     super.onDestroyView()
     disposables.dispose()
+
+    presenter.detachView()
     presenter.dispose()
   }
 }

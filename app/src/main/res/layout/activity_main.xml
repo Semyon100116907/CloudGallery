@@ -39,6 +39,16 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="@+id/swipe_refresh" />
 
+  <ProgressBar
+    android:id="@+id/progress_loader"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    app:layout_constraintBottom_toTopOf="@+id/nav_bottom"
+    app:layout_constraintEnd_toEndOf="@+id/swipe_refresh"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="@+id/swipe_refresh" />
+
   <android.support.design.widget.FloatingActionButton
     android:id="@+id/btn_add_new"
     android:layout_width="wrap_content"

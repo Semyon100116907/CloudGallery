@@ -1,21 +1,42 @@
 package com.semisonfire.cloudgallery.ui.main
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.widget.Toolbar
-import android.text.TextUtils
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.di.module.data.remote.OAUTH_URL
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
+import com.semisonfire.cloudgallery.core.ui.state.State
+import com.semisonfire.cloudgallery.core.ui.state.StateViewDelegate
+import com.semisonfire.cloudgallery.core.ui.state.strategy.EnterActionStrategy
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
 import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
 import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
+import com.semisonfire.cloudgallery.utils.foreground
+import com.semisonfire.cloudgallery.utils.printThrowable
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
+
+
+enum class MainStateView {
+  AUTH,
+  LOADER,
+  CONTENT,
+  EMPTY
+}
 
 class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), MainContract.View {
 
   private var toolbar: Toolbar? = null
   private var bottomNavigationView: BottomNavigationView? = null
+
+  private lateinit var stateViewDelegate: StateViewDelegate<MainStateView>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,36 +61,97 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
 
     bottomNavigationView = findViewById(R.id.nav_bottom)
     addBottomNavigation()
+
+    bindStateDelegate()
+  }
+
+  private fun bindStateDelegate() {
+
+    stateViewDelegate = StateViewDelegate(
+      State(MainStateView.CONTENT, findViewById<View>(R.id.frame_fragment)),
+      State(MainStateView.LOADER, findViewById<View>(R.id.progress_loader))
+    )
+
+    val informView = findViewById<View>(R.id.include_inform)
+    informView?.let {
+
+      stateViewDelegate.addState(
+        State(
+          MainStateView.AUTH,
+          informView,
+          EnterActionStrategy {
+            val informImage = it.findViewById<ImageView>(R.id.image_inform)
+            val informTitle = it.findViewById<TextView>(R.id.text_inform_title)
+            val informBody = it.findViewById<TextView>(R.id.text_inform_body)
+            val informButton = it.findViewById<Button>(R.id.btn_inform)
+
+            informTitle.text = string(R.string.msg_yandex_start)
+            informBody.text = string(R.string.msg_yandex_account)
+            informButton.text = string(R.string.action_yandex_link_account)
+
+            informImage.setImageResource(R.drawable.ic_cloud_off)
+
+            informButton.visibility = View.VISIBLE
+            informButton.setOnClickListener {
+              val intent = Intent(Intent.ACTION_VIEW, Uri.parse(OAUTH_URL))
+              startActivity(intent)
+            }
+          }
+        ),
+        State(
+          MainStateView.EMPTY,
+          informView,
+          EnterActionStrategy {
+            val informImage = it.findViewById<ImageView>(R.id.image_inform)
+            val informTitle = it.findViewById<TextView>(R.id.text_inform_title)
+            val informBody = it.findViewById<TextView>(R.id.text_inform_body)
+            val informButton = it.findViewById<Button>(R.id.btn_inform)
+
+            informTitle.text = string(R.string.msg_yandex_failed_retrieve)
+            informBody.text = string(R.string.action_yandex_check_connection)
+            informButton.text = string(R.string.action_yandex_link_account)
+
+            informImage.setImageResource(R.drawable.ic_yandex_disk)
+            informButton.visibility = View.GONE
+          }
+        )
+      )
+    }
+
+    stateViewDelegate.currentState = MainStateView.CONTENT
+  }
+
+  override fun onResume() {
+    super.onResume()
+
+    stateViewDelegate.currentState = MainStateView.LOADER
+    disposables.addAll(
+      presenter
+        .getTokenListener()
+        .observeOn(foreground())
+        .subscribe({
+          stateViewDelegate.currentState = (if (it.token.isNotEmpty()) MainStateView.CONTENT else MainStateView.AUTH)
+        }, {
+          it.printThrowable()
+        })
+    )
   }
 
   /** Oauth login.  */
   private fun login() {
     val data = intent.data
     intent = null
-    val pattern = Pattern.compile("access_token=(.*?)(&|$)")
-    val matcher = pattern.matcher(data!!.toString())
-    if (matcher.find()) {
-      val token = matcher.group(1)
-      if (!TextUtils.isEmpty(token)) {
-        //                saveToken(token);
+    data?.let {
+      val pattern = Pattern.compile("access_token=(.*?)(&|$)")
+      val matcher = pattern.matcher(data.toString())
+      if (matcher.find()) {
+        val token = matcher.group(1)
+        if (token.isNotEmpty()) {
+          presenter.saveToken(token)
+        }
       }
     }
   }
-
-  /** Save new token in private.  */
-  //    private void saveToken(String token) {
-  //        if (token != null) {
-  //            if (DiskClient.getToken() != null && DiskClient.getToken().equals(token)) {
-  //                return;
-  //            }
-  //
-  //            //Update token
-  //            DiskClient.getInstance().getAuthInterceptor().setToken(token);
-  //
-  //            //Save new token
-  //            mMainPresenter.setCachedToken(token);
-  //        }
-  //    }
 
   /** Create navigation instance.  */
   private fun addBottomNavigation() {
@@ -97,13 +179,13 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
       }
       true
     }
-    bottomNavigationView?.setOnNavigationItemReselectedListener { item ->
-      //      when (item.itemId) {
+//    bottomNavigationView?.setOnNavigationItemReselectedListener { item ->
+//      when (item.itemId) {
 //        R.id.nav_disk, R.id.nav_trash -> fragment?.scrollToTop()
 //        R.id.nav_settings -> {
 //        }
 //      }
-    }
+//    }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {

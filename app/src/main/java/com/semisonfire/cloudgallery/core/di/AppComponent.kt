@@ -4,6 +4,7 @@ import android.content.Context
 import com.semisonfire.cloudgallery.App
 import com.semisonfire.cloudgallery.core.di.builder.ActivityProvider
 import com.semisonfire.cloudgallery.core.di.module.AppModule
+import com.squareup.picasso.Picasso
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
@@ -37,4 +38,6 @@ interface AppComponent : AndroidInjector<App> {
 
   @AppContext
   fun context(): Context
+
+  fun picasso(): Picasso
 }

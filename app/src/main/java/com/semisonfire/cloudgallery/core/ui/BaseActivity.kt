@@ -60,7 +60,7 @@ abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
     presenter.detachView()
   }
 
-  protected fun getMvpView(): V {
+  private fun getMvpView(): V {
     return this as V
   }
 
@@ -76,10 +76,6 @@ abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
       permissions,
       grantResults
     )
-  }
-
-  override fun onError(throwable: Throwable) {
-    throwable.printThrowable()
   }
 
   override fun onBackPressed() {

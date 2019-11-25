@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
 import com.semisonfire.cloudgallery.core.di.AppContext
+import com.semisonfire.cloudgallery.data.remote.interceptors.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
@@ -27,7 +28,8 @@ class HttpClientModule {
   fun provideHttpClient(
     cache: Cache,
     networkConnectionInterceptor: NetworkConnectionInterceptor,
-    loggingInterceptor: HttpLoggingInterceptor
+    loggingInterceptor: HttpLoggingInterceptor,
+    authInterceptor: AuthInterceptor
   ): OkHttpClient {
 
     //Build http client for api
@@ -35,6 +37,7 @@ class HttpClientModule {
       cache,
       networkConnectionInterceptor
     )
+    builder.addInterceptor(authInterceptor)
 
     //Add logging in debug
     if (BuildConfig.DEBUG) {

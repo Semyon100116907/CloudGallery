@@ -17,10 +17,14 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.*
+import android.widget.TextView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseFragment
+import com.semisonfire.cloudgallery.core.ui.state.State
+import com.semisonfire.cloudgallery.core.ui.state.StateViewDelegate
+import com.semisonfire.cloudgallery.core.ui.state.strategy.EnterActionStrategy
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
@@ -58,7 +62,6 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View? {
-    super.onCreateView(inflater, container, savedInstanceState)
     if (savedInstanceState != null) {
       cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
       isSelectable = savedInstanceState.getBoolean(STATE_SELECTABLE)
@@ -66,6 +69,11 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
       setSelectableItems()
     }
     return super.onCreateView(inflater, container, savedInstanceState)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    presenter.getPhotos(0)
   }
 
   private fun setSelectableItems() {
@@ -137,6 +145,7 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
     diskAdapter.setPhotos(photoList)
 
     swipeRefreshLayout?.setOnRefreshListener {
+      presenter.getPhotos(0)
       swipeRefreshLayout?.isRefreshing = true
       updateDataSet()
     }
@@ -266,8 +275,8 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
         }
       }
       uploadingList.addAll(photos)
-      //            getStateView().hideStateView();
-      //            scrollToTop();
+
+      recyclerView?.scrollToPosition(0)
     }
   }
 
@@ -325,17 +334,6 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
     return photo
   }
 
-  //    @Override
-  //    public void onInternetUnavailable() {
-  //        if (photoList.isEmpty()) {
-  //            getStateView().showEmptyView(
-  //                    R.drawable.ic_yandex_disk,
-  //                    getString(R.string.msg_yandex_failed_retrieve),
-  //                    getString(R.string.action_yandex_check_connection)
-  //            );
-  //        }
-  //    }
-
   override fun onUploadingPhotos(photos: List<Photo>) {
     if (photos.isNotEmpty()) {
       uploadingList.addAll(photos)
@@ -350,14 +348,8 @@ class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), 
       floatingActionButton?.show()
       photoList.addAll(photos)
       diskAdapter.addPhotos(photos)
-      //            getStateView().hideStateView();
     } else {
       if (photoList.isEmpty()) {
-        //                getStateView().showEmptyView(
-        //                        R.drawable.ic_yandex_disk,
-        //                        getString(R.string.msg_yandex_ready),
-        //                        getString(R.string.action_yandex_add_items)
-        //                );
       }
     }
   }

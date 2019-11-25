@@ -1,23 +1,32 @@
 package com.semisonfire.cloudgallery.data.remote.interceptors
 
+import com.semisonfire.cloudgallery.data.remote.auth.Auth
+import com.semisonfire.cloudgallery.data.remote.auth.AuthRepository
 import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthInterceptor : Interceptor {
+@Singleton
+class AuthInterceptor @Inject constructor(
+  private val authRepository: AuthRepository
+) : Interceptor {
 
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
     val request = chain.request()
 
     var modifiedRequest = request
-//    if (token != null) {
-//      modifiedRequest = request.newBuilder()
-//        .header("Accept", "application/json")
-//        .header("Authorization", "OAuth $token")
-//        .build()
-//    }
+
+    val authModel = authRepository.authModel
+    if (authModel is Auth.AuthModel) {
+      modifiedRequest = request.newBuilder()
+        .header("Accept", "application/json")
+        .header("Authorization", "OAuth ${authModel.token}")
+        .build()
+    }
 
     val response = chain.proceed(modifiedRequest)
     val unauthorized = response.code() == 401

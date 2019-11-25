@@ -21,9 +21,11 @@ class StateViewDelegate<T>(
     nextState?.run { strategy.onStateEnter(this, prevState) }
   }
 
-  fun addState(state: State<T>) {
-    if (stateMap is MutableMap) {
-      stateMap[state.name] = state
+  fun addState(vararg states: State<T>) {
+    states.forEach {
+      if (stateMap is MutableMap) {
+        stateMap[it.name] = it
+      }
     }
   }
 }

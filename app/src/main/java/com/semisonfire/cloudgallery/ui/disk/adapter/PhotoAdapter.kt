@@ -71,7 +71,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
     val diffUtilCallback = PhotoDiffUtil(newItems, items)
     val diffResult = DiffUtil.calculateDiff(diffUtilCallback)
     items.clear()
-    items.addAll(items)
+    items.addAll(newItems)
     diffResult.dispatchUpdatesTo(this)
   }
 

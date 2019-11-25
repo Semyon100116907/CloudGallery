@@ -11,6 +11,7 @@ import com.semisonfire.cloudgallery.core.di.module.ContextModule
 import com.semisonfire.cloudgallery.core.di.module.data.local.RoomModule
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
+import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -46,12 +47,15 @@ class App : Application(), HasActivityInjector {
     )
     FileUtils.initInstance(fileProvider)
 
-    component = DaggerAppComponent.builder()
+    val component = DaggerAppComponent.builder()
       .contextModule(ContextModule(this))
       .roomModule(RoomModule(this))
       .build()
+    component.inject(this)
 
-    component?.inject(this)
+    Picasso.setSingletonInstance(component.picasso())
+
+    this.component = component
   }
 
   companion object {

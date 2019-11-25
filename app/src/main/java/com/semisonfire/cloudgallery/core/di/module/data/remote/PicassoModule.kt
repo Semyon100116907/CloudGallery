@@ -4,6 +4,7 @@ import android.content.Context
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
 import com.semisonfire.cloudgallery.core.di.AppContext
+import com.semisonfire.cloudgallery.data.remote.interceptors.AuthInterceptor
 import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
 import dagger.Module
@@ -25,16 +26,12 @@ class PicassoModule {
     @AppContext context: Context,
     @Named("PICASSO") picassoClient: OkHttpClient
   ): Picasso {
-
-    val picasso = Picasso.Builder(context)
+    return Picasso.Builder(context)
       .indicatorsEnabled(BuildConfig.DEBUG)
       .loggingEnabled(BuildConfig.DEBUG)
       .downloader(OkHttp3Downloader(picassoClient))
       .listener { pic, uri, exception -> exception.printStackTrace() }
       .build()
-
-    Picasso.setSingletonInstance(picasso)
-    return picasso
   }
 
   @Provides
@@ -42,7 +39,8 @@ class PicassoModule {
   @Named("PICASSO")
   fun providePicassoClient(
     @Named("PICASSO") cache: Cache,
-    networkConnectionInterceptor: NetworkConnectionInterceptor
+    networkConnectionInterceptor: NetworkConnectionInterceptor,
+    authInterceptor: AuthInterceptor
   ): OkHttpClient {
     val picassoClient = OkHttpClient.Builder()
       .connectTimeout(30, TimeUnit.SECONDS)
@@ -50,6 +48,7 @@ class PicassoModule {
       .writeTimeout(30, TimeUnit.SECONDS)
       .cache(cache)
       .addInterceptor(networkConnectionInterceptor)
+      .addInterceptor(authInterceptor)
 
     return picassoClient.build()
   }

@@ -12,15 +12,16 @@ import com.semisonfire.cloudgallery.ui.dialogs.base.BaseDialogFragment
 class BottomDialogFragment : BaseDialogFragment() {
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-    val context = context
+    val context = context ?: throw NullPointerException("Context must not be null")
+
+    val bottomSheetDialog = BottomSheetDialog(context)
     val sheetView = View.inflate(context, R.layout.dialog_bottom, null)
-    val behavior = BottomSheetBehavior.from(sheetView.parent as View)
     bind(sheetView)
 
-    if (context == null) throw NullPointerException("Context must not be null")
+    bottomSheetDialog.setContentView(sheetView)
 
-    return BottomSheetDialog(context).apply {
-      setContentView(sheetView)
+    val behavior = BottomSheetBehavior.from(sheetView.parent as? View)
+    return bottomSheetDialog.apply {
       setOnShowListener {
         behavior.setPeekHeight(sheetView.height)
       }
