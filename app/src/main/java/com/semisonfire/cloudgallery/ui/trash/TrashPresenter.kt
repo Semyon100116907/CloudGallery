@@ -6,6 +6,7 @@ import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
+import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Flowable
 import java.util.*
 
@@ -23,7 +24,7 @@ class TrashPresenter(private val remoteRepository: RemoteRepository) :
         .observeOn(foreground())
         .subscribe(
           { view?.onTrashLoaded(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -37,7 +38,7 @@ class TrashPresenter(private val remoteRepository: RemoteRepository) :
         .observeOn(foreground())
         .subscribe(
           { view?.onPhotoRestored(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -51,7 +52,7 @@ class TrashPresenter(private val remoteRepository: RemoteRepository) :
         .observeOn(foreground())
         .subscribe(
           { view?.onPhotoDeleted(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -63,7 +64,7 @@ class TrashPresenter(private val remoteRepository: RemoteRepository) :
         .observeOn(foreground())
         .subscribe(
           { view?.onTrashCleared() },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }

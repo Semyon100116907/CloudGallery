@@ -6,11 +6,8 @@ import com.semisonfire.cloudgallery.data.local.LocalRepository
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
-import com.semisonfire.cloudgallery.utils.DateUtils
-import com.semisonfire.cloudgallery.utils.FileUtils
+import com.semisonfire.cloudgallery.utils.*
 import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import retrofit2.HttpException
 import java.io.File
@@ -38,11 +35,11 @@ class DiskPresenter(
 
   override fun getPhotos(offset: Int) {
     val result = remoteRepository.getPhotos(LIMIT, offset)
-      .subscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
+      .subscribeOn(background())
+      .observeOn(foreground())
       .subscribe(
         { view?.onPhotosLoaded(it) },
-        { view?.onError(it) }
+        { it.printThrowable() }
       )
 
     compositeDisposable.add(result)
@@ -51,11 +48,11 @@ class DiskPresenter(
   override fun getUploadingPhotos() {
     compositeDisposable.add(
       localRepository.uploadingPhotos
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(background())
+        .observeOn(foreground())
         .subscribe(
           { view?.onUploadingPhotos(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -70,11 +67,11 @@ class DiskPresenter(
           val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
           FileUtils.getInstance().savePublicFile(bitmap, it.photo.name)
         }
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(background())
+        .observeOn(foreground())
         .subscribe(
           { view?.onPhotoDownloaded(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -85,11 +82,11 @@ class DiskPresenter(
     compositeDisposable.add(
       Flowable.fromIterable(items)
         .concatMap { remoteRepository.deletePhoto(it) }
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(background())
+        .observeOn(foreground())
         .subscribe(
           { view?.onPhotoDeleted(it) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -116,10 +113,10 @@ class DiskPresenter(
   private fun createInformerSubject() {
     compositeDisposable.add(
       uploadSubjectInformer
-        .observeOn(AndroidSchedulers.mainThread())
+        .observeOn(foreground())
         .subscribe(
           { view?.onPhotoUploaded(it, false) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -133,7 +130,7 @@ class DiskPresenter(
         .concatMap { photo: Photo -> getUploadFlowable(photo).toObservable() }
         .subscribe(
           { view?.onPhotoUploaded(it, true) },
-          { view?.onError(it) }
+          { it.printThrowable() }
         )
     )
   }
@@ -143,7 +140,7 @@ class DiskPresenter(
    */
   private fun getUploadFlowable(photo: Photo): Flowable<Photo> {
     return Flowable.just(photo)
-      .subscribeOn(Schedulers.io())
+      .subscribeOn(background())
       .switchMap {
         Flowable.just(it).delay(1000, TimeUnit.MILLISECONDS)
       }
@@ -168,11 +165,11 @@ class DiskPresenter(
       .flatMap {
         val absolutePath = "file://" + File(it.localPath).absolutePath
         it.preview = absolutePath
-        it.modifiedAt = DateUtils.getCurrentDate()
+        it.modifiedAt = DateUtils.currentDate
         localRepository.removeUploadingPhoto(it)
           .andThen(Flowable.just(it))
       }
-      .observeOn(AndroidSchedulers.mainThread())
+      .observeOn(foreground())
   }
 
   /**
