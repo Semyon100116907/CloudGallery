@@ -1,5 +1,6 @@
 package com.semisonfire.cloudgallery.di.builder
 
+import com.semisonfire.cloudgallery.di.FragmentScope
 import com.semisonfire.cloudgallery.ui.disk.DiskFragment
 import com.semisonfire.cloudgallery.ui.disk.di.DiskModule
 import com.semisonfire.cloudgallery.ui.settings.SettingsFragment
@@ -12,12 +13,15 @@ import dagger.android.ContributesAndroidInjector
 @Module
 abstract class FragmentProvider {
 
+  @FragmentScope
   @ContributesAndroidInjector(modules = [DiskModule::class])
   internal abstract fun contributeDiskFragment(): DiskFragment
 
+  @FragmentScope
   @ContributesAndroidInjector(modules = [TrashModule::class])
   internal abstract fun contributeTrashFragment(): TrashFragment
 
+  @FragmentScope
   @ContributesAndroidInjector(modules = [SettingsModule::class])
   internal abstract fun contributeSettingsFragment(): SettingsFragment
 }

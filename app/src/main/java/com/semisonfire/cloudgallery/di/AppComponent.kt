@@ -34,6 +34,7 @@ annotation class FragmentScope
   ]
 )
 interface AppComponent : AndroidInjector<App> {
+
   @AppContext
   fun context(): Context
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
+import com.semisonfire.cloudgallery.di.AppContext
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
@@ -56,7 +57,7 @@ class HttpClientModule {
 
   @Provides
   @Singleton
-  fun provideConnectivityManager(context: Context): ConnectivityManager {
+  fun provideConnectivityManager(@AppContext context: Context): ConnectivityManager {
     return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
@@ -80,7 +81,7 @@ class HttpClientModule {
 
   @Provides
   @Singleton
-  fun provideCache(context: Context): Cache {
+  fun provideCache(@AppContext context: Context): Cache {
     return Cache(
       File(context.cacheDir, cacheName),
       DISK_CACHE_SIZE

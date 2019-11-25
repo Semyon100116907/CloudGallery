@@ -3,6 +3,7 @@ package com.semisonfire.cloudgallery.di.module.data.remote
 import android.content.Context
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
+import com.semisonfire.cloudgallery.di.AppContext
 import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
 import dagger.Module
@@ -21,7 +22,7 @@ class PicassoModule {
   @Provides
   @Singleton
   fun providePicasso(
-    context: Context,
+    @AppContext context: Context,
     @Named("PICASSO") picassoClient: OkHttpClient
   ): Picasso {
 
@@ -56,7 +57,7 @@ class PicassoModule {
   @Provides
   @Singleton
   @Named("PICASSO")
-  fun provideCache(context: Context): Cache {
+  fun provideCache(@AppContext context: Context): Cache {
     return Cache(
       File(context.cacheDir, cacheName),
       DISK_CACHE_SIZE
