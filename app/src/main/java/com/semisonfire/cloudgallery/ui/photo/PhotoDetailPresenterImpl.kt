@@ -11,7 +11,6 @@ import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
 import java.net.URL
@@ -35,7 +34,7 @@ class PhotoDetailPresenterImpl(
         .map {
           val url = URL(it.href)
           val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-          FileUtils.getInstance().savePublicFile(bitmap, photo.name)
+          FileUtils.savePublicFile(bitmap, photo.name)
         }
         .subscribeOn(background())
         .observeOn(foreground())
@@ -79,7 +78,7 @@ class PhotoDetailPresenterImpl(
   override fun createShareFile(bitmap: Bitmap) {
     compositeDisposable.add(
       Single.just(bitmap)
-        .map { FileUtils.getInstance().createShareFile(it) }
+        .map { FileUtils.createShareFile(it) }
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(

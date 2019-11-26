@@ -11,7 +11,6 @@ import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
 import java.net.URL
 
 const val LIMIT = 15
@@ -68,7 +67,7 @@ class DiskPresenterImpl(
         .map {
           val url = URL(it.href)
           val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-          FileUtils.getInstance().savePublicFile(bitmap, it.photo.name)
+          FileUtils.savePublicFile(bitmap, it.photo.name)
         }
         .subscribeOn(background())
         .observeOn(foreground())

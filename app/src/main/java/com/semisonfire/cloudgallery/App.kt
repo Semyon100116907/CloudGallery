@@ -24,9 +24,6 @@ class App : Application(), HasActivityInjector {
   @Inject
   internal lateinit var activityInjector: DispatchingAndroidInjector<Activity>
 
-  var component: AppComponent? = null
-    private set
-
   override fun activityInjector(): AndroidInjector<Activity> {
     return activityInjector
   }
@@ -40,25 +37,25 @@ class App : Application(), HasActivityInjector {
     super.onCreate()
 
     //Init external file provider
-    val fileProvider = ExternalFileProvider(this)
-    fileProvider.setPrivateDirectory(
-      getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-      "CloudGallery"
-    )
-    FileUtils.initInstance(fileProvider)
+    val fileProvider = ExternalFileProvider()
+    val directory = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    directory?.let {
+      fileProvider.setPrivateDirectory(directory, "CloudGallery")
+    }
+    FileUtils.fileProvider = fileProvider
 
-    val component = DaggerAppComponent.builder()
+    component = DaggerAppComponent.builder()
       .contextModule(ContextModule(this))
       .roomModule(RoomModule(this))
       .build()
     component.inject(this)
 
     Picasso.setSingletonInstance(component.picasso())
-
-    this.component = component
   }
 
   companion object {
+
+    lateinit var component: AppComponent
 
     val background = lazy {
       Schedulers.from(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()))

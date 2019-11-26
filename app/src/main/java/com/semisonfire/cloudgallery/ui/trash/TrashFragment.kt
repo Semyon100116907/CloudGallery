@@ -1,7 +1,6 @@
 package com.semisonfire.cloudgallery.ui.trash
 
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -11,7 +10,6 @@ import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -20,15 +18,13 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
-import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
-import com.semisonfire.cloudgallery.ui.dialogs.base.DialogListener
+import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.utils.color
-import com.semisonfire.cloudgallery.utils.colorResDrawable
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
@@ -41,7 +37,7 @@ interface TrashView : MvpView {
   fun onTrashCleared()
 }
 
-class TrashFragment : SelectableFragment<TrashView, TrashPresenter>(), TrashView, DialogListener {
+class TrashFragment : SelectableFragment<TrashView, TrashPresenter>(), TrashView {
 
   private val photoAdapter = PhotoAdapter()
 
@@ -251,17 +247,12 @@ class TrashFragment : SelectableFragment<TrashView, TrashPresenter>(), TrashView
     val activity = activity as AppCompatActivity?
     if (activity != null) {
       val alertDialog = AlertDialogFragment.newInstance(title, message, color)
-      alertDialog.setTargetFragment(this, 0)
+      alertDialog.dialogListener = object : DialogListener() {
+        override fun onPositiveClick() {
+          presenter.clear()
+        }
+      }
       alertDialog.show(activity.supportFragmentManager, "alert")
     }
-  }
-
-  override fun onPositiveClick(dialogInterface: DialogInterface) {
-    presenter.clear()
-    dialogInterface.cancel()
-  }
-
-  override fun onNegativeClick(dialogInterface: DialogInterface) {
-    dialogInterface.cancel()
   }
 }

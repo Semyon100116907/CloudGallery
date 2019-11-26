@@ -3,30 +3,34 @@ package com.semisonfire.cloudgallery.ui.dialogs
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.ui.dialogs.base.BaseDialogFragment
 
-class AlertDialogFragment : BaseDialogFragment() {
+class AlertDialogFragment : DialogFragment() {
 
-  private var dialogTitle: String? = null
-  private var dialogMessage: String? = null
-  private var dialogButtonColor = -1
+  var dialogListener: DialogListener? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    var dialogTitle = ""
+    var dialogMessage = ""
+    var dialogButtonColor = -1
+
     arguments?.apply {
-      dialogTitle = getString(ARGUMENT_TITLE)
-      dialogMessage = getString(ARGUMENT_MESSAGE)
+      dialogTitle = getString(ARGUMENT_TITLE) ?: ""
+      dialogMessage = getString(ARGUMENT_MESSAGE) ?: ""
       dialogButtonColor = getInt(ARGUMENT_COLOR, -1)
     }
 
     val dialog = AlertDialog.Builder(context)
-      .setTitle(dialogTitle ?: "")
-      .setMessage(dialogMessage ?: "")
+      .setTitle(dialogTitle)
+      .setMessage(dialogMessage)
       .setPositiveButton(R.string.action_ok) { dialogInterface, i ->
-        dialogListener?.onPositiveClick(dialogInterface)
+        dialogListener?.onPositiveClick()
+        dialogInterface.cancel()
       }
       .setNegativeButton(R.string.action_cancel) { dialogInterface, i ->
-        dialogListener?.onNegativeClick(dialogInterface)
+        dialogListener?.onNegativeClick()
+        dialogInterface.cancel()
       }
       .create()
     dialog.setOnShowListener {
