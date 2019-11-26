@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.data.remote.response
+package com.semisonfire.cloudgallery.ui.disk.model
 
 import android.arch.persistence.room.Ignore
 import com.google.gson.annotations.SerializedName

@@ -5,8 +5,8 @@ import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.local.LocalRepository
 import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
+import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.utils.*
 import io.reactivex.Flowable
 import io.reactivex.subjects.PublishSubject
@@ -29,7 +29,7 @@ interface DiskPresenter : MvpPresenter<DiskView> {
 }
 
 class DiskPresenterImpl(
-  private val remoteRepository: RemoteRepository,
+  private val diskRepository: DiskRepository,
   private val localRepository: LocalRepository
 ) : BasePresenter<DiskView>(),
   DiskPresenter {
@@ -45,7 +45,7 @@ class DiskPresenterImpl(
   }
 
   override fun getPhotos(offset: Int) {
-    val result = remoteRepository.getPhotos(LIMIT, offset)
+    val result = diskRepository.getPhotos(LIMIT, offset)
       .subscribeOn(background())
       .observeOn(foreground())
       .subscribe(
@@ -72,7 +72,7 @@ class DiskPresenterImpl(
     val items: List<Photo> = ArrayList(photos)
     compositeDisposable.add(
       Flowable.fromIterable(items)
-        .concatMap { remoteRepository.getDownloadLink(it) }
+        .concatMap { diskRepository.getDownloadLink(it) }
         .filter { !it.href.isNullOrEmpty() }
         .map {
           val url = URL(it.href)
@@ -93,7 +93,7 @@ class DiskPresenterImpl(
 
     compositeDisposable.add(
       Flowable.fromIterable(items)
-        .concatMap { remoteRepository.deletePhoto(it) }
+        .concatMap { diskRepository.deletePhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(
@@ -156,8 +156,8 @@ class DiskPresenterImpl(
       .switchMap {
         Flowable.just(it).delay(1000, TimeUnit.MILLISECONDS)
       }
-      .flatMap { remoteRepository.getUploadLink(it) }
-      .flatMap { remoteRepository.savePhoto(it.photo, it) }
+      .flatMap { diskRepository.getUploadLink(it) }
+      .flatMap { diskRepository.savePhoto(it.photo, it) }
       .retryWhen { error: Flowable<Throwable?> ->
         error.flatMap { throwable: Throwable? ->
           if (throwable is InternetUnavailableException) {

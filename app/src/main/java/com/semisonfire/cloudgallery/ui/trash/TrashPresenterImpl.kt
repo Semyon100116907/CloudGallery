@@ -3,8 +3,8 @@ package com.semisonfire.cloudgallery.ui.trash
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
+import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
@@ -19,12 +19,13 @@ interface TrashPresenter : MvpPresenter<TrashView> {
   fun clear()
 }
 
-class TrashPresenterImpl(private val remoteRepository: RemoteRepository) :
-  BasePresenter<TrashView>(), TrashPresenter {
+class TrashPresenterImpl(
+  private val trashRepository: TrashRepository
+) : BasePresenter<TrashView>(), TrashPresenter {
 
   override fun getPhotos(page: Int) {
     compositeDisposable.add(
-      remoteRepository.getTrashPhotos(LIMIT, page)
+      trashRepository.getTrashPhotos(LIMIT, page)
         .flatMapIterable { it }
         .filter { it.mediaType.isNotEmpty() }
         .filter { it.mediaType == "image" }
@@ -42,7 +43,7 @@ class TrashPresenterImpl(private val remoteRepository: RemoteRepository) :
     val items: List<Photo> = ArrayList(photos)
     compositeDisposable.add(
       Flowable.fromIterable(items)
-        .concatMap { remoteRepository.restoreTrashPhoto(it) }
+        .concatMap { trashRepository.restoreTrashPhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(
@@ -56,7 +57,7 @@ class TrashPresenterImpl(private val remoteRepository: RemoteRepository) :
     val items: List<Photo> = ArrayList(photos)
     compositeDisposable.add(
       Flowable.fromIterable(items)
-        .concatMap { remoteRepository.deleteTrashPhoto(it) }
+        .concatMap { trashRepository.deleteTrashPhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(
@@ -68,7 +69,7 @@ class TrashPresenterImpl(private val remoteRepository: RemoteRepository) :
 
   override fun clear() {
     compositeDisposable.add(
-      remoteRepository.clearTrash()
+      trashRepository.clearTrash()
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(

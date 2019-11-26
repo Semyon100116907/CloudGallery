@@ -5,7 +5,8 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.data.remote.RemoteRepository
+import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
+import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
@@ -23,12 +24,13 @@ interface PhotoDetailPresenter : MvpPresenter<PhotoDetailView> {
 }
 
 class PhotoDetailPresenterImpl(
-  private val remoteRepository: RemoteRepository
+  private val diskRepository: DiskRepository,
+  private val trashRepository: TrashRepository
 ) : BasePresenter<PhotoDetailView>(), PhotoDetailPresenter {
 
   override fun download(photo: Photo) {
     compositeDisposable.add(
-      remoteRepository.getDownloadLink(photo)
+      diskRepository.getDownloadLink(photo)
         .map {
           val url = URL(it.href)
           val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
@@ -45,8 +47,8 @@ class PhotoDetailPresenterImpl(
 
   override fun delete(photo: Photo, from: Int) {
     val delete = when (from) {
-      PhotoDetailActivity.FROM_DISK -> remoteRepository.deletePhoto(photo)
-      PhotoDetailActivity.FROM_TRASH -> remoteRepository.deleteTrashPhoto(photo)
+      PhotoDetailActivity.FROM_DISK -> diskRepository.deletePhoto(photo)
+      PhotoDetailActivity.FROM_TRASH -> trashRepository.deleteTrashPhoto(photo)
       else -> Flowable.just(photo)
     }
 
@@ -62,7 +64,7 @@ class PhotoDetailPresenterImpl(
 
   override fun restore(photo: Photo) {
     compositeDisposable.add(
-      remoteRepository.restoreTrashPhoto(photo)
+      trashRepository.restoreTrashPhoto(photo)
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(

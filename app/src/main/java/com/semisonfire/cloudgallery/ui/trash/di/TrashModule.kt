@@ -1,9 +1,9 @@
 package com.semisonfire.cloudgallery.ui.trash.di
 
 import com.semisonfire.cloudgallery.core.di.FragmentScope
-import com.semisonfire.cloudgallery.data.remote.RemoteRepository
 import com.semisonfire.cloudgallery.ui.trash.TrashPresenter
 import com.semisonfire.cloudgallery.ui.trash.TrashPresenterImpl
+import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import dagger.Module
 import dagger.Provides
 
@@ -13,8 +13,8 @@ class TrashModule {
   @Provides
   @FragmentScope
   fun provideTrashPresenter(
-    remoteRepository: RemoteRepository
+    trashRepository: TrashRepository
   ): TrashPresenter {
-    return TrashPresenterImpl(remoteRepository)
+    return TrashPresenterImpl(trashRepository)
   }
 }

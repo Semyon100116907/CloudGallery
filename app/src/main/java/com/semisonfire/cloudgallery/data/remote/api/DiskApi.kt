@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.data.remote.api
 
-import com.semisonfire.cloudgallery.data.remote.response.DiskResponse
-import com.semisonfire.cloudgallery.data.remote.response.Link
-import com.semisonfire.cloudgallery.data.remote.response.Trash
+import com.semisonfire.cloudgallery.ui.disk.model.DiskResponse
+import com.semisonfire.cloudgallery.ui.disk.model.Link
+import com.semisonfire.cloudgallery.ui.trash.model.Trash
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import okhttp3.MultipartBody
