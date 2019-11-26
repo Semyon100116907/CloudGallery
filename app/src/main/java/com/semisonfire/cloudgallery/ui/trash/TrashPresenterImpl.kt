@@ -8,8 +8,7 @@ import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
-import io.reactivex.Flowable
-import java.util.*
+import io.reactivex.Observable
 
 interface TrashPresenter : MvpPresenter<TrashView> {
 
@@ -26,10 +25,12 @@ class TrashPresenterImpl(
   override fun getPhotos(page: Int) {
     compositeDisposable.add(
       trashRepository.getTrashPhotos(LIMIT, page)
-        .flatMapIterable { it }
-        .filter { it.mediaType.isNotEmpty() }
-        .filter { it.mediaType == "image" }
-        .toList()
+        .map { photoList ->
+          photoList.asSequence()
+            .filter { it.mediaType.isNotEmpty() }
+            .filter { it.mediaType == "image" }
+            .toList()
+        }
         .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(
@@ -40,9 +41,8 @@ class TrashPresenterImpl(
   }
 
   override fun restorePhotos(photos: List<Photo>) {
-    val items: List<Photo> = ArrayList(photos)
     compositeDisposable.add(
-      Flowable.fromIterable(items)
+      Observable.fromIterable(photos.toMutableList())
         .concatMap { trashRepository.restoreTrashPhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())
@@ -54,9 +54,8 @@ class TrashPresenterImpl(
   }
 
   override fun deletePhotos(photos: List<Photo>) {
-    val items: List<Photo> = ArrayList(photos)
     compositeDisposable.add(
-      Flowable.fromIterable(items)
+      Observable.fromIterable(photos.toMutableList())
         .concatMap { trashRepository.deleteTrashPhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())

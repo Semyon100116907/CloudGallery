@@ -12,6 +12,7 @@ import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.Single
 import java.net.URL
 
@@ -49,11 +50,12 @@ class PhotoDetailPresenterImpl(
     val delete = when (from) {
       PhotoDetailActivity.FROM_DISK -> diskRepository.deletePhoto(photo)
       PhotoDetailActivity.FROM_TRASH -> trashRepository.deleteTrashPhoto(photo)
-      else -> Flowable.just(photo)
+      else -> Observable.just(photo)
     }
 
     compositeDisposable.add(
-      delete.subscribeOn(background())
+      delete
+        .subscribeOn(background())
         .observeOn(foreground())
         .subscribe(
           { view?.onFilesChanged(it) },

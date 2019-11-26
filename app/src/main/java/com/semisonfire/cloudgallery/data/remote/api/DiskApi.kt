@@ -5,6 +5,8 @@ import com.semisonfire.cloudgallery.ui.disk.model.Link
 import com.semisonfire.cloudgallery.ui.trash.model.Trash
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Observable
+import io.reactivex.Single
 import okhttp3.MultipartBody
 import retrofit2.http.*
 
@@ -17,14 +19,14 @@ interface DiskApi {
     @Query("media_type") mediaType: String?,
     @Query("preview_size") size: String?,
     @Query("sort") sort: String?
-  ): Flowable<DiskResponse>
+  ): Single<DiskResponse>
 
   /** Get the link to upload file on the disk.  */
   @GET("disk/resources/upload")
   fun getUploadLink(
     @Query("path") path: String?,
     @Query("overwrite") overwrite: Boolean
-  ): Flowable<Link>
+  ): Observable<Link>
 
   /** Upload file on the disk.  */
   @Multipart
@@ -36,7 +38,7 @@ interface DiskApi {
 
   /** Download file from the disk folder.  */
   @GET("disk/resources/download")
-  fun getDownloadLink(@Query("path") path: String?): Flowable<Link>
+  fun getDownloadLink(@Query("path") path: String?): Observable<Link>
 
   /** Delete file from the disk folder.  */
   @DELETE("disk/resources")
@@ -50,7 +52,7 @@ interface DiskApi {
     @Query("offset") offset: Int,
     @Query("preview_size") size: String?,
     @Query("sort") sort: String?
-  ): Flowable<Trash>
+  ): Single<Trash>
 
   /** Restore file from the trash folder.  */
   @PUT("disk/trash/resources/restore")
