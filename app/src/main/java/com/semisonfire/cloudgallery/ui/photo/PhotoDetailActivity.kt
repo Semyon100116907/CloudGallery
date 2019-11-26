@@ -15,6 +15,7 @@ import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
@@ -25,9 +26,16 @@ import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 
+interface PhotoDetailView : MvpView {
+
+  fun onPhotoDownloaded(path: String)
+  fun onFilePrepared(uri: Uri)
+  fun onFilesChanged(photo: Photo)
+}
+
 class PhotoDetailActivity :
-  BaseActivity<PhotoDetailContract.View, PhotoDetailContract.Presenter>(),
-  PhotoDetailContract.View {
+  BaseActivity<PhotoDetailView, PhotoDetailPresenterImpl>(),
+  PhotoDetailView {
 
 
   private val adapter = PhotoDetailAdapter()

@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.*
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
@@ -30,9 +31,17 @@ import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 
+interface TrashView : MvpView {
+
+  fun onTrashLoaded(photos: List<Photo>)
+  fun onPhotoDeleted(photo: Photo)
+  fun onPhotoRestored(photo: Photo)
+  fun onTrashCleared()
+}
+
 class TrashFragment :
-  BaseFragment<TrashContract.View, TrashContract.Presenter>(),
-  TrashContract.View, DialogListener {
+  BaseFragment<TrashView, TrashPresenter>(),
+  TrashView, DialogListener {
 
   //RecyclerView
   private var recyclerView: RecyclerView? = null

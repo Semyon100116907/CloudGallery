@@ -2,10 +2,10 @@ package com.semisonfire.cloudgallery.ui.photo
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.RemoteRepository
-import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
@@ -13,12 +13,18 @@ import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Flowable
 import io.reactivex.Single
 import java.net.URL
-import javax.inject.Inject
 
-@ActivityScope
-class PhotoDetailPresenter @Inject constructor(private val remoteRepository: RemoteRepository) :
-  BasePresenter<PhotoDetailContract.View>(),
-  PhotoDetailContract.Presenter {
+interface PhotoDetailPresenter : MvpPresenter<PhotoDetailView> {
+
+  fun download(photo: Photo)
+  fun delete(photo: Photo, from: Int)
+  fun restore(photo: Photo)
+  fun createShareFile(bitmap: Bitmap)
+}
+
+class PhotoDetailPresenterImpl(
+  private val remoteRepository: RemoteRepository
+) : BasePresenter<PhotoDetailView>(), PhotoDetailPresenter {
 
   override fun download(photo: Photo) {
     compositeDisposable.add(

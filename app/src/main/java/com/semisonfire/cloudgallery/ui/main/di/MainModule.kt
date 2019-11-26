@@ -7,8 +7,8 @@ import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.core.di.module.ActivityModule
 import com.semisonfire.cloudgallery.data.remote.auth.AuthRepository
 import com.semisonfire.cloudgallery.ui.main.MainActivity
-import com.semisonfire.cloudgallery.ui.main.MainContract
 import com.semisonfire.cloudgallery.ui.main.MainPresenter
+import com.semisonfire.cloudgallery.ui.main.MainPresenterImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -25,8 +25,8 @@ class MainModule {
 
   @Provides
   @ActivityScope
-  fun provideMainPresenter(authRepository: AuthRepository): MainContract.Presenter {
-    return MainPresenter(authRepository)
+  fun provideMainPresenter(authRepository: AuthRepository): MainPresenter {
+    return MainPresenterImpl(authRepository)
   }
 
   @Provides

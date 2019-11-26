@@ -1,13 +1,20 @@
 package com.semisonfire.cloudgallery.ui.main
 
+import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.remote.auth.Auth
 import com.semisonfire.cloudgallery.data.remote.auth.AuthRepository
 import io.reactivex.Observable
 
-class MainPresenter(
+interface MainPresenter : MvpPresenter<MainView> {
+  fun saveToken(token: String)
+  fun getTokenListener(): Observable<Auth.AuthModel>
+}
+
+class MainPresenterImpl(
   private val authRepository: AuthRepository
-) : BasePresenter<MainContract.View>(), MainContract.Presenter {
+) : BasePresenter<MainView>(),
+  MainPresenter {
 
   override fun saveToken(token: String) {
     authRepository.saveToken(token)

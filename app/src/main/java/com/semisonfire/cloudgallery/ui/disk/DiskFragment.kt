@@ -17,14 +17,11 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.*
-import android.widget.TextView
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseFragment
-import com.semisonfire.cloudgallery.core.ui.state.State
-import com.semisonfire.cloudgallery.core.ui.state.StateViewDelegate
-import com.semisonfire.cloudgallery.core.ui.state.strategy.EnterActionStrategy
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
@@ -35,7 +32,16 @@ import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.utils.*
 import java.util.*
 
-class DiskFragment : BaseFragment<DiskContract.View, DiskContract.Presenter>(), DiskContract.View,
+interface DiskView : MvpView {
+
+  fun onPhotosLoaded(photos: List<Photo>)
+  fun onUploadingPhotos(photos: List<Photo>)
+  fun onPhotoUploaded(photo: Photo, uploaded: Boolean)
+  fun onPhotoDownloaded(path: String)
+  fun onPhotoDeleted(photo: Photo)
+}
+
+class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
   BottomDialogListener {
 
   //RecyclerView

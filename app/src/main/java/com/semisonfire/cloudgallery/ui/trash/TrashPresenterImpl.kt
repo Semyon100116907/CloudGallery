@@ -1,5 +1,6 @@
 package com.semisonfire.cloudgallery.ui.trash
 
+import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.RemoteRepository
@@ -10,8 +11,16 @@ import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Flowable
 import java.util.*
 
-class TrashPresenter(private val remoteRepository: RemoteRepository) :
-  BasePresenter<TrashContract.View>(), TrashContract.Presenter {
+interface TrashPresenter : MvpPresenter<TrashView> {
+
+  fun getPhotos(page: Int)
+  fun restorePhotos(photos: List<Photo>)
+  fun deletePhotos(photos: List<Photo>)
+  fun clear()
+}
+
+class TrashPresenterImpl(private val remoteRepository: RemoteRepository) :
+  BasePresenter<TrashView>(), TrashPresenter {
 
   override fun getPhotos(page: Int) {
     compositeDisposable.add(

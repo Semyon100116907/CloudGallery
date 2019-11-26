@@ -1,6 +1,7 @@
 package com.semisonfire.cloudgallery.ui.disk
 
 import android.graphics.BitmapFactory
+import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.data.local.LocalRepository
 import com.semisonfire.cloudgallery.data.model.Photo
@@ -15,13 +16,23 @@ import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-
 const val LIMIT = 15
 
-class DiskPresenter(
+interface DiskPresenter : MvpPresenter<DiskView> {
+
+  fun getPhotos(offset: Int)
+  fun uploadPhotos(photos: List<Photo>)
+  fun uploadPhoto(photo: Photo)
+  fun getUploadingPhotos()
+  fun downloadPhotos(photos: List<Photo>)
+  fun deletePhotos(photos: List<Photo>)
+}
+
+class DiskPresenterImpl(
   private val remoteRepository: RemoteRepository,
   private val localRepository: LocalRepository
-) : BasePresenter<DiskContract.View>(), DiskContract.Presenter {
+) : BasePresenter<DiskView>(),
+  DiskPresenter {
 
   //Upload
   private val uploadSubject = PublishSubject.create<Photo>()

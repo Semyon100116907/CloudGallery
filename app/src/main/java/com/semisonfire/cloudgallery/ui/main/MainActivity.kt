@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.di.module.data.remote.OAUTH_URL
+import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
 import com.semisonfire.cloudgallery.core.ui.state.State
 import com.semisonfire.cloudgallery.core.ui.state.StateViewDelegate
@@ -23,7 +24,6 @@ import com.semisonfire.cloudgallery.utils.printThrowable
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 
-
 enum class MainStateView {
   AUTH,
   LOADER,
@@ -31,7 +31,9 @@ enum class MainStateView {
   EMPTY
 }
 
-class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), MainContract.View {
+interface MainView : MvpView
+
+class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
 
   private var toolbar: Toolbar? = null
   private var bottomNavigationView: BottomNavigationView? = null
@@ -44,7 +46,7 @@ class MainActivity : BaseActivity<MainContract.View, MainContract.Presenter>(), 
       login()
     }
 
-    val currentScreenKey: String = if (savedInstanceState != null) {
+    val currentScreenKey = if (savedInstanceState != null) {
       savedInstanceState.getString(STATE_CURRENT_SCREEN) ?: ""
     } else {
       DISK_KEY
