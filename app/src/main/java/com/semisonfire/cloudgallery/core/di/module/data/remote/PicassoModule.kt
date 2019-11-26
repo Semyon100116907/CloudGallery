@@ -2,9 +2,9 @@ package com.semisonfire.cloudgallery.core.di.module.data.remote
 
 import android.content.Context
 import com.semisonfire.cloudgallery.BuildConfig
-import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
+import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
 import com.semisonfire.cloudgallery.core.di.AppContext
-import com.semisonfire.cloudgallery.data.remote.interceptors.AuthInterceptor
+import com.semisonfire.cloudgallery.core.data.remote.interceptors.AuthInterceptor
 import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
 import dagger.Module

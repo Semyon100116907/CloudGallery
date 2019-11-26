@@ -21,7 +21,7 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment

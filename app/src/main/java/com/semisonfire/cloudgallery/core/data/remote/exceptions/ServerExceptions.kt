@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.data.remote.exceptions
+package com.semisonfire.cloudgallery.core.data.remote.exceptions
 
 import java.io.IOException
 

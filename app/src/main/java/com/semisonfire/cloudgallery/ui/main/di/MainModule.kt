@@ -5,7 +5,7 @@ import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
 import com.semisonfire.cloudgallery.core.ui.navigation.NavigatorImpl
 import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.core.di.module.ActivityModule
-import com.semisonfire.cloudgallery.data.remote.auth.AuthRepository
+import com.semisonfire.cloudgallery.core.data.remote.auth.AuthRepository
 import com.semisonfire.cloudgallery.ui.main.MainActivity
 import com.semisonfire.cloudgallery.ui.main.MainPresenter
 import com.semisonfire.cloudgallery.ui.main.MainPresenterImpl

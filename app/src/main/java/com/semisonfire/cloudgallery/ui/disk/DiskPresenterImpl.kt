@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.ui.disk
 import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadRepository
 import com.semisonfire.cloudgallery.utils.FileUtils

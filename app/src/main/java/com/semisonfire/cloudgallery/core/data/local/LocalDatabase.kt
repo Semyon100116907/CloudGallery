@@ -1,12 +1,10 @@
-package com.semisonfire.cloudgallery.data.local
+package com.semisonfire.cloudgallery.core.data.local
 
 import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
-import android.content.Context
 
-import com.semisonfire.cloudgallery.data.local.dao.PhotoDao
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.local.dao.PhotoDao
+import com.semisonfire.cloudgallery.core.data.model.Photo
 
 @Database(
   entities = [

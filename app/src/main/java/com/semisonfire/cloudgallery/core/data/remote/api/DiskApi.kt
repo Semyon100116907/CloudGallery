@@ -1,10 +1,9 @@
-package com.semisonfire.cloudgallery.data.remote.api
+package com.semisonfire.cloudgallery.core.data.remote.api
 
 import com.semisonfire.cloudgallery.ui.disk.model.DiskResponse
 import com.semisonfire.cloudgallery.ui.disk.model.Link
 import com.semisonfire.cloudgallery.ui.trash.model.Trash
 import io.reactivex.Completable
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
 import okhttp3.MultipartBody

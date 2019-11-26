@@ -1,7 +1,7 @@
 package com.semisonfire.cloudgallery.ui.trash.data
 
-import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single

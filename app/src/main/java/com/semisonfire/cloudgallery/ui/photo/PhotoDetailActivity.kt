@@ -19,7 +19,7 @@ import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.setMenuIconsColor

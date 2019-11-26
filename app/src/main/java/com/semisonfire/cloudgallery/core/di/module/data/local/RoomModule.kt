@@ -2,7 +2,7 @@ package com.semisonfire.cloudgallery.core.di.module.data.local
 
 import android.arch.persistence.room.Room
 import android.content.Context
-import com.semisonfire.cloudgallery.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.core.di.AppContext
 import dagger.Module
 import dagger.Provides

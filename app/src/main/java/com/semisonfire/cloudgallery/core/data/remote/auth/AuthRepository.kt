@@ -1,6 +1,6 @@
-package com.semisonfire.cloudgallery.data.remote.auth
+package com.semisonfire.cloudgallery.core.data.remote.auth
 
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences
+import com.semisonfire.cloudgallery.core.data.local.prefs.DiskPreferences
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import javax.inject.Inject

@@ -13,7 +13,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.ProgressBar
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Picasso.LoadedFrom
 import com.squareup.picasso.Target

@@ -1,9 +1,9 @@
 package com.semisonfire.cloudgallery.ui.disk.data
 
-import com.semisonfire.cloudgallery.data.local.LocalDatabase
-import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
+import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.core.data.remote.exceptions.InternetUnavailableException
 import com.semisonfire.cloudgallery.ui.disk.model.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
 import io.reactivex.Observable

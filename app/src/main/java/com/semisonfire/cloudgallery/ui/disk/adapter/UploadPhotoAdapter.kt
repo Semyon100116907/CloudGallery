@@ -6,7 +6,7 @@ import android.widget.ImageView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil
 import com.semisonfire.cloudgallery.utils.dimen
 import com.squareup.picasso.Picasso

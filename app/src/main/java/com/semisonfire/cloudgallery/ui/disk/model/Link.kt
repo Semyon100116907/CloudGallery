@@ -2,7 +2,7 @@ package com.semisonfire.cloudgallery.ui.disk.model
 
 import android.arch.persistence.room.Ignore
 import com.google.gson.annotations.SerializedName
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.core.data.model.Photo
 
 class Link {
   @SerializedName("href")

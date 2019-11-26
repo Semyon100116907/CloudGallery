@@ -2,7 +2,7 @@ package com.semisonfire.cloudgallery.core.di.module.data.remote
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.semisonfire.cloudgallery.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient

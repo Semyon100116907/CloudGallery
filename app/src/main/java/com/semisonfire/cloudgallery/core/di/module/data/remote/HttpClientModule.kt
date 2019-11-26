@@ -3,9 +3,9 @@ package com.semisonfire.cloudgallery.core.di.module.data.remote
 import android.content.Context
 import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.BuildConfig
-import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
+import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
 import com.semisonfire.cloudgallery.core.di.AppContext
-import com.semisonfire.cloudgallery.data.remote.interceptors.AuthInterceptor
+import com.semisonfire.cloudgallery.core.data.remote.interceptors.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
