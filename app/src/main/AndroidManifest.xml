@@ -38,8 +38,6 @@
             android:name=".ui.photo.PhotoDetailActivity"
             android:theme="@style/Custom.FullScreen"/>
 
-        <activity android:name=".ui.about.AboutActivity" />
-
         <provider
             android:name=".utils.ExternalFileProvider"
             android:authorities="${applicationId}.provider"

@@ -53,4 +53,16 @@
     <string name="action_delete_all">Delete all</string>
     <string name="action_restore_all">Restore all</string>
     <string name="msg_internet_disable">Could not load new data</string>
+
+    <!--Permissions-->
+    <string name="text_request_rights">Request rights</string>
+    <string name="text_memory_rights_description">Allow access to device memory to be able to </string>
+    <string name="text_memory_rights_settings_description">Enable access to device memory in settings to be able to </string>
+    <string name="text_camera_rights_description">Allow access to device camera to be able to </string>
+    <string name="text_camera_rights_settings_description">Enable access to device camera in settings to be able to </string>
+
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_photo">Take photo</string>
+
 </resources>
