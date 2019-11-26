@@ -22,7 +22,7 @@ interface MainView : MvpView
 class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
 
   @Inject
-  private lateinit var stateViewController: StateViewController
+  lateinit var stateViewController: StateViewController
 
   private var toolbar: Toolbar? = null
   private var bottomNavigationView: BottomNavigationView? = null

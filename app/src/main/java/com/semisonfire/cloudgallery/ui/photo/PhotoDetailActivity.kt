@@ -34,9 +34,8 @@ interface PhotoDetailView : MvpView {
 }
 
 class PhotoDetailActivity :
-  BaseActivity<PhotoDetailView, PhotoDetailPresenterImpl>(),
+  BaseActivity<PhotoDetailView, PhotoDetailPresenter>(),
   PhotoDetailView {
-
 
   private val adapter = PhotoDetailAdapter()
   private var photoList = mutableListOf<Photo>()

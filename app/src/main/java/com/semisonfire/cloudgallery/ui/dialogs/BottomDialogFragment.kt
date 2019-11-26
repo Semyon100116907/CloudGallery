@@ -30,7 +30,7 @@ class BottomDialogFragment : BaseDialogFragment() {
 
   private fun bind(sheetView: View) {
     val clickListener = View.OnClickListener {
-      dialogListener?.onItemClick(dialog, it)
+//      dialogListener?.onItemClick(dialog, it)
     }
 
     val camera = sheetView.findViewById<ViewGroup>(R.id.container_camera)
