@@ -86,7 +86,6 @@ class TrashFragment :
       floatingActionButton = activity.findViewById(R.id.btn_add_new)
       swipeRefreshLayout = activity.findViewById(R.id.swipe_refresh)
     }
-    // setScrollView(recyclerView);
     floatingActionButton?.hide()
 
     photoAdapter.setPhotoListener(object : OnPhotoListener {
@@ -143,7 +142,7 @@ class TrashFragment :
   private fun updateDataSet() {
     trashPhotoList.clear()
     photoAdapter.updateDataSet(trashPhotoList)
-    //        mTrashPresenter.getPhotos(mCurrentPage);
+    presenter.getPhotos(0)
   }
 
   private fun showEmpty() {
@@ -279,10 +278,7 @@ class TrashFragment :
   ) {
     super.onActivityResult(requestCode, resultCode, data)
     if (resultCode == Activity.RESULT_OK && requestCode == PhotoDetailActivity.DETAIL_REQUEST) {
-      val isDataChanged = data.getBooleanExtra(
-        PhotoDetailActivity.EXTRA_CHANGED,
-        false
-      )
+      val isDataChanged = data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
       if (isDataChanged) {
         updateDataSet()
       }
@@ -292,9 +288,9 @@ class TrashFragment :
   private fun showDialog(title: String, message: String, color: Int) {
     val activity = activity as AppCompatActivity?
     if (activity != null) {
-      val mAlertDialog = AlertDialogFragment.newInstance(title, message, color)
-      mAlertDialog.setTargetFragment(this, 0)
-      mAlertDialog.show(activity.supportFragmentManager, "alert")
+      val alertDialog = AlertDialogFragment.newInstance(title, message, color)
+      alertDialog.setTargetFragment(this, 0)
+      alertDialog.show(activity.supportFragmentManager, "alert")
     }
   }
 
@@ -305,12 +301,6 @@ class TrashFragment :
 
   override fun onNegativeClick(dialogInterface: DialogInterface) {
     dialogInterface.cancel()
-  }
-
-  override fun onItemClick(
-    dialogInterface: DialogInterface,
-    view: View
-  ) {
   }
 
   override fun onDestroyView() {
