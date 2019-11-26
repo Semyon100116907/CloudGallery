@@ -99,9 +99,14 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
   public override fun bind(view: View) {
     super.bind(view)
     activity?.let {
+      if (it is AppCompatActivity) {
+        it.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
+      }
       floatingActionButton = it.findViewById(R.id.btn_add_new)
       swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
     }
+    setHasOptionsMenu(true)
+
     recyclerView = view.findViewById(R.id.rv_disk)
     presenter.getUploadingPhotos()
 
@@ -138,17 +143,17 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
         }
       }
     })
-    val layoutManager = LinearLayoutManager(context)
-
-    recyclerView?.adapter = diskAdapter
-    recyclerView?.layoutManager = layoutManager
-    val mItemDecorator = ItemDecorator(
-      resources
-        .getDimensionPixelOffset(R.dimen.disk_linear_space)
-    )
-    recyclerView?.addItemDecoration(mItemDecorator)
-
     diskAdapter.setPhotos(photoList)
+
+    val layoutManager = LinearLayoutManager(context)
+    recyclerView?.layoutManager = layoutManager
+    recyclerView?.adapter = diskAdapter
+
+    context?.let {
+      val decorator = ItemDecorator(it.dimen(R.dimen.disk_linear_space))
+      recyclerView?.addItemDecoration(decorator)
+    }
+
 
     swipeRefreshLayout?.setOnRefreshListener {
       presenter.getPhotos(0)
@@ -157,11 +162,11 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     }
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-    super.onCreateOptionsMenu(menu, inflater)
+  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    inflater.inflate(R.menu.menu_fragment, menu)
     this.menu = menu
+
     setEnabledSelection(isSelectable)
-    updateToolbarTitle(selectedPhotos.size.toString())
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -245,6 +250,8 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     if (!enabled) {
       selectedPhotos.clear()
       updateToolbarTitle(getString(R.string.msg_disk))
+    } else {
+      updateToolbarTitle(selectedPhotos.size.toString())
     }
   }
 

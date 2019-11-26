@@ -81,12 +81,17 @@ class TrashFragment :
 
   public override fun bind(view: View) {
     super.bind(view)
-    val activity = activity
-    if (activity != null) {
-      floatingActionButton = activity.findViewById(R.id.btn_add_new)
-      swipeRefreshLayout = activity.findViewById(R.id.swipe_refresh)
+
+    activity?.let {
+      if (it is AppCompatActivity) {
+        it.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
+      }
+
+      floatingActionButton = it.findViewById(R.id.btn_add_new)
+      swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
     }
     floatingActionButton?.hide()
+    setHasOptionsMenu(true)
 
     photoAdapter.setPhotoListener(object : OnPhotoListener {
       override fun onPhotoClick(photos: List<Photo>, position: Int) {
@@ -119,7 +124,6 @@ class TrashFragment :
       }
     })
     photoAdapter.updateDataSet(trashPhotoList)
-    //RecyclerView
 
     val recyclerView = view.findViewById<RecyclerView>(R.id.rv_trash)
     recyclerView.adapter = photoAdapter
@@ -157,12 +161,14 @@ class TrashFragment :
     menu: Menu,
     inflater: MenuInflater
   ) {
-    super.onCreateOptionsMenu(menu, inflater)
-    menu.findItem(R.id.menu_restore_all).isVisible = true
-    menu.findItem(R.id.menu_delete_all).isVisible = true
+    inflater.inflate(R.menu.menu_fragment, menu)
+
+    menu.apply {
+      findItem(R.id.menu_restore_all).isVisible = true
+      findItem(R.id.menu_delete_all).isVisible = true
+    }
+
     setEnabledSelection(isSelectable)
-    photoAdapter.setSelection(isSelectable)
-    updateToolbarTitle(selectedPhotos.size.toString())
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -210,6 +216,8 @@ class TrashFragment :
     if (!enabled) {
       selectedPhotos.clear()
       updateToolbarTitle(getString(R.string.msg_trash))
+    } else {
+      updateToolbarTitle(selectedPhotos.size.toString())
     }
   }
 
