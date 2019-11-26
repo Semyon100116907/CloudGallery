@@ -60,7 +60,7 @@ public class FileUtils {
 
         String newName = name;
         if (counter != 0) {
-            newName = name + "(" + String.valueOf(counter) + ")";
+            newName = name + "(" + counter + ")";
         }
 
         File file = new File(directory, newName + extension);

@@ -21,7 +21,6 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.core.ui.BaseFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
@@ -29,6 +28,7 @@ import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.base.BottomDialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
+import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.utils.*
 import java.util.*
 
@@ -41,27 +41,31 @@ interface DiskView : MvpView {
   fun onPhotoDeleted(photo: Photo)
 }
 
-class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
-  BottomDialogListener {
+class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView, BottomDialogListener {
 
   //RecyclerView
   private var recyclerView: RecyclerView? = null
   private val diskAdapter: DiskAdapter = DiskAdapter()
   private val photoList: MutableList<Photo> = mutableListOf()
 
-  private var menu: Menu? = null
-
   //Uploading
   private val uploadingList: MutableList<Photo> = mutableListOf()
 
   //Camera/gallery request
   private var cameraFileUri: Uri? = null
-  private var isSelectable: Boolean = false
 
   private val selectedPhotos = mutableListOf<Photo>()
 
   private var floatingActionButton: FloatingActionButton? = null
   private var swipeRefreshLayout: SwipeRefreshLayout? = null
+
+  override fun layout(): Int {
+    return R.layout.fragment_disk
+  }
+
+  override fun menuRes(): Int {
+    return R.menu.menu_fragment
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -70,9 +74,6 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
   ): View? {
     if (savedInstanceState != null) {
       cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
-      isSelectable = savedInstanceState.getBoolean(STATE_SELECTABLE)
-
-      setSelectableItems()
     }
     return super.onCreateView(inflater, container, savedInstanceState)
   }
@@ -82,30 +83,17 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     presenter.getPhotos(0)
   }
 
-  private fun setSelectableItems() {
-    for (photo in photoList) {
-      if (photo.isSelected) {
-        selectedPhotos.add(photo)
-      }
-    }
-  }
-
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     outState.putParcelable(STATE_FILE_URI, cameraFileUri)
-    outState.putBoolean(STATE_SELECTABLE, isSelectable)
   }
 
   public override fun bind(view: View) {
     super.bind(view)
     activity?.let {
-      if (it is AppCompatActivity) {
-        it.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-      }
       floatingActionButton = it.findViewById(R.id.btn_add_new)
       swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
     }
-    setHasOptionsMenu(true)
 
     recyclerView = view.findViewById(R.id.rv_disk)
     presenter.getUploadingPhotos()
@@ -162,13 +150,6 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     }
   }
 
-  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-    inflater.inflate(R.menu.menu_fragment, menu)
-    this.menu = menu
-
-    setEnabledSelection(isSelectable)
-  }
-
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       android.R.id.home -> setEnabledSelection(false)
@@ -217,32 +198,15 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     return super.onOptionsItemSelected(item)
   }
 
-  fun setEnabledSelection(enabled: Boolean) {
-    SelectableHelper.setMultipleSelection(enabled)
-
-    val secondaryColorRes = if (enabled) R.color.white else R.color.black
-    val secondaryColor = context?.color(secondaryColorRes) ?: Color.WHITE
-
-    activity?.let {
-      if (it is AppCompatActivity) {
-        it.supportActionBar?.setDisplayHomeAsUpEnabled(enabled)
-        it.supportActionBar?.setBackgroundDrawable(it.colorResDrawable(if (enabled) R.color.colorAccent else R.color.white))
-
-        it.findViewById<Toolbar>(R.id.toolbar).setTitleTextColor(secondaryColor)
-      }
-    }
-
+  override fun setEnabledSelection(enabled: Boolean) {
+    super.setEnabledSelection(enabled)
     menu?.let {
-      setMenuIconsColor(it, secondaryColor)
       it.findItem(R.id.menu_delete)?.isVisible = enabled
       it.findItem(R.id.menu_download)?.isVisible = enabled
     }
-
-    swipeRefreshLayout?.isEnabled = !enabled
-
-    isSelectable = enabled
     diskAdapter.setSelection(enabled)
 
+    swipeRefreshLayout?.isEnabled = !enabled
     floatingActionButton?.apply {
       if (enabled) hide() else show()
     }
@@ -507,21 +471,10 @@ class DiskFragment : BaseFragment<DiskView, DiskPresenter>(), DiskView,
     )
   }
 
-  override fun onDestroyView() {
-    super.onDestroyView()
-    recyclerView?.adapter = null
-    recyclerView = null
-  }
-
-  override fun layout(): Int {
-    return R.layout.fragment_disk
-  }
-
   companion object {
 
     //Saved state constants
     private const val STATE_FILE_URI = "STATE_FILE_URI"
-    private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
     //Requests types
     private const val GALLERY_IMAGE_REQUEST = 1999

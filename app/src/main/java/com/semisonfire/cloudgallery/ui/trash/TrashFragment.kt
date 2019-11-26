@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Bundle
 import android.os.Parcelable
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
@@ -13,10 +12,12 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
-import com.semisonfire.cloudgallery.core.ui.BaseFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
@@ -25,6 +26,7 @@ import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.base.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
+import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.utils.color
 import com.semisonfire.cloudgallery.utils.colorResDrawable
 import com.semisonfire.cloudgallery.utils.longToast
@@ -39,12 +41,8 @@ interface TrashView : MvpView {
   fun onTrashCleared()
 }
 
-class TrashFragment :
-  BaseFragment<TrashView, TrashPresenter>(),
-  TrashView, DialogListener {
+class TrashFragment : SelectableFragment<TrashView, TrashPresenter>(), TrashView, DialogListener {
 
-  //RecyclerView
-  private var recyclerView: RecyclerView? = null
   private val photoAdapter = PhotoAdapter()
 
   private val trashPhotoList: MutableList<Photo> = mutableListOf()
@@ -52,46 +50,23 @@ class TrashFragment :
 
   private var floatingActionButton: FloatingActionButton? = null
   private var swipeRefreshLayout: SwipeRefreshLayout? = null
-  private var isSelectable = false
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?
-  ): View? {
-    if (savedInstanceState != null) {
-      isSelectable = savedInstanceState.getBoolean(STATE_SELECTABLE)
-      setSelectableItems()
-    }
-    return super.onCreateView(inflater, container, savedInstanceState)
+  override fun layout(): Int {
+    return R.layout.fragment_trash
   }
 
-  private fun setSelectableItems() {
-    for (photo in trashPhotoList) {
-      if (photo.isSelected) {
-        selectedPhotos.add(photo)
-      }
-    }
-  }
-
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.putBoolean(STATE_SELECTABLE, isSelectable)
+  override fun menuRes(): Int {
+    return R.menu.menu_fragment
   }
 
   public override fun bind(view: View) {
     super.bind(view)
 
     activity?.let {
-      if (it is AppCompatActivity) {
-        it.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-      }
-
       floatingActionButton = it.findViewById(R.id.btn_add_new)
       swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
     }
     floatingActionButton?.hide()
-    setHasOptionsMenu(true)
 
     photoAdapter.setPhotoListener(object : OnPhotoListener {
       override fun onPhotoClick(photos: List<Photo>, position: Int) {
@@ -161,73 +136,52 @@ class TrashFragment :
     menu: Menu,
     inflater: MenuInflater
   ) {
-    inflater.inflate(R.menu.menu_fragment, menu)
+    super.onCreateOptionsMenu(menu, inflater)
 
     menu.apply {
       findItem(R.id.menu_restore_all).isVisible = true
       findItem(R.id.menu_delete_all).isVisible = true
     }
-
-    setEnabledSelection(isSelectable)
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
       android.R.id.home -> setEnabledSelection(false)
-      R.id.menu_restore_all -> if (isSelectable && selectedPhotos.size != trashPhotoList.size) {
-        presenter.restorePhotos(selectedPhotos)
-      } else {
-        presenter.restorePhotos(trashPhotoList)
+      R.id.menu_restore_all -> {
+        if (isSelectable && selectedPhotos.size != trashPhotoList.size) {
+          presenter.restorePhotos(selectedPhotos)
+        } else {
+          presenter.restorePhotos(trashPhotoList)
+        }
       }
-      R.id.menu_delete_all -> if (isSelectable && selectedPhotos.size != trashPhotoList.size) {
-        presenter.deletePhotos(selectedPhotos)
-      } else {
-        if (trashPhotoList.isNotEmpty() || selectedPhotos.isNotEmpty()) {
-          showDialog(
-            getString(R.string.msg_clear_trash),
-            getString(R.string.msg_clear_trash_description),
-            context?.color(R.color.colorAccent) ?: Color.BLUE
-          )
+      R.id.menu_delete_all -> {
+        if (isSelectable && selectedPhotos.size != trashPhotoList.size) {
+          presenter.deletePhotos(selectedPhotos)
+        } else {
+          if (trashPhotoList.isNotEmpty() || selectedPhotos.isNotEmpty()) {
+            showDialog(
+              getString(R.string.msg_clear_trash),
+              getString(R.string.msg_clear_trash_description),
+              context?.color(R.color.colorAccent) ?: Color.BLUE
+            )
+          }
         }
       }
     }
     return super.onOptionsItemSelected(item)
   }
 
-  private fun setEnabledSelection(enabled: Boolean) {
-    SelectableHelper.setMultipleSelection(enabled)
-
-    val secondaryColorRes = if (enabled) R.color.white else R.color.black
-    val secondaryColor = context?.color(secondaryColorRes) ?: Color.WHITE
-
-    activity?.let {
-      if (it is AppCompatActivity) {
-        it.supportActionBar?.setDisplayHomeAsUpEnabled(enabled)
-        it.supportActionBar?.setBackgroundDrawable(it.colorResDrawable(if (enabled) R.color.colorAccent else R.color.white))
-
-        it.findViewById<Toolbar>(R.id.toolbar).setTitleTextColor(secondaryColor)
-      }
-    }
+  override fun setEnabledSelection(enabled: Boolean) {
+    super.setEnabledSelection(enabled)
 
     swipeRefreshLayout?.isEnabled = !enabled
 
-    isSelectable = enabled
     photoAdapter.setSelection(enabled)
     if (!enabled) {
       selectedPhotos.clear()
       updateToolbarTitle(getString(R.string.msg_trash))
     } else {
       updateToolbarTitle(selectedPhotos.size.toString())
-    }
-  }
-
-  fun onInternetUnavailable() {
-    if (trashPhotoList.isEmpty()) {
-//      getStateView().showEmptyView(
-//        R.drawable.ic_delete,
-//        getString(R.string.msg_yandex_failed_retrieve),
-//        getString(R.string.action_yandex_check_connection)
-//      )
     }
   }
 
@@ -309,20 +263,5 @@ class TrashFragment :
 
   override fun onNegativeClick(dialogInterface: DialogInterface) {
     dialogInterface.cancel()
-  }
-
-  override fun onDestroyView() {
-    super.onDestroyView()
-    recyclerView?.adapter = null
-    recyclerView = null
-  }
-
-  override fun layout(): Int {
-    return R.layout.fragment_trash
-  }
-
-  companion object {
-    //State
-    private const val STATE_SELECTABLE = "STATE_SELECTABLE"
   }
 }
