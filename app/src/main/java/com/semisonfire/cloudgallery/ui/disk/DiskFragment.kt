@@ -18,15 +18,16 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
+import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.utils.FileUtils
@@ -35,16 +36,17 @@ import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 
-interface DiskView : MvpView {
+interface DiskView : MvpView<DiskViewModel> {
 
   fun onPhotosLoaded(photos: List<Photo>)
   fun onUploadingPhotos(photos: List<Photo>)
   fun onPhotoUploaded(photo: Photo, uploaded: Boolean)
   fun onPhotoDownloaded(path: String)
   fun onPhotoDeleted(photo: Photo)
+  fun loadMoreComplete(it: List<Photo>)
 }
 
-class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView {
+class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(), DiskView {
 
   //RecyclerView
   private var recyclerView: RecyclerView? = null
@@ -83,7 +85,7 @@ class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView {
 
   override fun onResume() {
     super.onResume()
-    presenter.getPhotos(0)
+    presenter.getPhotos()
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -102,7 +104,7 @@ class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView {
     presenter.getUploadingPhotos()
 
     floatingActionButton?.show()
-    floatingActionButton?.setOnClickListener { setBottomDialog() }
+    floatingActionButton?.setOnClickListener { showBottomDialog() }
 
     diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
       override fun onPhotoClick(photos: List<Photo>, position: Int) {
@@ -147,7 +149,7 @@ class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView {
 
 
     swipeRefreshLayout?.setOnRefreshListener {
-      presenter.getPhotos(0)
+      presenter.getPhotos()
       swipeRefreshLayout?.isRefreshing = true
       updateDataSet()
     }
@@ -362,7 +364,11 @@ class DiskFragment : SelectableFragment<DiskView, DiskPresenter>(), DiskView {
     }
   }
 
-  private fun setBottomDialog() {
+  override fun loadMoreComplete(it: List<Photo>) {
+
+  }
+
+  private fun showBottomDialog() {
     val activity = activity as AppCompatActivity?
     if (activity != null) {
       val bottomDialog = BottomDialogFragment()

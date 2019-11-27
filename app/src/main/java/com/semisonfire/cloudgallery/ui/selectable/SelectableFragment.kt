@@ -12,6 +12,7 @@ import android.view.View
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
+import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.ui.BaseFragment
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.utils.color
@@ -20,7 +21,7 @@ import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 
 private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
-abstract class SelectableFragment<V : MvpView, P : MvpPresenter<V>> : BaseFragment<V, P>() {
+abstract class SelectableFragment<M: MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>> : BaseFragment<M, V, P>() {
 
   protected var menu: Menu? = null
   protected var isSelectable = false

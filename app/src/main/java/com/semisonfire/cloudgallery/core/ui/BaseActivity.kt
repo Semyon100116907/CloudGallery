@@ -6,10 +6,9 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
+import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
-import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import com.semisonfire.cloudgallery.utils.printThrowable
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -18,8 +17,8 @@ import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
-  : AppCompatActivity(), MvpView, HasSupportFragmentInjector {
+abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>>
+  : AppCompatActivity(), MvpView<M>, HasSupportFragmentInjector {
 
   @Inject
   internal lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
@@ -53,6 +52,10 @@ abstract class BaseActivity<V : MvpView, P : MvpPresenter<V>>
   override fun onResume() {
     super.onResume()
     presenter.attachView(getMvpView())
+  }
+
+  override fun showContent(model: M) {
+
   }
 
   override fun onPause() {

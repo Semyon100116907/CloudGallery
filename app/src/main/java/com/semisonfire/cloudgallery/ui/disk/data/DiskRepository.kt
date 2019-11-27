@@ -2,7 +2,7 @@ package com.semisonfire.cloudgallery.ui.disk.data
 
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.ui.disk.model.Link
+import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import io.reactivex.Observable
 import io.reactivex.Single
 import okhttp3.MediaType
@@ -17,7 +17,7 @@ class DiskRepository @Inject constructor(
   private val diskApi: DiskApi
 ) {
 
-  fun getPhotos(limit: Int, page: Int): Single<List<Photo>> {
+  fun getPhotos(page: Int, limit: Int): Single<List<Photo>> {
     return diskApi.getDiskImages(limit, limit * (page - 1), "image", "XL", "-modified")
       .map { it.photos ?: emptyList() }
       .onErrorReturn { emptyList() }

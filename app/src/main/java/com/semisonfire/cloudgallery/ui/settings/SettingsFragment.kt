@@ -6,10 +6,11 @@ import android.view.View
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseFragment
+import com.semisonfire.cloudgallery.ui.settings.model.SettingsViewModel
 
-interface SettingsView : MvpView
+interface SettingsView : MvpView<SettingsViewModel>
 
-class SettingsFragment : BaseFragment<SettingsView, SettingsPresenter>() {
+class SettingsFragment : BaseFragment<SettingsViewModel, SettingsView, SettingsPresenter>() {
 
   override fun bind(view: View) {
     super.bind(view)

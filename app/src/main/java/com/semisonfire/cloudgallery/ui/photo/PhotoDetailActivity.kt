@@ -15,18 +15,19 @@ import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.ui.photo.model.PhotoDetailViewModel
 import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 
-interface PhotoDetailView : MvpView {
+interface PhotoDetailView : MvpView<PhotoDetailViewModel> {
 
   fun onPhotoDownloaded(path: String)
   fun onFilePrepared(uri: Uri)
@@ -34,7 +35,7 @@ interface PhotoDetailView : MvpView {
 }
 
 class PhotoDetailActivity :
-  BaseActivity<PhotoDetailView, PhotoDetailPresenter>(),
+  BaseActivity<PhotoDetailViewModel, PhotoDetailView, PhotoDetailPresenter>(),
   PhotoDetailView {
 
   private val adapter = PhotoDetailAdapter()

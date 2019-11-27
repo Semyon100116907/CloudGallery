@@ -1,10 +1,11 @@
 package com.semisonfire.cloudgallery.ui.trash
 
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
+import com.semisonfire.cloudgallery.ui.trash.model.TrashViewModel
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
@@ -20,7 +21,9 @@ interface TrashPresenter : MvpPresenter<TrashView> {
 
 class TrashPresenterImpl(
   private val trashRepository: TrashRepository
-) : BasePresenter<TrashView>(), TrashPresenter {
+) : BasePresenter<TrashViewModel, TrashView>(), TrashPresenter {
+
+  override val viewModel = TrashViewModel()
 
   override fun getPhotos(page: Int) {
     compositeDisposable.add(

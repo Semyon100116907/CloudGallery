@@ -2,10 +2,11 @@ package com.semisonfire.cloudgallery.ui.photo
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
+import com.semisonfire.cloudgallery.ui.photo.model.PhotoDetailViewModel
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
@@ -26,7 +27,9 @@ interface PhotoDetailPresenter : MvpPresenter<PhotoDetailView> {
 class PhotoDetailPresenterImpl(
   private val diskRepository: DiskRepository,
   private val trashRepository: TrashRepository
-) : BasePresenter<PhotoDetailView>(), PhotoDetailPresenter {
+) : BasePresenter<PhotoDetailViewModel, PhotoDetailView>(), PhotoDetailPresenter {
+
+  override val viewModel = PhotoDetailViewModel()
 
   override fun download(photo: Photo) {
     compositeDisposable.add(

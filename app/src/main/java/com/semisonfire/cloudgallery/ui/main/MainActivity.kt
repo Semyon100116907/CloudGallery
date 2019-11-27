@@ -7,6 +7,7 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
 import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
@@ -17,9 +18,9 @@ import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-interface MainView : MvpView
+interface MainView : MvpView<MainViewModel>
 
-class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
+class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView {
 
   @Inject
   lateinit var stateViewController: StateViewController

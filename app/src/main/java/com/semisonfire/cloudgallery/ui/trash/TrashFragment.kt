@@ -15,8 +15,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
@@ -24,12 +24,13 @@ import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
+import com.semisonfire.cloudgallery.ui.trash.model.TrashViewModel
 import com.semisonfire.cloudgallery.utils.color
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 
-interface TrashView : MvpView {
+interface TrashView : MvpView<TrashViewModel> {
 
   fun onTrashLoaded(photos: List<Photo>)
   fun onPhotoDeleted(photo: Photo)
@@ -37,7 +38,7 @@ interface TrashView : MvpView {
   fun onTrashCleared()
 }
 
-class TrashFragment : SelectableFragment<TrashView, TrashPresenter>(), TrashView {
+class TrashFragment : SelectableFragment<TrashViewModel, TrashView, TrashPresenter>(), TrashView {
 
   private val photoAdapter = PhotoAdapter()
 

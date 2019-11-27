@@ -1,23 +1,25 @@
 package com.semisonfire.cloudgallery.ui.disk
 
 import android.graphics.BitmapFactory
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadRepository
+import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Observable
 import java.net.URL
+import java.util.concurrent.atomic.AtomicInteger
 
 const val LIMIT = 15
 
 interface DiskPresenter : MvpPresenter<DiskView> {
 
-  fun getPhotos(offset: Int)
+  fun getPhotos()
   fun uploadPhotos(photos: List<Photo>)
   fun uploadPhoto(photo: Photo)
   fun getUploadingPhotos()
@@ -28,23 +30,60 @@ interface DiskPresenter : MvpPresenter<DiskView> {
 class DiskPresenterImpl(
   private val diskRepository: DiskRepository,
   private val uploadRepository: UploadRepository
-) : BasePresenter<DiskView>(), DiskPresenter {
+) : BasePresenter<DiskViewModel, DiskView>(), DiskPresenter {
+
+  override val viewModel = DiskViewModel()
+
+  private val currentPage = AtomicInteger(0)
 
   init {
-    createInformerSubject()
-    createUploadSubj()
+    compositeDisposable.add(
+      uploadRepository.uploadListener()
+        .subscribeOn(background())
+        .observeOn(foreground())
+        .subscribe(
+          { view?.onPhotoUploaded(it.photo, it.uploaded) },
+          { it.printThrowable() }
+        )
+    )
   }
 
-  override fun getPhotos(offset: Int) {
-    val result = diskRepository.getPhotos(LIMIT, offset)
-      .subscribeOn(background())
-      .observeOn(foreground())
-      .subscribe(
-        { view?.onPhotosLoaded(it) },
-        { it.printThrowable() }
-      )
+  override fun getPhotos() {
+    currentPage.set(0)
+    compositeDisposable.add(
+      diskRepository
+        .getPhotos(currentPage.get(), LIMIT)
+        .subscribeOn(background())
+        .observeOn(foreground())
+        .doOnSuccess { currentPage.getAndIncrement() }
+        .subscribe({
 
-    compositeDisposable.add(result)
+          viewModel.photoList.apply {
+            clear()
+            addAll(it)
+          }
+
+          view?.onPhotosLoaded(it)
+        }, {
+          it.printThrowable()
+        })
+    )
+  }
+
+  fun loadMorePhotos() {
+    compositeDisposable.add(
+      diskRepository
+        .getPhotos(currentPage.get(), LIMIT)
+        .subscribeOn(background())
+        .observeOn(foreground())
+        .doOnSuccess { currentPage.getAndIncrement() }
+        .subscribe({
+          viewModel.photoList.addAll(it)
+          view?.loadMoreComplete(it)
+        }, {
+          it.printThrowable()
+        })
+    )
   }
 
   override fun getUploadingPhotos() {
@@ -97,33 +136,5 @@ class DiskPresenterImpl(
 
   override fun uploadPhotos(photos: List<Photo>) {
     uploadRepository.uploadPhotos(*photos.toTypedArray())
-  }
-
-  /**
-   * Subject which inform android main thread about error
-   */
-  private fun createInformerSubject() {
-    compositeDisposable.add(
-      uploadRepository
-        .uploadFailListener()
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoUploaded(it, false) },
-          { it.printThrowable() }
-        )
-    )
-  }
-
-  private fun createUploadSubj() {
-    compositeDisposable.add(
-      uploadRepository
-        .uploadCompleteListener()
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoUploaded(it, true) },
-          { it.printThrowable() }
-        )
-    )
   }
 }

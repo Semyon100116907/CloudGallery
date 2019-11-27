@@ -9,17 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
+import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
-import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import com.semisonfire.cloudgallery.utils.printThrowable
 import dagger.android.support.AndroidSupportInjection
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
-  : Fragment(), MvpView {
+abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>>
+  : Fragment(), MvpView<M> {
 
   @Inject
   lateinit var permissionManager: PermissionManager
@@ -61,6 +60,10 @@ abstract class BaseFragment<V : MvpView, P : MvpPresenter<V>>
   override fun onResume() {
     super.onResume()
     presenter.attachView(getMvpView())
+  }
+
+  override fun showContent(model: M) {
+
   }
 
   override fun onPause() {

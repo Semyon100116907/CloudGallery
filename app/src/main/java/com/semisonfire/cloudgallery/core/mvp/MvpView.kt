@@ -1,3 +1,5 @@
 package com.semisonfire.cloudgallery.core.mvp
 
-interface MvpView
+interface MvpView<M : MvpViewModel> {
+  fun showContent(model: M)
+}

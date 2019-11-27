@@ -4,11 +4,11 @@ import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.core.data.remote.exceptions.InternetUnavailableException
-import com.semisonfire.cloudgallery.ui.disk.model.Link
+import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
+import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import retrofit2.HttpException
 import java.io.File
@@ -16,6 +16,11 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+
+sealed class UploadResult(open val photo: Photo, val uploaded: Boolean) {
+  data class Complete(override val photo: Photo) : UploadResult(photo, true)
+  data class Fail(override val photo: Photo) : UploadResult(photo, false)
+}
 
 @Singleton
 class UploadRepository @Inject constructor(
@@ -29,6 +34,9 @@ class UploadRepository @Inject constructor(
   private val uploadSubjectInformer = PublishSubject.create<Photo>()
   private val uploadingPhotosQueue: Queue<Photo> = LinkedList()
 
+  val uploadingPhotos: Single<List<Photo>>
+    get() = database.photoDao.uploadingPhotos
+
   fun uploadPhotos(vararg photos: Photo) {
     uploadingPhotosQueue.addAll(photos)
 
@@ -37,33 +45,37 @@ class UploadRepository @Inject constructor(
     }
   }
 
-  fun uploadCompleteListener() = uploadSubject.hide().switchMap { upload(it) }
-  fun uploadFailListener() = uploadSubjectInformer.hide()
+  fun uploadListener() =
+    Observable
+      .merge(
+        uploadCompleteListener().map { UploadResult.Complete(it) },
+        uploadFailListener().map { UploadResult.Fail(it) }
+      )
 
-  val uploadingPhotos: Single<List<Photo>>
-    get() = database.photoDao.uploadingPhotos
+  private fun uploadCompleteListener() = uploadSubject.hide().switchMap { uploadPhoto(it) }
+  private fun uploadFailListener() = uploadSubjectInformer.hide()
 
-  fun getUploadLink(photo: Photo): Observable<Link> {
+  private fun getUploadLink(photo: Photo): Observable<Link> {
     return diskApi.getUploadLink("disk:/" + photo.name, false)
       .doOnNext { it.photo = photo }
   }
 
-  fun uploadPhoto(photo: Photo): Observable<Photo> {
+  private fun uploadPhoto(photo: Photo): Observable<Photo> {
     return saveUploadingPhoto(photo)
       .flatMapObservable { upload(it) }
   }
 
-  fun saveUploadingPhoto(photo: Photo): Single<Photo> {
-    photo.isUploaded = false
+  private fun saveUploadingPhoto(photo: Photo): Single<Photo> {
     return Single
       .fromCallable {
+        photo.isUploaded = false
         photo.id = database.photoDao.insertPhoto(photo)
         photo
       }
-      .subscribeOn(Schedulers.io())
+      .subscribeOn(background())
   }
 
-  fun removeUploadingPhoto(photo: Photo): Single<Photo> {
+  private fun removeUploadingPhoto(photo: Photo): Single<Photo> {
     return Single.fromCallable {
       database.photoDao.deletePhoto(photo)
       photo
@@ -75,9 +87,6 @@ class UploadRepository @Inject constructor(
    */
   private fun upload(photo: Photo): Observable<Photo> {
     return Observable.just(photo)
-      .switchMapSingle {
-        Single.just(it).delay(1000, TimeUnit.MILLISECONDS)
-      }
       .flatMap { getUploadLink(it) }
       .flatMap { diskRepository.savePhoto(it.photo, it) }
       .retryWhen {
@@ -108,9 +117,10 @@ class UploadRepository @Inject constructor(
    * Rename duplicate file.
    */
   private fun rename(fullName: String): String {
-    val index = fullName.lastIndexOf('.')
-    val name = fullName.substring(0, index)
-    val extension = fullName.substring(index)
+    val split = fullName.split('.')
+    val name = split[0]
+    val extension = split[1]
+
     val first = name.indexOf("(") + 1
     val last = name.lastIndexOf(")")
 
