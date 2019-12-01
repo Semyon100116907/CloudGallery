@@ -22,11 +22,13 @@ import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
+import com.semisonfire.cloudgallery.core.ui.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
+import com.semisonfire.cloudgallery.ui.disk.adapter.items.ProgressItem
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
@@ -107,6 +109,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
     floatingActionButton?.show()
     floatingActionButton?.setOnClickListener { showBottomDialog() }
 
+    val progressItem = ProgressItem()
     diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
       override fun onPhotoClick(photos: List<Photo>, position: Int) {
         if (context != null) {
@@ -137,6 +140,17 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         }
       }
     })
+    diskAdapter.loadMoreListener = object : LoadMoreListener {
+      override fun noMoreLoad() {
+        diskAdapter.progressItem = progressItem
+      }
+
+      override fun onLoadMore() {
+        presenter.loadMorePhotos()
+      }
+    }
+    diskAdapter.progressItem = progressItem
+    diskAdapter.endlessScrollThreshold = 2
 
     val layoutManager = LinearLayoutManager(context)
     recyclerView?.layoutManager = layoutManager
@@ -358,7 +372,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
   }
 
   override fun loadMoreComplete(it: List<Photo>) {
-
+    diskAdapter.addPhotos(it)
   }
 
   private fun showBottomDialog() {

@@ -24,6 +24,7 @@ interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
   fun getUploadingPhotos()
   fun downloadPhotos(photos: List<Photo>)
   fun deletePhotos(photos: List<Photo>)
+  fun loadMorePhotos()
 }
 
 class DiskPresenterImpl(
@@ -70,14 +71,13 @@ class DiskPresenterImpl(
     )
   }
 
-  fun loadMorePhotos() {
+  override fun loadMorePhotos() {
     val currentPage = viewModel.currentPage
     compositeDisposable.add(
       diskRepository
-        .getPhotos(currentPage.get(), LIMIT)
+        .getPhotos(currentPage.incrementAndGet(), LIMIT)
         .subscribeOn(background())
         .observeOn(foreground())
-        .doOnSuccess { currentPage.getAndIncrement() }
         .subscribe({
           viewModel.photoList.addAll(it)
           view?.loadMoreComplete(it)

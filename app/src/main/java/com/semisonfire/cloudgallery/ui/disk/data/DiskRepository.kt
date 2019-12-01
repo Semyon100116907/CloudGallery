@@ -24,7 +24,7 @@ class DiskRepository @Inject constructor(
     return diskApi
       .getDiskImages(
         limit,
-        limit * (page - 1),
+        limit * page,
         IMAGE_MEDIA_TYPE,
         IMAGE_SIZE_XL,
         SORT_MODIFIED_DESC

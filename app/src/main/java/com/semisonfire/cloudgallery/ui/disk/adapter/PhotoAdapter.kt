@@ -47,8 +47,8 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
         photoListener?.onSelectedPhotoClick(photo)
       }
     }
-    photoViewHolder.itemView.setOnClickListener(itemClick)
-    photoViewHolder.itemView.setOnLongClickListener {
+    photoViewHolder.photoImage.setOnClickListener(itemClick)
+    photoViewHolder.photoImage.setOnLongClickListener {
       val adapterPosition = photoViewHolder.adapterPosition
       if (adapterPosition == RecyclerView.NO_POSITION) return@setOnLongClickListener false
 
@@ -87,7 +87,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
 
   class PhotoViewHolder(itemView: View) : BaseViewHolder<Photo>(itemView) {
 
-    private val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
+    val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
     private val selectImage: ImageView = itemView.findViewById(R.id.image_selected)
 
     private val targetHeight = itemView.context.dimen(R.dimen.photo_max_height)

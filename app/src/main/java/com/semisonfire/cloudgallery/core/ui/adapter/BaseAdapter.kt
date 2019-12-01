@@ -41,8 +41,12 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
 
   protected var endlessLoading = false
   protected var endlessScrollEnabled = false
+  var progressItem: T? = null
+    set(value) {
+      endlessScrollEnabled = value != null
+      field = value
+    }
 
-  protected var progressItem: T? = null
   private val handler = Handler(Looper.getMainLooper(), Handler.Callback { true })
 
   var itemClickListener: ItemClickListener<T>? = null
@@ -60,7 +64,7 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
     val view = LayoutInflater.from(parent.context).inflate(layoutId(), parent, false)
-    val viewHolder = createViewHolder(view)
+    val viewHolder = createViewHolder(view) ?: throw NullPointerException("View holder null")
     createItemListeners(view, viewHolder)
     return viewHolder
   }
@@ -120,7 +124,7 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
     return position == progressPosition || position < threshold
   }
 
-  protected open fun onLoadMoreComplete(newItems: List<T>) {
+  open fun onLoadMoreComplete(newItems: List<T>) {
     endlessLoading = false
 
     val progressPosition = progressItem?.let { items.indexOf(it) } ?: -1
@@ -167,9 +171,13 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
     return items.size
   }
 
-  abstract fun layoutId(): Int
+  protected open fun layoutId(): Int {
+    return -1
+  }
 
-  abstract fun createViewHolder(view: View): VH
+  protected open fun createViewHolder(view: View): VH? {
+    return null
+  }
 
   fun getItemsList(): List<T> {
     return Collections.unmodifiableList(items)

@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
+import com.semisonfire.cloudgallery.core.ui.adapter.ProgressViewHolder
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.items.*
@@ -21,10 +23,11 @@ import com.semisonfire.cloudgallery.utils.string
 import java.util.*
 import kotlin.collections.ArrayList
 
-class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
+class DiskAdapter : BaseAdapter<DiskItem, BaseViewHolder<DiskItem>>() {
 
   private val map = mutableMapOf<String, List<Photo>>()
   private val diskItemList = mutableListOf<DiskItem>()
+  private var photoCount = 0
 
   private var photoListener: OnPhotoListener? = null
   private var selected = false
@@ -36,7 +39,7 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
   override fun onCreateViewHolder(
     parent: ViewGroup,
     viewType: Int
-  ): BaseViewHolder<out DiskItem> {
+  ): BaseViewHolder<DiskItem> {
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
       TYPE_HEADER -> {
@@ -51,42 +54,59 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
         val view = inflater.inflate(R.layout.item_disk_upload, parent, false)
         UploadViewHolder(view)
       }
+      TYPE_PROGRESS -> {
+        val view = inflater.inflate(R.layout.item_progress, parent, false)
+        ProgressViewHolder(view)
+      }
       else -> throw IllegalStateException("unsupported item type")
-    }
+    } as BaseViewHolder<DiskItem>
   }
 
   override fun onBindViewHolder(
-    holder: BaseViewHolder<out DiskItem>,
+    viewHolder: BaseViewHolder<DiskItem>,
     position: Int
   ) {
     val diskItem = diskItemList[position]
     when (getItemViewType(position)) {
       TYPE_HEADER -> {
         val headerItem = diskItem as HeaderItem
-        val headerViewHolder = holder as HeaderViewHolder
+        val headerViewHolder = viewHolder as HeaderViewHolder
         headerViewHolder.bindItem(headerItem)
       }
       TYPE_GALLERY -> {
         val galleryItem = diskItem as GalleryItem
-        val galleryViewHolder = holder as GalleryViewHolder
+        val galleryViewHolder = viewHolder as GalleryViewHolder
         galleryViewHolder.bindItem(galleryItem)
       }
       TYPE_UPLOAD -> {
         val uploadItem = diskItem as UploadItem
-        val uploadViewHolder = holder as UploadViewHolder
+        val uploadViewHolder = viewHolder as UploadViewHolder
         uploadViewHolder.bindItem(uploadItem)
       }
       else -> throw IllegalStateException("unsupported item type")
     }
+
+    onLoadMore(position)
+  }
+
+  override fun checkNextThreshold(position: Int): Boolean {
+    val threshold = photoCount - endlessScrollThreshold
+    val progressPosition = progressItem?.let { items.indexOf(it) } ?: -1
+    return position == progressPosition || position < threshold
   }
 
   fun setPhotos(items: List<Photo>) {
     clear()
     updateItems(toMap(items))
+
+    photoCount = items.size
   }
 
   fun addPhotos(items: List<Photo>) {
     updateItems(toMap(items))
+    onLoadMoreComplete(emptyList())
+
+    photoCount += items.size
   }
 
   /**
@@ -103,13 +123,13 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
    * Transform [List]<[Photo]> into map which will used inside [.updateItems]
    */
   private fun toMap(photos: List<Photo>): Map<String, List<Photo>> {
-    val map: MutableMap<String, List<Photo>> = LinkedHashMap()
+    val map = mutableMapOf<String, List<Photo>>()
     for (photo in photos) {
       val date = getDateString(photo.modifiedAt, DateUtils.DATE_FORMAT)
       var values = map[date] as MutableList<Photo>?
 
       if (values == null) {
-        values = ArrayList()
+        values = mutableListOf()
         if (date != null) {
           map[date] = values
         }
@@ -123,7 +143,9 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
    * Update adapter data set
    */
   private fun updateItems(map: Map<String, List<Photo>>) {
-    for (date in map.keys) {
+    val keys = map.keys.toList()
+    for (i in keys.size - 1 downTo 0) {
+      val date = keys[i]
 
       val headerItem = HeaderItem()
       headerItem.date = date
@@ -203,6 +225,7 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
       headerItem.count = values.size
       diskItemList[headerPos] = headerItem
       notifyItemRangeChanged(headerPos, 2)
+      photoCount++
     }
   }
 
@@ -226,6 +249,8 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
       if (!items.contains(photo)) continue
 
       items.remove(photo)
+      photoCount--
+
       if (items.isEmpty()) {
         diskItemList.remove(diskItem)
         diskItemList.removeAt(headerPos)
