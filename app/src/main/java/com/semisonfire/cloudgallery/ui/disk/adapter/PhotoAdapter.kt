@@ -5,9 +5,9 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ImageView
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
@@ -34,7 +34,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
   }
 
   private fun addClickListener(photoViewHolder: PhotoViewHolder) {
-    val onItemClick = View.OnClickListener {
+    val itemClick = View.OnClickListener {
       val adapterPosition = photoViewHolder.adapterPosition
       if (adapterPosition == RecyclerView.NO_POSITION) return@OnClickListener
 
@@ -47,10 +47,8 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
         photoListener?.onSelectedPhotoClick(photo)
       }
     }
-    photoViewHolder.selectImage.setOnClickListener(onItemClick)
-    photoViewHolder.photoImage.setOnClickListener(onItemClick)
-
-    photoViewHolder.photoImage.setOnLongClickListener {
+    photoViewHolder.itemView.setOnClickListener(itemClick)
+    photoViewHolder.itemView.setOnLongClickListener {
       val adapterPosition = photoViewHolder.adapterPosition
       if (adapterPosition == RecyclerView.NO_POSITION) return@setOnLongClickListener false
 
@@ -87,11 +85,10 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
     notifyDataSetChanged()
   }
 
-  inner class PhotoViewHolder(itemView: View) :
-    BaseViewHolder<Photo>(itemView) {
+  inner class PhotoViewHolder(itemView: View) : BaseViewHolder<Photo>(itemView) {
 
-    val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
-    val selectImage: ImageView = itemView.findViewById(R.id.image_selected)
+    private val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
+    private val selectImage: ImageView = itemView.findViewById(R.id.image_selected)
 
     private val targetHeight = itemView.context.dimen(R.dimen.photo_max_height)
     private val targetWidth = itemView.context.dimen(R.dimen.photo_max_width)

@@ -2,11 +2,16 @@ package com.semisonfire.cloudgallery.ui.trash.data
 
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.core.data.remote.api.IMAGE_SIZE_XL
+import com.semisonfire.cloudgallery.core.data.remote.api.SORT_DELETED_DESC
+import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TRASH_PATH = "trash:/"
 
 @Singleton
 class TrashRepository @Inject constructor(
@@ -14,9 +19,19 @@ class TrashRepository @Inject constructor(
 ) {
 
   fun getTrashPhotos(limit: Int, page: Int): Single<List<Photo>> {
-    return diskApi.getTrashFiles("trash:/", limit, limit * (page - 1), "XL", "-deleted")
+    return diskApi
+      .getTrashFiles(
+        TRASH_PATH,
+        limit,
+        limit * (page - 1),
+        IMAGE_SIZE_XL,
+        SORT_DELETED_DESC
+      )
       .map { it.trashResponse?.photos ?: emptyList() }
-      .onErrorReturn { emptyList() }
+      .onErrorReturn {
+        it.printThrowable()
+        emptyList()
+      }
   }
 
   fun restoreTrashPhoto(photo: Photo): Observable<Photo> {

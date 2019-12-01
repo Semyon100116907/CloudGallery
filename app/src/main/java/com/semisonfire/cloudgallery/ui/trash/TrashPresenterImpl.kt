@@ -11,7 +11,7 @@ import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Observable
 
-interface TrashPresenter : MvpPresenter<TrashView> {
+interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
 
   fun getPhotos(page: Int)
   fun restorePhotos(photos: List<Photo>)

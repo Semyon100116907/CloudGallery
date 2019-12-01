@@ -13,11 +13,10 @@ import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Observable
 import java.net.URL
-import java.util.concurrent.atomic.AtomicInteger
 
 const val LIMIT = 15
 
-interface DiskPresenter : MvpPresenter<DiskView> {
+interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
 
   fun getPhotos()
   fun uploadPhotos(photos: List<Photo>)
@@ -34,21 +33,22 @@ class DiskPresenterImpl(
 
   override val viewModel = DiskViewModel()
 
-  private val currentPage = AtomicInteger(0)
-
   init {
     compositeDisposable.add(
       uploadRepository.uploadListener()
         .subscribeOn(background())
         .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoUploaded(it.photo, it.uploaded) },
-          { it.printThrowable() }
-        )
+        .subscribe({
+          viewModel.photoList.add(it.photo)
+          view?.onPhotoUploaded(it.photo, it.uploaded)
+        }, {
+          it.printThrowable()
+        })
     )
   }
 
   override fun getPhotos() {
+    val currentPage = viewModel.currentPage
     currentPage.set(0)
     compositeDisposable.add(
       diskRepository
@@ -71,6 +71,7 @@ class DiskPresenterImpl(
   }
 
   fun loadMorePhotos() {
+    val currentPage = viewModel.currentPage
     compositeDisposable.add(
       diskRepository
         .getPhotos(currentPage.get(), LIMIT)
@@ -123,10 +124,12 @@ class DiskPresenterImpl(
         .concatMap { diskRepository.deletePhoto(it) }
         .subscribeOn(background())
         .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoDeleted(it) },
-          { it.printThrowable() }
-        )
+        .subscribe({
+          viewModel.photoList.remove(it)
+          view?.onPhotoDeleted(it)
+        }, {
+          it.printThrowable()
+        })
     )
   }
 

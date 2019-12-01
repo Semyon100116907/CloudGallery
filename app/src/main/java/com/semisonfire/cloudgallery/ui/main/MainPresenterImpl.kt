@@ -7,7 +7,7 @@ import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import io.reactivex.Observable
 
-interface MainPresenter : MvpPresenter<MainView> {
+interface MainPresenter : MvpPresenter<MainViewModel, MainView> {
   fun saveToken(token: String)
   fun getTokenListener(): Observable<Auth.AuthModel>
 }

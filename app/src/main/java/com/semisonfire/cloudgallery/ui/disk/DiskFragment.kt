@@ -51,7 +51,6 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
   //RecyclerView
   private var recyclerView: RecyclerView? = null
   private val diskAdapter: DiskAdapter = DiskAdapter()
-  private val photoList: MutableList<Photo> = mutableListOf()
 
   //Uploading
   private val uploadingList: MutableList<Photo> = mutableListOf()
@@ -64,13 +63,10 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
   private var floatingActionButton: FloatingActionButton? = null
   private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
-  override fun layout(): Int {
-    return R.layout.fragment_disk
-  }
+  private lateinit var diskModel: DiskViewModel
 
-  override fun menuRes(): Int {
-    return R.menu.menu_fragment
-  }
+  override fun layout() = R.layout.fragment_disk
+  override fun menuRes() = R.menu.menu_fragment
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -81,6 +77,11 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
       cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
     }
     return super.onCreateView(inflater, container, savedInstanceState)
+  }
+
+  override fun showContent(model: DiskViewModel) {
+    super.showContent(model)
+    this.diskModel = model
   }
 
   override fun onResume() {
@@ -113,7 +114,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
           intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
           intent.putParcelableArrayListExtra(
             PhotoDetailActivity.EXTRA_PHOTOS,
-            photoList as ArrayList<out Parcelable>
+            diskModel.photoList as ArrayList<out Parcelable>
           )
           intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
           startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
@@ -136,7 +137,6 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         }
       }
     })
-    diskAdapter.setPhotos(photoList)
 
     val layoutManager = LinearLayoutManager(context)
     recyclerView?.layoutManager = layoutManager
@@ -263,7 +263,6 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
   }
 
   private fun updateDataSet() {
-    photoList.clear()
     diskAdapter.clear()
     if (uploadingList.isNotEmpty()) {
       diskAdapter.addUploadPhotos(uploadingList)
@@ -328,18 +327,13 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
     swipeRefreshLayout?.isRefreshing = false
     if (photos.isNotEmpty()) {
       floatingActionButton?.show()
-      photoList.addAll(photos)
-      diskAdapter.addPhotos(photos)
-    } else {
-      if (photoList.isEmpty()) {
-      }
+      diskAdapter.setPhotos(photos)
     }
   }
 
   override fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
     var uploadState: String? = null
     if (uploaded) {
-      photoList.add(photo)
       diskAdapter.addPhoto(photo)
       uploadingList.remove(photo)
       diskAdapter.removeUploadedPhoto(photo)
@@ -355,7 +349,6 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
 
   override fun onPhotoDeleted(photo: Photo) {
     setEnabledSelection(false)
-    photoList.remove(photo)
     diskAdapter.removePhoto(photo)
 
     context?.let {

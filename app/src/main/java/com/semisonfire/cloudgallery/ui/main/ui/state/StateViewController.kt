@@ -67,7 +67,6 @@ class StateViewController @Inject constructor() {
           EnterActionStrategy {
             informTitle.text = context.string(R.string.msg_yandex_failed_retrieve)
             informBody.text = context.string(R.string.action_yandex_check_connection)
-            informButton.text = context.string(R.string.action_yandex_link_account)
 
             informImage.setImageResource(R.drawable.ic_yandex_disk)
             informButton.visibility = View.GONE

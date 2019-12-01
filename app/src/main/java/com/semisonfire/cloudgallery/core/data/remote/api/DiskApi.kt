@@ -9,6 +9,15 @@ import io.reactivex.Single
 import okhttp3.MultipartBody
 import retrofit2.http.*
 
+const val IMAGE_MEDIA_TYPE = "image"
+
+const val IMAGE_SIZE_XL = "XL"
+
+const val SORT_MODIFIED_ASC = "modified"
+const val SORT_MODIFIED_DESC = "-$SORT_MODIFIED_ASC"
+const val SORT_DELETED_ASC = "deleted"
+const val SORT_DELETED_DESC = "-$SORT_DELETED_ASC"
+
 interface DiskApi {
   /** Get images from all disk folders besides trash folder.  */
   @GET("disk/resources/files")

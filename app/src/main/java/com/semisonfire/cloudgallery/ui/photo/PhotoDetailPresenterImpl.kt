@@ -16,7 +16,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import java.net.URL
 
-interface PhotoDetailPresenter : MvpPresenter<PhotoDetailView> {
+interface PhotoDetailPresenter : MvpPresenter<PhotoDetailViewModel, PhotoDetailView> {
 
   fun download(photo: Photo)
   fun delete(photo: Photo, from: Int)

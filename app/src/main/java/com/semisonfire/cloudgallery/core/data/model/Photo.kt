@@ -12,7 +12,8 @@ import com.google.gson.annotations.SerializedName
 class Photo : Parcelable {
 
   @PrimaryKey(autoGenerate = true)
-  var id: Long = 0
+  @SerializedName("resource_id")
+  var id: String = ""
 
   var name: String = ""
 
