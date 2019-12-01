@@ -85,7 +85,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
     notifyDataSetChanged()
   }
 
-  inner class PhotoViewHolder(itemView: View) : BaseViewHolder<Photo>(itemView) {
+  class PhotoViewHolder(itemView: View) : BaseViewHolder<Photo>(itemView) {
 
     private val photoImage: ImageView = itemView.findViewById(R.id.image_photo)
     private val selectImage: ImageView = itemView.findViewById(R.id.image_selected)
@@ -96,10 +96,10 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
     override fun bindItem(item: Photo) {
       photoImage.setImageDrawable(null)
       Picasso.get().load(item.preview)
-        .resize(targetWidth, targetHeight)
-        .centerCrop()
         .placeholder(R.color.black)
         .error(R.drawable.ic_gallery)
+        .resize(targetWidth, targetHeight)
+        .centerCrop()
         .into(photoImage)
       selectImage.visibility = if (item.isSelected) View.VISIBLE else View.GONE
     }

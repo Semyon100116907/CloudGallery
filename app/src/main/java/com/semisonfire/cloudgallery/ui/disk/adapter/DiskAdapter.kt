@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
 import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.items.*
@@ -59,19 +59,20 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
     holder: BaseViewHolder<out DiskItem>,
     position: Int
   ) {
+    val diskItem = diskItemList[position]
     when (getItemViewType(position)) {
       TYPE_HEADER -> {
-        val headerItem = diskItemList[position] as HeaderItem
+        val headerItem = diskItem as HeaderItem
         val headerViewHolder = holder as HeaderViewHolder
         headerViewHolder.bindItem(headerItem)
       }
       TYPE_GALLERY -> {
-        val galleryItem = diskItemList[position] as GalleryItem
+        val galleryItem = diskItem as GalleryItem
         val galleryViewHolder = holder as GalleryViewHolder
         galleryViewHolder.bindItem(galleryItem)
       }
       TYPE_UPLOAD -> {
-        val uploadItem = diskItemList[position] as UploadItem
+        val uploadItem = diskItem as UploadItem
         val uploadViewHolder = holder as UploadViewHolder
         uploadViewHolder.bindItem(uploadItem)
       }
@@ -104,7 +105,7 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
   private fun toMap(photos: List<Photo>): Map<String, List<Photo>> {
     val map: MutableMap<String, List<Photo>> = LinkedHashMap()
     for (photo in photos) {
-      val date = getDateString(photo.modifiedAt, DateUtils.ONLY_DATE_FORMAT)
+      val date = getDateString(photo.modifiedAt, DateUtils.DATE_FORMAT)
       var values = map[date] as MutableList<Photo>?
 
       if (values == null) {
@@ -160,7 +161,7 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
     headerItem: HeaderItem
   ): Int {
     if (headerPos == -1) {
-      val insertPosition = if (diskItemList[0] is UploadItem) 1 else 0
+      val insertPosition = if (diskItemList.getOrNull(0) is UploadItem) 1 else 0
       diskItemList.add(insertPosition, headerItem)
       notifyItemInserted(insertPosition)
       return insertPosition
@@ -173,7 +174,7 @@ class DiskAdapter : RecyclerView.Adapter<BaseViewHolder<out DiskItem>>() {
    */
   fun addPhoto(photo: Photo) {
 
-    val date = getDateString(photo.modifiedAt, DateUtils.ONLY_DATE_FORMAT) ?: ""
+    val date = getDateString(photo.modifiedAt, DateUtils.DATE_FORMAT) ?: ""
     val headerItem = HeaderItem()
     headerItem.date = date
 

@@ -6,20 +6,18 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object DateUtils {
-  const val ONLY_DATE_FORMAT = "dd.MM.yyyy"
-  const val DEFAULT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
+  const val DATE_FORMAT = "dd.MM.yyyy"
+  const val DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
 
   val currentDate: String
     get() {
       val millis = System.currentTimeMillis()
-      return getDateString(Date(millis), DEFAULT_FORMAT)
+      return getDateString(Date(millis), DATE_TIME_FORMAT)
     }
 
   fun getDateString(date: String?, format: String?): String? {
     try {
-      val simpleDateFormat = SimpleDateFormat(DEFAULT_FORMAT, Locale.getDefault())
-      simpleDateFormat.timeZone = TimeZone.getTimeZone("GMT")
-
+      val simpleDateFormat = SimpleDateFormat(DATE_TIME_FORMAT, Locale.getDefault())
       val newDate = simpleDateFormat.parse(date)
       return getDateString(newDate, format)
     } catch (e: ParseException) {

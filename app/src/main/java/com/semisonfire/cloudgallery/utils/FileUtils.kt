@@ -98,7 +98,7 @@ object FileUtils {
   fun getLocalFileUri(date: Date?): Uri {
     val time = "IMG_" + getDateString(
       date,
-      DateUtils.DEFAULT_FORMAT
+      DateUtils.DATE_TIME_FORMAT
     )
     return getLocalFileUri(time)
   }
