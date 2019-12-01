@@ -14,7 +14,7 @@ interface PhotoDao {
   val uploadingPhotos: Single<List<Photo>>
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  fun insertPhoto(photo: Photo): Long
+  fun insertPhoto(photo: Photo)
 
   @Delete
   fun deletePhoto(photo: Photo)

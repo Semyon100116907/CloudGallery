@@ -68,8 +68,8 @@ class UploadRepository @Inject constructor(
   private fun saveUploadingPhoto(photo: Photo): Single<Photo> {
     return Single
       .fromCallable {
+        database.photoDao.insertPhoto(photo)
         photo.isUploaded = false
-        photo.id = database.photoDao.insertPhoto(photo)
         photo
       }
       .subscribeOn(background())
