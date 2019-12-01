@@ -17,7 +17,7 @@ import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>>
+abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
   : AppCompatActivity(), MvpView<M>, HasSupportFragmentInjector {
 
   @Inject

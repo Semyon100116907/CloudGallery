@@ -17,7 +17,7 @@ import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>>
+abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
   : Fragment(), MvpView<M> {
 
   @Inject

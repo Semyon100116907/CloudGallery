@@ -21,7 +21,7 @@ import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 
 private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
-abstract class SelectableFragment<M: MvpViewModel, V : MvpView<M>, P : MvpPresenter<V>> : BaseFragment<M, V, P>() {
+abstract class SelectableFragment<M: MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>> : BaseFragment<M, V, P>() {
 
   protected var menu: Menu? = null
   protected var isSelectable = false
