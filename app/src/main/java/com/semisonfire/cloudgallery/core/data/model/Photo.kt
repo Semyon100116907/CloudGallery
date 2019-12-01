@@ -11,7 +11,7 @@ import com.google.gson.annotations.SerializedName
 @Entity(tableName = "photo")
 class Photo : Parcelable {
 
-  @PrimaryKey(autoGenerate = true)
+  @PrimaryKey
   @SerializedName("resource_id")
   var id: String = ""
 
