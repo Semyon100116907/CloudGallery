@@ -2,7 +2,9 @@ package com.semisonfire.cloudgallery.core.ui.adapter
 
 import android.os.Handler
 import android.os.Looper
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,8 +24,21 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
 
   protected val items = mutableListOf<T>()
 
+  protected var recyclerView: RecyclerView? = null
+
   /* EndlessScroll */
-  protected var endlessScrollThreshold = 1
+  var endlessScrollThreshold = 1
+    set(value) {
+      val spanCount = recyclerView?.let {
+        when (val layoutManager = it.layoutManager) {
+          is GridLayoutManager -> layoutManager.spanCount
+          is StaggeredGridLayoutManager -> layoutManager.spanCount
+          else -> 1
+        }
+      } ?: 1
+      field = value * spanCount
+    }
+
   protected var endlessLoading = false
   protected var endlessScrollEnabled = false
 
@@ -32,6 +47,16 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
 
   var itemClickListener: ItemClickListener<T>? = null
   var loadMoreListener: LoadMoreListener? = null
+
+  override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+    super.onAttachedToRecyclerView(recyclerView)
+    this.recyclerView = recyclerView
+  }
+
+  override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+    super.onDetachedFromRecyclerView(recyclerView)
+    this.recyclerView = null
+  }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
     val view = LayoutInflater.from(parent.context).inflate(layoutId(), parent, false)
@@ -243,5 +268,5 @@ abstract class BaseAdapter<T, VH : BaseViewHolder<T>> : RecyclerView.Adapter<VH>
     }
   }
 
-  private fun isInBounds(position: Int) = position < itemCount && position > -1
+  private fun isInBounds(position: Int) = position < itemCount && position > RecyclerView.NO_POSITION
 }
