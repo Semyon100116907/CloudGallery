@@ -25,9 +25,6 @@ fun Any.errorLog(message: String) {
 
 fun Throwable.printThrowable() {
     this.printStackTrace()
-//  App.context.fabric {
-//    Crashlytics.logException(this)
-//  }
     log("ERROR", this.message ?: this.javaClass.simpleName + "\n", ERROR)
 }
 
