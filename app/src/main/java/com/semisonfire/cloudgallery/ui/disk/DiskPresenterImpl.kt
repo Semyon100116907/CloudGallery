@@ -13,6 +13,7 @@ import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
 import java.net.URL
+import javax.inject.Inject
 
 const val LIMIT = 15
 
@@ -27,7 +28,7 @@ interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
     fun loadMorePhotos()
 }
 
-class DiskPresenterImpl(
+class DiskPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
     private val uploadRepository: UploadRepository
 ) : BasePresenter<DiskViewModel, DiskView>(), DiskPresenter {

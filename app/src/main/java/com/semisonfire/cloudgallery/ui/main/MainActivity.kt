@@ -7,7 +7,12 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
+import com.semisonfire.cloudgallery.ui.di.ComponentProvider
+import com.semisonfire.cloudgallery.ui.di.NavigationComponentApi
+import com.semisonfire.cloudgallery.ui.di.provideComponent
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.ui.main.di.DaggerMainComponent
+import com.semisonfire.cloudgallery.ui.main.di.MainComponent
 import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
@@ -20,27 +25,39 @@ import javax.inject.Inject
 
 interface MainView : MvpView<MainViewModel>
 
-class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView {
+class MainActivity :
+    BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView,
+    ComponentProvider<NavigationComponentApi> {
 
     @Inject
     lateinit var stateViewController: StateViewController
 
+    var component: MainComponent? = null
+
     private var toolbar: Toolbar? = null
     private var bottomNavigationView: BottomNavigationView? = null
 
+    override fun component(): NavigationComponentApi? {
+        return component
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        component = DaggerMainComponent
+            .factory()
+            .create(
+                this,
+                provideComponent()
+            )
+        component?.inject(this)
+
         super.onCreate(savedInstanceState)
         if (intent != null && intent.data != null) {
             login()
         }
 
-        val currentScreenKey = if (savedInstanceState != null) {
-            savedInstanceState.getString(STATE_CURRENT_SCREEN) ?: ""
-        } else {
-            DISK_KEY
+        if (savedInstanceState == null) {
+            router.replaceScreen(DISK_KEY)
         }
-
-        router.replaceScreen(currentScreenKey)
     }
 
     public override fun bind() {
@@ -116,18 +133,6 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
             }
             true
         }
-//    bottomNavigationView?.setOnNavigationItemReselectedListener { item ->
-//      when (item.itemId) {
-//        R.id.nav_disk, R.id.nav_trash -> fragment?.scrollToTop()
-//        R.id.nav_settings -> {
-//        }
-//      }
-//    }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(STATE_CURRENT_SCREEN, router.getCurrentScreenKey())
     }
 
     override fun onBackPressed() {
@@ -140,10 +145,5 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
 
     override fun layout(): Int {
         return R.layout.activity_main
-    }
-
-    companion object {
-        //STATE
-        private const val STATE_CURRENT_SCREEN = "STATE_CURRENT_SCREEN"
     }
 }

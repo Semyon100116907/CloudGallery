@@ -1,6 +1,7 @@
 package com.semisonfire.cloudgallery.ui.trash
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -19,11 +20,13 @@ import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
+import com.semisonfire.cloudgallery.ui.di.provideComponent
 import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
+import com.semisonfire.cloudgallery.ui.trash.di.DaggerTrashBinComponent
 import com.semisonfire.cloudgallery.ui.trash.model.TrashViewModel
 import com.semisonfire.cloudgallery.utils.color
 import com.semisonfire.cloudgallery.utils.longToast
@@ -47,6 +50,17 @@ class TrashFragment : SelectableFragment<TrashViewModel, TrashView, TrashPresent
 
     private var floatingActionButton: FloatingActionButton? = null
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
+
+    override fun onAttach(context: Context) {
+        DaggerTrashBinComponent
+            .factory()
+            .create(
+                context.provideComponent(),
+                context.provideComponent()
+            )
+            .inject(this)
+        super.onAttach(context)
+    }
 
     override fun layout(): Int {
         return R.layout.fragment_trash

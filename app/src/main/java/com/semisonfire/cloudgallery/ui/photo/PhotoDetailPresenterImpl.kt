@@ -15,6 +15,7 @@ import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
 import io.reactivex.Single
 import java.net.URL
+import javax.inject.Inject
 
 interface PhotoDetailPresenter : MvpPresenter<PhotoDetailViewModel, PhotoDetailView> {
 
@@ -24,7 +25,7 @@ interface PhotoDetailPresenter : MvpPresenter<PhotoDetailViewModel, PhotoDetailV
     fun createShareFile(bitmap: Bitmap)
 }
 
-class PhotoDetailPresenterImpl(
+class PhotoDetailPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
     private val trashRepository: TrashRepository
 ) : BasePresenter<PhotoDetailViewModel, PhotoDetailView>(), PhotoDetailPresenter {

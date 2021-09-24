@@ -4,11 +4,14 @@ import android.app.Application
 import android.os.Environment
 import com.semisonfire.cloudgallery.di.AppComponent
 import com.semisonfire.cloudgallery.di.DaggerAppComponent
+import com.semisonfire.cloudgallery.ui.di.ComponentProvider
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.squareup.picasso.Picasso
 
-class App : Application() {
+class App : Application(), ComponentProvider<AppComponent> {
+
+    lateinit var component: AppComponent
 
     override fun onCreate() {
 
@@ -18,6 +21,7 @@ class App : Application() {
         directory?.let {
             fileProvider.setPrivateDirectory(directory, "CloudGallery")
         }
+        FileUtils.application = this
         FileUtils.fileProvider = fileProvider
 
         component = DaggerAppComponent.factory().create(this)
@@ -26,8 +30,7 @@ class App : Application() {
         super.onCreate()
     }
 
-    companion object {
-
-        lateinit var component: AppComponent
+    override fun component(): AppComponent {
+        return component
     }
 }

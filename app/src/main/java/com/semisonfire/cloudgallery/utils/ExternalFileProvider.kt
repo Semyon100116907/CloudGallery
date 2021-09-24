@@ -1,9 +1,9 @@
 package com.semisonfire.cloudgallery.utils
 
+import android.app.Application
 import android.net.Uri
 import android.os.Environment
 import androidx.core.content.FileProvider
-import com.semisonfire.cloudgallery.App
 import com.semisonfire.cloudgallery.BuildConfig
 import java.io.File
 
@@ -19,12 +19,8 @@ class ExternalFileProvider : FileProvider() {
         return File(privateDirectory, uri.lastPathSegment ?: "")
     }
 
-    fun getUri(file: File): Uri {
-        return getUriForFile(
-            App.component.context(),
-            BuildConfig.APPLICATION_ID + ".provider",
-            file
-        )
+    fun getUri(app: Application, file: File): Uri {
+        return getUriForFile(app, BuildConfig.APPLICATION_ID + ".provider", file)
     }
 
     fun setPrivateDirectory(directory: File, name: String) {

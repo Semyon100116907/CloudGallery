@@ -2,18 +2,18 @@ package com.semisonfire.cloudgallery.core.ui
 
 import android.os.Bundle
 import androidx.annotation.CallSuper
+import androidx.appcompat.app.AppCompatActivity
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import dagger.android.support.DaggerAppCompatActivity
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
-    : DaggerAppCompatActivity(), MvpView<M> {
+    : AppCompatActivity(), MvpView<M> {
 
     @Inject
     lateinit var permissionManager: PermissionManager

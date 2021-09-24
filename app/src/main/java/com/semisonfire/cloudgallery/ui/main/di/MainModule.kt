@@ -1,37 +1,28 @@
 package com.semisonfire.cloudgallery.ui.main.di
 
 import androidx.appcompat.app.AppCompatActivity
-import com.semisonfire.cloudgallery.core.data.remote.auth.AuthRepository
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
 import com.semisonfire.cloudgallery.core.ui.navigation.NavigatorImpl
 import com.semisonfire.cloudgallery.di.annotation.ActivityScope
-import com.semisonfire.cloudgallery.di.module.ActivityModule
-import com.semisonfire.cloudgallery.ui.main.MainActivity
 import com.semisonfire.cloudgallery.ui.main.MainPresenter
 import com.semisonfire.cloudgallery.ui.main.MainPresenterImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 
-@Module(includes = [MainModule.Declarations::class])
-class MainModule {
+@Module
+abstract class MainModule {
 
-    @Module(includes = [ActivityModule::class])
-    interface Declarations {
-        @Binds
+    companion object {
+
+        @Provides
         @ActivityScope
-        fun activity(mainActivity: MainActivity): AppCompatActivity
+        fun provideNavigator(activity: AppCompatActivity): Navigator {
+            return NavigatorImpl(activity.supportFragmentManager)
+        }
     }
 
-    @Provides
+    @Binds
     @ActivityScope
-    fun provideMainPresenter(authRepository: AuthRepository): MainPresenter {
-        return MainPresenterImpl(authRepository)
-    }
-
-    @Provides
-    @ActivityScope
-    fun provideNavigator(activity: AppCompatActivity): Navigator {
-        return NavigatorImpl(activity.supportFragmentManager)
-    }
+    abstract fun bindsMainPresenter(impl: MainPresenterImpl): MainPresenter
 }

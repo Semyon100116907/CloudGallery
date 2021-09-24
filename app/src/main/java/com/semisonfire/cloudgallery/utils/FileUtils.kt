@@ -1,5 +1,6 @@
 package com.semisonfire.cloudgallery.utils
 
+import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -11,6 +12,8 @@ import java.io.IOException
 import java.util.*
 
 object FileUtils {
+
+    lateinit var application: Application
 
     lateinit var fileProvider: ExternalFileProvider
 
@@ -118,7 +121,7 @@ object FileUtils {
                     + if (name.endsWith(".png")) name else "$name.png"
         )
         return if (Build.VERSION.SDK_INT >= 24) {
-            fileProvider.getUri(mediaFile)
+            fileProvider.getUri(application, mediaFile)
         } else {
             Uri.fromFile(mediaFile)
         }

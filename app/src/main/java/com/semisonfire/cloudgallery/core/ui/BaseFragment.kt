@@ -6,18 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import dagger.android.support.DaggerFragment
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
-    : DaggerFragment(), MvpView<M> {
+    : Fragment(), MvpView<M> {
 
     @Inject
     lateinit var permissionManager: PermissionManager

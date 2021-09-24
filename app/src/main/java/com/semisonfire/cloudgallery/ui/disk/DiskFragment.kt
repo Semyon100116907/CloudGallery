@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.ui.disk
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -25,10 +26,12 @@ import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
+import com.semisonfire.cloudgallery.ui.di.provideComponent
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
 import com.semisonfire.cloudgallery.ui.disk.adapter.items.ProgressItem
+import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
@@ -69,6 +72,17 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
 
     override fun layout() = R.layout.fragment_disk
     override fun menuRes() = R.menu.menu_fragment
+
+    override fun onAttach(context: Context) {
+        DaggerDiskComponent
+            .factory()
+            .create(
+                context.provideComponent(),
+                context.provideComponent()
+            )
+            .inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

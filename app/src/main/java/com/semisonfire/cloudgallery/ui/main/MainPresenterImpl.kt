@@ -6,13 +6,14 @@ import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import io.reactivex.Observable
+import javax.inject.Inject
 
 interface MainPresenter : MvpPresenter<MainViewModel, MainView> {
     fun saveToken(token: String)
     fun getTokenListener(): Observable<Auth.AuthModel>
 }
 
-class MainPresenterImpl(
+class MainPresenterImpl @Inject constructor(
     private val authRepository: AuthRepository
 ) : BasePresenter<MainViewModel, MainView>(),
     MainPresenter {

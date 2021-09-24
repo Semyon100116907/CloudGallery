@@ -10,6 +10,7 @@ import com.semisonfire.cloudgallery.ui.trash.model.TrashViewModel
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
+import javax.inject.Inject
 
 interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
 
@@ -19,7 +20,7 @@ interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
     fun clear()
 }
 
-class TrashPresenterImpl(
+class TrashPresenterImpl @Inject constructor(
     private val trashRepository: TrashRepository
 ) : BasePresenter<TrashViewModel, TrashView>(), TrashPresenter {
 
