@@ -22,99 +22,100 @@ interface MainView : MvpView<MainViewModel>
 
 class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView {
 
-  @Inject
-  lateinit var stateViewController: StateViewController
+    @Inject
+    lateinit var stateViewController: StateViewController
 
-  private var toolbar: Toolbar? = null
-  private var bottomNavigationView: BottomNavigationView? = null
+    private var toolbar: Toolbar? = null
+    private var bottomNavigationView: BottomNavigationView? = null
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    if (intent != null && intent.data != null) {
-      login()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (intent != null && intent.data != null) {
+            login()
+        }
+
+        val currentScreenKey = if (savedInstanceState != null) {
+            savedInstanceState.getString(STATE_CURRENT_SCREEN) ?: ""
+        } else {
+            DISK_KEY
+        }
+
+        router.replaceScreen(currentScreenKey)
     }
 
-    val currentScreenKey = if (savedInstanceState != null) {
-      savedInstanceState.getString(STATE_CURRENT_SCREEN) ?: ""
-    } else {
-      DISK_KEY
+    public override fun bind() {
+        super.bind()
+
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        bottomNavigationView = findViewById(R.id.nav_bottom)
+        addBottomNavigation()
+
+        stateViewController.bindStateDelegate(findViewById(android.R.id.content))
+        stateViewController.updateStateView(MainStateView.CONTENT)
     }
 
-    router.replaceScreen(currentScreenKey)
-  }
+    override fun onResume() {
+        super.onResume()
 
-  public override fun bind() {
-    super.bind()
-
-    toolbar = findViewById(R.id.toolbar)
-    setSupportActionBar(toolbar)
-
-    bottomNavigationView = findViewById(R.id.nav_bottom)
-    addBottomNavigation()
-
-    stateViewController.bindStateDelegate(findViewById(android.R.id.content))
-    stateViewController.updateStateView(MainStateView.CONTENT)
-  }
-
-  override fun onResume() {
-    super.onResume()
-
-    stateViewController.updateStateView(MainStateView.LOADER)
-    disposables.addAll(
-      presenter
-        .getTokenListener()
-        .observeOn(foreground())
-        .subscribe({
-          val state = if (it.token.isNotEmpty()) MainStateView.CONTENT else MainStateView.AUTH
-          stateViewController.updateStateView(state)
-        }, {
-          it.printThrowable()
-        })
-    )
-  }
-
-  /** Oauth login.  */
-  private fun login() {
-    val data = intent.data
-    intent = null
-    data?.let {
-      val pattern = Pattern.compile("access_token=(.*?)(&|$)")
-      val matcher = pattern.matcher(data.toString())
-      if (matcher.find()) {
-        val token = matcher.group(1)
-        if (token.isNotEmpty()) {
-          presenter.saveToken(token)
-        }
-      }
+        stateViewController.updateStateView(MainStateView.LOADER)
+        disposables.addAll(
+            presenter
+                .getTokenListener()
+                .observeOn(foreground())
+                .subscribe({
+                    val state =
+                        if (it.token.isNotEmpty()) MainStateView.CONTENT else MainStateView.AUTH
+                    stateViewController.updateStateView(state)
+                }, {
+                    it.printThrowable()
+                })
+        )
     }
-  }
 
-  /** Create navigation instance.  */
-  private fun addBottomNavigation() {
-    bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
-      val title: String
-      val key = when (item.itemId) {
-        R.id.nav_disk -> {
-          title = string(R.string.msg_disk)
-          DISK_KEY
+    /** Oauth login.  */
+    private fun login() {
+        val data = intent.data
+        intent = null
+        data?.let {
+            val pattern = Pattern.compile("access_token=(.*?)(&|$)")
+            val matcher = pattern.matcher(data.toString())
+            if (matcher.find()) {
+                val token = matcher.group(1)
+                if (token.isNotEmpty()) {
+                    presenter.saveToken(token)
+                }
+            }
         }
-        R.id.nav_trash -> {
-          title = string(R.string.msg_trash)
-          TRASH_KEY
-        }
-        R.id.nav_settings -> {
-          title = string(R.string.msg_settings)
-          SETTINGS_KEY
-        }
-        else -> return@setOnNavigationItemSelectedListener false
-      }
-
-      key.let {
-        toolbar?.title = title
-        router.replaceScreen(key)
-      }
-      true
     }
+
+    /** Create navigation instance.  */
+    private fun addBottomNavigation() {
+        bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
+            val title: String
+            val key = when (item.itemId) {
+                R.id.nav_disk -> {
+                    title = string(R.string.msg_disk)
+                    DISK_KEY
+                }
+                R.id.nav_trash -> {
+                    title = string(R.string.msg_trash)
+                    TRASH_KEY
+                }
+                R.id.nav_settings -> {
+                    title = string(R.string.msg_settings)
+                    SETTINGS_KEY
+                }
+                else -> return@setOnNavigationItemSelectedListener false
+            }
+
+            key.let {
+                toolbar?.title = title
+                router.replaceScreen(key)
+            }
+            true
+        }
 //    bottomNavigationView?.setOnNavigationItemReselectedListener { item ->
 //      when (item.itemId) {
 //        R.id.nav_disk, R.id.nav_trash -> fragment?.scrollToTop()
@@ -122,27 +123,27 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
 //        }
 //      }
 //    }
-  }
-
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.putString(STATE_CURRENT_SCREEN, router.getCurrentScreenKey())
-  }
-
-  override fun onBackPressed() {
-    if (bottomNavigationView?.selectedItemId == R.id.nav_disk) {
-      super.onBackPressed()
-    } else {
-      bottomNavigationView?.selectedItemId = R.id.nav_disk
     }
-  }
 
-  override fun layout(): Int {
-    return R.layout.activity_main
-  }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_CURRENT_SCREEN, router.getCurrentScreenKey())
+    }
 
-  companion object {
-    //STATE
-    private const val STATE_CURRENT_SCREEN = "STATE_CURRENT_SCREEN"
-  }
+    override fun onBackPressed() {
+        if (bottomNavigationView?.selectedItemId == R.id.nav_disk) {
+            super.onBackPressed()
+        } else {
+            bottomNavigationView?.selectedItemId = R.id.nav_disk
+        }
+    }
+
+    override fun layout(): Int {
+        return R.layout.activity_main
+    }
+
+    companion object {
+        //STATE
+        private const val STATE_CURRENT_SCREEN = "STATE_CURRENT_SCREEN"
+    }
 }

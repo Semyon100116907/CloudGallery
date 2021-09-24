@@ -11,12 +11,12 @@ import dagger.Provides
 @Module
 class DiskModule {
 
-  @Provides
-  @FragmentScope
-  fun provideDiskPresenter(
-    diskRepository: DiskRepository,
-    uploadRepository: UploadRepository
-  ): DiskPresenter {
-    return DiskPresenterImpl(diskRepository, uploadRepository)
-  }
+    @Provides
+    @FragmentScope
+    fun provideDiskPresenter(
+        diskRepository: DiskRepository,
+        uploadRepository: UploadRepository
+    ): DiskPresenter {
+        return DiskPresenterImpl(diskRepository, uploadRepository)
+    }
 }

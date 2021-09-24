@@ -8,6 +8,51 @@ repositories {
     google()
 }
 
+android {
+    compileSdkVersion 28
+    buildToolsVersion '29.0.0'
+    defaultConfig {
+        applicationId "com.semisonfire.cloudgallery"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        archivesBaseName = "app-${versionName}-${versionCode}"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled = true
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            debuggable true
+            minifyEnabled false
+            ext.alwaysUpdateBuildId = false
+        }
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            crunchPngs false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError false
+
+        disable 'GoogleAppIndexingWarning'
+        disable 'InvalidPackage'
+    }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
@@ -60,49 +105,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-}
-
-android {
-    compileSdkVersion 28
-    buildToolsVersion '29.0.0'
-    defaultConfig {
-        applicationId "com.semisonfire.cloudgallery"
-        minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
-
-        archivesBaseName = "app-${versionName}-${versionCode}"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
-        multiDexEnabled = true
-    }
-    buildTypes {
-        debug {
-            applicationIdSuffix ".debug"
-            debuggable true
-            minifyEnabled false
-            ext.alwaysUpdateBuildId = false
-        }
-        release {
-            debuggable false
-            minifyEnabled true
-            shrinkResources true
-            crunchPngs false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    lintOptions {
-        abortOnError false
-
-        disable 'GoogleAppIndexingWarning'
-        disable 'InvalidPackage'
-    }
 }

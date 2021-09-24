@@ -10,11 +10,11 @@ import dagger.Provides
 @Module
 class TrashModule {
 
-  @Provides
-  @FragmentScope
-  fun provideTrashPresenter(
-    trashRepository: TrashRepository
-  ): TrashPresenter {
-    return TrashPresenterImpl(trashRepository)
-  }
+    @Provides
+    @FragmentScope
+    fun provideTrashPresenter(
+        trashRepository: TrashRepository
+    ): TrashPresenter {
+        return TrashPresenterImpl(trashRepository)
+    }
 }

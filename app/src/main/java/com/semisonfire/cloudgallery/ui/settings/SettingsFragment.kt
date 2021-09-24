@@ -12,15 +12,15 @@ interface SettingsView : MvpView<SettingsViewModel>
 
 class SettingsFragment : BaseFragment<SettingsViewModel, SettingsView, SettingsPresenter>() {
 
-  override fun bind(view: View) {
-    super.bind(view)
-    activity?.let {
-      it.findViewById<FloatingActionButton>(R.id.btn_add_new).hide()
-      it.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh).isEnabled = false
+    override fun bind(view: View) {
+        super.bind(view)
+        activity?.let {
+            it.findViewById<FloatingActionButton>(R.id.btn_add_new).hide()
+            it.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh).isEnabled = false
+        }
     }
-  }
 
-  override fun layout(): Int {
-    return R.layout.fragment_settings
-  }
+    override fun layout(): Int {
+        return R.layout.fragment_settings
+    }
 }

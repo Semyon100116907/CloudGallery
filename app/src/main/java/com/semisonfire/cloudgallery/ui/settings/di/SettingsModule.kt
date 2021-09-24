@@ -9,9 +9,9 @@ import dagger.Provides
 @Module
 class SettingsModule {
 
-  @Provides
-  @FragmentScope
-  fun provideSettingsPresenter(): SettingsPresenter {
-    return SettingsPresenterImpl()
-  }
+    @Provides
+    @FragmentScope
+    fun provideSettingsPresenter(): SettingsPresenter {
+        return SettingsPresenterImpl()
+    }
 }

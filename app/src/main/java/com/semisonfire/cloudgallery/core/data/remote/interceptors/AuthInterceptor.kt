@@ -11,28 +11,28 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthInterceptor @Inject constructor(
-  private val authRepository: AuthRepository
+    private val authRepository: AuthRepository
 ) : Interceptor {
 
-  @Throws(IOException::class)
-  override fun intercept(chain: Interceptor.Chain): Response {
-    val request = chain.request()
+    @Throws(IOException::class)
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request()
 
-    var modifiedRequest = request
+        var modifiedRequest = request
 
-    val authModel = authRepository.authModel
-    if (authModel is Auth.AuthModel) {
-      modifiedRequest = request.newBuilder()
-        .header("Accept", "application/json")
-        .header("Authorization", "OAuth ${authModel.token}")
-        .build()
+        val authModel = authRepository.authModel
+        if (authModel is Auth.AuthModel) {
+            modifiedRequest = request.newBuilder()
+                .header("Accept", "application/json")
+                .header("Authorization", "OAuth ${authModel.token}")
+                .build()
+        }
+
+        val response = chain.proceed(modifiedRequest)
+        val unauthorized = response.code() == 401
+        if (unauthorized) {
+            throw UnauthorizedException(response.code(), response.message())
+        }
+        return response
     }
-
-    val response = chain.proceed(modifiedRequest)
-    val unauthorized = response.code() == 401
-    if (unauthorized) {
-      throw UnauthorizedException(response.code(), response.message())
-    }
-    return response
-  }
 }

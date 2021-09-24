@@ -18,77 +18,77 @@ import java.net.URL
 
 interface PhotoDetailPresenter : MvpPresenter<PhotoDetailViewModel, PhotoDetailView> {
 
-  fun download(photo: Photo)
-  fun delete(photo: Photo, from: Int)
-  fun restore(photo: Photo)
-  fun createShareFile(bitmap: Bitmap)
+    fun download(photo: Photo)
+    fun delete(photo: Photo, from: Int)
+    fun restore(photo: Photo)
+    fun createShareFile(bitmap: Bitmap)
 }
 
 class PhotoDetailPresenterImpl(
-  private val diskRepository: DiskRepository,
-  private val trashRepository: TrashRepository
+    private val diskRepository: DiskRepository,
+    private val trashRepository: TrashRepository
 ) : BasePresenter<PhotoDetailViewModel, PhotoDetailView>(), PhotoDetailPresenter {
 
-  override val viewModel = PhotoDetailViewModel()
+    override val viewModel = PhotoDetailViewModel()
 
-  override fun download(photo: Photo) {
-    compositeDisposable.add(
-      diskRepository.getDownloadLink(photo)
-        .map {
-          val url = URL(it.href)
-          val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-          FileUtils.savePublicFile(bitmap, photo.name)
-        }
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoDownloaded(it) },
-          { it.printThrowable() }
+    override fun download(photo: Photo) {
+        compositeDisposable.add(
+            diskRepository.getDownloadLink(photo)
+                .map {
+                    val url = URL(it.href)
+                    val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+                    FileUtils.savePublicFile(bitmap, photo.name)
+                }
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onPhotoDownloaded(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
-
-  override fun delete(photo: Photo, from: Int) {
-    val delete = when (from) {
-      PhotoDetailActivity.FROM_DISK -> diskRepository.deletePhoto(photo)
-      PhotoDetailActivity.FROM_TRASH -> trashRepository.deleteTrashPhoto(photo)
-      else -> Observable.just(photo)
     }
 
-    compositeDisposable.add(
-      delete
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onFilesChanged(it) },
-          { it.printThrowable() }
-        )
-    )
-  }
+    override fun delete(photo: Photo, from: Int) {
+        val delete = when (from) {
+            PhotoDetailActivity.FROM_DISK -> diskRepository.deletePhoto(photo)
+            PhotoDetailActivity.FROM_TRASH -> trashRepository.deleteTrashPhoto(photo)
+            else -> Observable.just(photo)
+        }
 
-  override fun restore(photo: Photo) {
-    compositeDisposable.add(
-      trashRepository.restoreTrashPhoto(photo)
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onFilesChanged(it) },
-          { it.printThrowable() }
+        compositeDisposable.add(
+            delete
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onFilesChanged(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
 
-  override fun createShareFile(bitmap: Bitmap) {
-    compositeDisposable.add(
-      Single.just(bitmap)
-        .map { FileUtils.createShareFile(it) }
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onFilePrepared(it) },
-          { it.printThrowable() }
+    override fun restore(photo: Photo) {
+        compositeDisposable.add(
+            trashRepository.restoreTrashPhoto(photo)
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onFilesChanged(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
+
+    override fun createShareFile(bitmap: Bitmap) {
+        compositeDisposable.add(
+            Single.just(bitmap)
+                .map { FileUtils.createShareFile(it) }
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onFilePrepared(it) },
+                    { it.printThrowable() }
+                )
+        )
+    }
 
 }

@@ -18,26 +18,26 @@ import javax.inject.Named
 @Module(includes = [PhotoDetailModule.Declarations::class])
 class PhotoDetailModule {
 
-  @Module(includes = [ActivityModule::class])
-  interface Declarations {
-    @Binds
+    @Module(includes = [ActivityModule::class])
+    interface Declarations {
+        @Binds
+        @ActivityScope
+        @Named("DETAIL")
+        fun activity(mainActivity: PhotoDetailActivity): AppCompatActivity
+    }
+
+    @Provides
     @ActivityScope
-    @Named("DETAIL")
-    fun activity(mainActivity: PhotoDetailActivity): AppCompatActivity
-  }
+    fun providesPhotoDetailPresenter(
+        diskRepository: DiskRepository,
+        trashRepository: TrashRepository
+    ): PhotoDetailPresenter {
+        return PhotoDetailPresenterImpl(diskRepository, trashRepository)
+    }
 
-  @Provides
-  @ActivityScope
-  fun providesPhotoDetailPresenter(
-    diskRepository: DiskRepository,
-    trashRepository: TrashRepository
-  ): PhotoDetailPresenter {
-    return PhotoDetailPresenterImpl(diskRepository, trashRepository)
-  }
-
-  @Provides
-  @ActivityScope
-  fun provideNavigator(@Named("DETAIL") activity: AppCompatActivity): Navigator {
-    return NavigatorImpl(activity.supportFragmentManager)
-  }
+    @Provides
+    @ActivityScope
+    fun provideNavigator(@Named("DETAIL") activity: AppCompatActivity): Navigator {
+        return NavigatorImpl(activity.supportFragmentManager)
+    }
 }

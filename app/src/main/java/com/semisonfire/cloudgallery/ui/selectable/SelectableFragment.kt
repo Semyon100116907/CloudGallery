@@ -21,69 +21,70 @@ import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 
 private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
-abstract class SelectableFragment<M: MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>> : BaseFragment<M, V, P>() {
+abstract class SelectableFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>> :
+    BaseFragment<M, V, P>() {
 
-  protected var menu: Menu? = null
-  protected var isSelectable = false
+    protected var menu: Menu? = null
+    protected var isSelectable = false
 
-  override fun onViewStateRestored(savedInstanceState: Bundle?) {
-    super.onViewStateRestored(savedInstanceState)
-    savedInstanceState?.apply {
-      isSelectable = getBoolean(STATE_SELECTABLE)
-    }
-  }
-
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.apply {
-      putBoolean(STATE_SELECTABLE, isSelectable)
-    }
-  }
-
-  @MenuRes
-  open fun menuRes(): Int {
-    return -1
-  }
-
-  override fun bind(view: View) {
-    super.bind(view)
-    val hasMenu = menuRes() != -1
-    if (hasMenu) {
-      val activity = activity
-      if (activity is AppCompatActivity) {
-        activity.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
-      }
-      setHasOptionsMenu(hasMenu)
-    }
-  }
-
-  @CallSuper
-  open fun setEnabledSelection(enabled: Boolean) {
-    SelectableHelper.setMultipleSelection(enabled)
-
-    val secondaryColorRes = if (enabled) R.color.white else R.color.black
-    val secondaryColor = context?.color(secondaryColorRes) ?: Color.WHITE
-
-    val activity = activity
-    if (activity is AppCompatActivity) {
-      activity.supportActionBar?.setDisplayHomeAsUpEnabled(enabled)
-      activity.supportActionBar?.setBackgroundDrawable(activity.colorResDrawable(if (enabled) R.color.colorAccent else R.color.white))
-
-      activity.findViewById<Toolbar>(R.id.toolbar).setTitleTextColor(secondaryColor)
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.apply {
+            isSelectable = getBoolean(STATE_SELECTABLE)
+        }
     }
 
-    menu?.let {
-      setMenuIconsColor(it, secondaryColor)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.apply {
+            putBoolean(STATE_SELECTABLE, isSelectable)
+        }
     }
 
-    isSelectable = enabled
-  }
+    @MenuRes
+    open fun menuRes(): Int {
+        return -1
+    }
 
-  @CallSuper
-  override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-    inflater.inflate(menuRes(), menu)
-    this.menu = menu
+    override fun bind(view: View) {
+        super.bind(view)
+        val hasMenu = menuRes() != -1
+        if (hasMenu) {
+            val activity = activity
+            if (activity is AppCompatActivity) {
+                activity.supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_close)
+            }
+            setHasOptionsMenu(hasMenu)
+        }
+    }
 
-    setEnabledSelection(isSelectable)
-  }
+    @CallSuper
+    open fun setEnabledSelection(enabled: Boolean) {
+        SelectableHelper.setMultipleSelection(enabled)
+
+        val secondaryColorRes = if (enabled) R.color.white else R.color.black
+        val secondaryColor = context?.color(secondaryColorRes) ?: Color.WHITE
+
+        val activity = activity
+        if (activity is AppCompatActivity) {
+            activity.supportActionBar?.setDisplayHomeAsUpEnabled(enabled)
+            activity.supportActionBar?.setBackgroundDrawable(activity.colorResDrawable(if (enabled) R.color.colorAccent else R.color.white))
+
+            activity.findViewById<Toolbar>(R.id.toolbar).setTitleTextColor(secondaryColor)
+        }
+
+        menu?.let {
+            setMenuIconsColor(it, secondaryColor)
+        }
+
+        isSelectable = enabled
+    }
+
+    @CallSuper
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(menuRes(), menu)
+        this.menu = menu
+
+        setEnabledSelection(isSelectable)
+    }
 }

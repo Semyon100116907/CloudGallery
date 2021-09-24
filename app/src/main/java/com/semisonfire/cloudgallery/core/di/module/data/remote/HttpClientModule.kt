@@ -1,11 +1,11 @@
 package com.semisonfire.cloudgallery.core.di.module.data.remote
 
+import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.BuildConfig
-import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
-import com.semisonfire.cloudgallery.core.di.AppContext
 import com.semisonfire.cloudgallery.core.data.remote.interceptors.AuthInterceptor
+import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
@@ -21,78 +21,78 @@ const val DISK_CACHE_SIZE = 10 * 1024 * 1024L
 @Module
 class HttpClientModule {
 
-  private val cacheName = "response-cache"
+    private val cacheName = "response-cache"
 
-  @Provides
-  @Singleton
-  fun provideHttpClient(
-    cache: Cache,
-    networkConnectionInterceptor: NetworkConnectionInterceptor,
-    loggingInterceptor: HttpLoggingInterceptor,
-    authInterceptor: AuthInterceptor
-  ): OkHttpClient {
+    @Provides
+    @Singleton
+    fun provideHttpClient(
+        cache: Cache,
+        networkConnectionInterceptor: NetworkConnectionInterceptor,
+        loggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: AuthInterceptor
+    ): OkHttpClient {
 
-    //Build http client for api
-    val builder = getHttpClientBuilder(
-      cache,
-      networkConnectionInterceptor
-    )
-    builder.addInterceptor(authInterceptor)
+        //Build http client for api
+        val builder = getHttpClientBuilder(
+            cache,
+            networkConnectionInterceptor
+        )
+        builder.addInterceptor(authInterceptor)
 
-    //Add logging in debug
-    if (BuildConfig.DEBUG) {
-      builder.addInterceptor(loggingInterceptor)
+        //Add logging in debug
+        if (BuildConfig.DEBUG) {
+            builder.addInterceptor(loggingInterceptor)
+        }
+        return builder.build()
     }
-    return builder.build()
-  }
 
-  private fun getHttpClientBuilder(
-    cache: Cache,
-    networkConnectionInterceptor: NetworkConnectionInterceptor
-  ): OkHttpClient.Builder {
-    return OkHttpClient.Builder()
-      .connectTimeout(30, TimeUnit.SECONDS)
-      .readTimeout(30, TimeUnit.SECONDS)
-      .writeTimeout(30, TimeUnit.SECONDS)
-      .cache(cache)
-      .addInterceptor(networkConnectionInterceptor)
-  }
-
-  @Provides
-  @Singleton
-  fun provideConnectivityManager(@AppContext context: Context): ConnectivityManager {
-    return context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-  }
-
-  @Provides
-  @Singleton
-  fun provideNetworkConnectionInterceptor(connectivityManager: ConnectivityManager): NetworkConnectionInterceptor {
-    return object : NetworkConnectionInterceptor() {
-      override val isInternetAvailable: Boolean
-        get() = this@HttpClientModule.isInternetAvailable(connectivityManager)
+    private fun getHttpClientBuilder(
+        cache: Cache,
+        networkConnectionInterceptor: NetworkConnectionInterceptor
+    ): OkHttpClient.Builder {
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .cache(cache)
+            .addInterceptor(networkConnectionInterceptor)
     }
-  }
 
-  @Provides
-  @Singleton
-  fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-    val loggingInterceptor = HttpLoggingInterceptor()
-    loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-    return loggingInterceptor
-  }
+    @Provides
+    @Singleton
+    fun provideConnectivityManager(application: Application): ConnectivityManager {
+        return application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
 
-  @Provides
-  @Singleton
-  fun provideCache(@AppContext context: Context): Cache {
-    return Cache(
-      File(context.cacheDir, cacheName),
-      DISK_CACHE_SIZE
-    )
-  }
+    @Provides
+    @Singleton
+    fun provideNetworkConnectionInterceptor(connectivityManager: ConnectivityManager): NetworkConnectionInterceptor {
+        return object : NetworkConnectionInterceptor() {
+            override val isInternetAvailable: Boolean
+                get() = this@HttpClientModule.isInternetAvailable(connectivityManager)
+        }
+    }
 
-  /** Get current Internet state.  */
-  private fun isInternetAvailable(connectivityManager: ConnectivityManager): Boolean {
-    val netInfo = connectivityManager.activeNetworkInfo
-    return netInfo != null && netInfo.isConnected
-  }
+    @Provides
+    @Singleton
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        val loggingInterceptor = HttpLoggingInterceptor()
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        return loggingInterceptor
+    }
+
+    @Provides
+    @Singleton
+    fun provideCache(application: Application): Cache {
+        return Cache(
+            File(application.cacheDir, cacheName),
+            DISK_CACHE_SIZE
+        )
+    }
+
+    /** Get current Internet state.  */
+    private fun isInternetAvailable(connectivityManager: ConnectivityManager): Boolean {
+        val netInfo = connectivityManager.activeNetworkInfo
+        return netInfo != null && netInfo.isConnected
+    }
 }

@@ -14,43 +14,45 @@ import javax.inject.Singleton
 
 //Rest api url
 const val BASE_URL = "https://cloud-api.yandex.net" + "/v1/"
+
 //App client id
 const val CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f"
+
 //Yandex oauth url
 const val OAUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=$CLIENT_ID"
 
 @Module(
-  includes = [
-    HttpClientModule::class,
-    PicassoModule::class
-  ]
+    includes = [
+        HttpClientModule::class,
+        PicassoModule::class
+    ]
 )
 class RetrofitModule {
 
-  private val dateFormat = "dd.MM.yyyy"
+    private val dateFormat = "dd.MM.yyyy"
 
-  @Provides
-  @Singleton
-  fun provideGson(): Gson {
-    return GsonBuilder()
-      .setDateFormat(dateFormat)
-      .create()
-  }
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder()
+            .setDateFormat(dateFormat)
+            .create()
+    }
 
-  @Provides
-  @Singleton
-  fun provideRetrofit(httpClient: OkHttpClient, gson: Gson): Retrofit {
-    return Retrofit.Builder()
-      .baseUrl(BASE_URL)
-      .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-      .addConverterFactory(GsonConverterFactory.create(gson))
-      .client(httpClient)
-      .build()
-  }
+    @Provides
+    @Singleton
+    fun provideRetrofit(httpClient: OkHttpClient, gson: Gson): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(httpClient)
+            .build()
+    }
 
-  @Provides
-  @Singleton
-  fun provideApi(retrofit: Retrofit): DiskApi {
-    return retrofit.create(DiskApi::class.java)
-  }
+    @Provides
+    @Singleton
+    fun provideApi(retrofit: Retrofit): DiskApi {
+        return retrofit.create(DiskApi::class.java)
+    }
 }

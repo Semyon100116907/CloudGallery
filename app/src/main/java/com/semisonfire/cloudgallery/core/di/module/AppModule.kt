@@ -6,11 +6,10 @@ import com.semisonfire.cloudgallery.core.di.module.data.remote.RetrofitModule
 import dagger.Module
 
 @Module(
-  includes = [
-    ContextModule::class,
-    RoomModule::class,
-    SharedPreferencesModule::class,
-    RetrofitModule::class
-  ]
+    includes = [
+        RoomModule::class,
+        SharedPreferencesModule::class,
+        RetrofitModule::class
+    ]
 )
 class AppModule

@@ -13,71 +13,71 @@ import io.reactivex.Observable
 
 interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
 
-  fun getPhotos(page: Int)
-  fun restorePhotos(photos: List<Photo>)
-  fun deletePhotos(photos: List<Photo>)
-  fun clear()
+    fun getPhotos(page: Int)
+    fun restorePhotos(photos: List<Photo>)
+    fun deletePhotos(photos: List<Photo>)
+    fun clear()
 }
 
 class TrashPresenterImpl(
-  private val trashRepository: TrashRepository
+    private val trashRepository: TrashRepository
 ) : BasePresenter<TrashViewModel, TrashView>(), TrashPresenter {
 
-  override val viewModel = TrashViewModel()
+    override val viewModel = TrashViewModel()
 
-  override fun getPhotos(page: Int) {
-    compositeDisposable.add(
-      trashRepository.getTrashPhotos(LIMIT, page)
-        .map { photoList ->
-          photoList.asSequence()
-            .filter { it.mediaType.isNotEmpty() }
-            .filter { it.mediaType == "image" }
-            .toList()
-        }
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onTrashLoaded(it) },
-          { it.printThrowable() }
+    override fun getPhotos(page: Int) {
+        compositeDisposable.add(
+            trashRepository.getTrashPhotos(LIMIT, page)
+                .map { photoList ->
+                    photoList.asSequence()
+                        .filter { it.mediaType.isNotEmpty() }
+                        .filter { it.mediaType == "image" }
+                        .toList()
+                }
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onTrashLoaded(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
 
-  override fun restorePhotos(photos: List<Photo>) {
-    compositeDisposable.add(
-      Observable.fromIterable(photos.toMutableList())
-        .concatMap { trashRepository.restoreTrashPhoto(it) }
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoRestored(it) },
-          { it.printThrowable() }
+    override fun restorePhotos(photos: List<Photo>) {
+        compositeDisposable.add(
+            Observable.fromIterable(photos.toMutableList())
+                .concatMap { trashRepository.restoreTrashPhoto(it) }
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onPhotoRestored(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
 
-  override fun deletePhotos(photos: List<Photo>) {
-    compositeDisposable.add(
-      Observable.fromIterable(photos.toMutableList())
-        .concatMap { trashRepository.deleteTrashPhoto(it) }
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onPhotoDeleted(it) },
-          { it.printThrowable() }
+    override fun deletePhotos(photos: List<Photo>) {
+        compositeDisposable.add(
+            Observable.fromIterable(photos.toMutableList())
+                .concatMap { trashRepository.deleteTrashPhoto(it) }
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onPhotoDeleted(it) },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
 
-  override fun clear() {
-    compositeDisposable.add(
-      trashRepository.clearTrash()
-        .subscribeOn(background())
-        .observeOn(foreground())
-        .subscribe(
-          { view?.onTrashCleared() },
-          { it.printThrowable() }
+    override fun clear() {
+        compositeDisposable.add(
+            trashRepository.clearTrash()
+                .subscribeOn(background())
+                .observeOn(foreground())
+                .subscribe(
+                    { view?.onTrashCleared() },
+                    { it.printThrowable() }
+                )
         )
-    )
-  }
+    }
 }

@@ -7,5 +7,5 @@ import com.semisonfire.cloudgallery.ui.settings.model.SettingsViewModel
 interface SettingsPresenter : MvpPresenter<SettingsViewModel, SettingsView>
 
 class SettingsPresenterImpl : BasePresenter<SettingsViewModel, SettingsView>(), SettingsPresenter {
-  override val viewModel = SettingsViewModel()
+    override val viewModel = SettingsViewModel()
 }

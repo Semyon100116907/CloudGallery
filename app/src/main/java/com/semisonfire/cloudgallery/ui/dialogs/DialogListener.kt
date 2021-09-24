@@ -4,7 +4,7 @@ import android.view.View
 
 abstract class DialogListener {
 
-  open fun onPositiveClick() {}
-  open fun onNegativeClick() {}
-  open fun onItemClick(view: View) {}
+    open fun onPositiveClick() {}
+    open fun onNegativeClick() {}
+    open fun onItemClick(view: View) {}
 }

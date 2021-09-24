@@ -18,82 +18,82 @@ import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
-  : AppCompatActivity(), MvpView<M>, HasSupportFragmentInjector {
+    : AppCompatActivity(), MvpView<M>, HasSupportFragmentInjector {
 
-  @Inject
-  internal lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
+    @Inject
+    internal lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
 
-  @Inject
-  lateinit var permissionManager: PermissionManager
+    @Inject
+    lateinit var permissionManager: PermissionManager
 
-  @Inject
-  lateinit var router: Router
+    @Inject
+    lateinit var router: Router
 
-  @Inject
-  lateinit var presenter: P
+    @Inject
+    lateinit var presenter: P
 
-  protected val disposables: CompositeDisposable = CompositeDisposable()
+    protected val disposables: CompositeDisposable = CompositeDisposable()
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    AndroidInjection.inject(this)
-    super.onCreate(savedInstanceState)
-    setContentView(layout())
-    bind()
-  }
-
-  override fun supportFragmentInjector(): AndroidInjector<Fragment> {
-    return supportFragmentInjector
-  }
-
-  @CallSuper
-  protected open fun bind() {
-  }
-
-  override fun onResume() {
-    super.onResume()
-    presenter.attachView(getMvpView())
-  }
-
-  override fun showContent(model: M) {
-
-  }
-
-  override fun onPause() {
-    super.onPause()
-    presenter.detachView()
-  }
-
-  private fun getMvpView(): V {
-    return this as V
-  }
-
-  override fun onRequestPermissionsResult(
-    requestCode: Int,
-    permissions: Array<out String>,
-    grantResults: IntArray
-  ) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    permissionManager.onRequestPermissionsResult(
-      this,
-      requestCode,
-      permissions,
-      grantResults
-    )
-  }
-
-  override fun onBackPressed() {
-    if (supportFragmentManager.backStackEntryCount > 0) {
-      router.back()
-    } else {
-      super.onBackPressed()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
+        super.onCreate(savedInstanceState)
+        setContentView(layout())
+        bind()
     }
-  }
 
-  override fun onDestroy() {
-    super.onDestroy()
-    disposables.dispose()
-    presenter.dispose()
-  }
+    override fun supportFragmentInjector(): AndroidInjector<Fragment> {
+        return supportFragmentInjector
+    }
 
-  abstract fun layout(): Int
+    @CallSuper
+    protected open fun bind() {
+    }
+
+    override fun onResume() {
+        super.onResume()
+        presenter.attachView(getMvpView())
+    }
+
+    override fun showContent(model: M) {
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        presenter.detachView()
+    }
+
+    private fun getMvpView(): V {
+        return this as V
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionManager.onRequestPermissionsResult(
+            this,
+            requestCode,
+            permissions,
+            grantResults
+        )
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            router.back()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposables.dispose()
+        presenter.dispose()
+    }
+
+    abstract fun layout(): Int
 }

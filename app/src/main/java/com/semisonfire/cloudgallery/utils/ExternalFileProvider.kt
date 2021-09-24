@@ -9,26 +9,26 @@ import java.io.File
 
 class ExternalFileProvider : FileProvider() {
 
-  lateinit var privateDirectory: File
-    private set
+    lateinit var privateDirectory: File
+        private set
 
-  val publicDirectory: File
-    get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+    val publicDirectory: File
+        get() = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 
-  fun getFile(uri: Uri): File {
-    return File(privateDirectory, uri.lastPathSegment ?: "")
-  }
+    fun getFile(uri: Uri): File {
+        return File(privateDirectory, uri.lastPathSegment ?: "")
+    }
 
-  fun getUri(file: File): Uri {
-    return getUriForFile(
-      App.component.context(),
-      BuildConfig.APPLICATION_ID + ".provider",
-      file
-    )
-  }
+    fun getUri(file: File): Uri {
+        return getUriForFile(
+            App.component.context(),
+            BuildConfig.APPLICATION_ID + ".provider",
+            file
+        )
+    }
 
-  fun setPrivateDirectory(directory: File, name: String) {
-    privateDirectory = File(directory, name)
-  }
+    fun setPrivateDirectory(directory: File, name: String) {
+        privateDirectory = File(directory, name)
+    }
 
 }

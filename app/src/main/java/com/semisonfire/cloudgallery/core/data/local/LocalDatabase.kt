@@ -7,20 +7,20 @@ import com.semisonfire.cloudgallery.core.data.local.dao.PhotoDao
 import com.semisonfire.cloudgallery.core.data.model.Photo
 
 @Database(
-  entities = [
-    Photo::class
-  ],
-  version = LocalDatabase.DATABASE_VERSION,
-  exportSchema = false
+    entities = [
+        Photo::class
+    ],
+    version = LocalDatabase.DATABASE_VERSION,
+    exportSchema = false
 )
 abstract class LocalDatabase : RoomDatabase() {
 
-  /*Dao*/
-  abstract val photoDao: PhotoDao
+    /*Dao*/
+    abstract val photoDao: PhotoDao
 
-  companion object {
-    internal const val DATABASE_VERSION = 2
-  }
+    companion object {
+        internal const val DATABASE_VERSION = 2
+    }
 
-  /*Migrations*/
+    /*Migrations*/
 }

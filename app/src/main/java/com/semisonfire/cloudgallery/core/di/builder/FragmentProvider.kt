@@ -13,15 +13,15 @@ import dagger.android.ContributesAndroidInjector
 @Module
 abstract class FragmentProvider {
 
-  @FragmentScope
-  @ContributesAndroidInjector(modules = [DiskModule::class])
-  internal abstract fun contributeDiskFragment(): DiskFragment
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [DiskModule::class])
+    internal abstract fun contributeDiskFragment(): DiskFragment
 
-  @FragmentScope
-  @ContributesAndroidInjector(modules = [TrashModule::class])
-  internal abstract fun contributeTrashFragment(): TrashFragment
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [TrashModule::class])
+    internal abstract fun contributeTrashFragment(): TrashFragment
 
-  @FragmentScope
-  @ContributesAndroidInjector(modules = [SettingsModule::class])
-  internal abstract fun contributeSettingsFragment(): SettingsFragment
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [SettingsModule::class])
+    internal abstract fun contributeSettingsFragment(): SettingsFragment
 }
