@@ -19,7 +19,9 @@ public class SelectableHelper {
     public interface OnPhotoListener {
 
         void onPhotoClick(List<Photo> photos, int position);
+
         void onPhotoLongClick();
+
         void onSelectedPhotoClick(Photo photo);
     }
 }

@@ -6,11 +6,11 @@ const val TYPE_UPLOAD = 2
 const val TYPE_PROGRESS = 3
 
 abstract class DiskItem {
-  /** Item type.  */
-  abstract val type: Int
+    /** Item type.  */
+    abstract val type: Int
 }
 
 class ProgressItem : DiskItem() {
-  override val type: Int
-    get() = TYPE_PROGRESS
+    override val type: Int
+        get() = TYPE_PROGRESS
 }

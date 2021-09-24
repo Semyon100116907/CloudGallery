@@ -9,15 +9,15 @@ private const val PREF_TOKEN = "TOKEN"
 @Singleton
 class DiskPreferences @Inject constructor(private val sharedPreferences: SharedPreferences) {
 
-  var prefToken: String?
-    get() = sharedPreferences.getString(PREF_TOKEN, null)
-    set(token) {
-      val editor = sharedPreferences.edit()
-      editor.putString(PREF_TOKEN, token)
-      editor.apply()
-    }
+    var prefToken: String?
+        get() = sharedPreferences.getString(PREF_TOKEN, null)
+        set(token) {
+            val editor = sharedPreferences.edit()
+            editor.putString(PREF_TOKEN, token)
+            editor.apply()
+        }
 
-  fun clear() {
-    sharedPreferences.edit().remove(PREF_TOKEN).apply()
-  }
+    fun clear() {
+        sharedPreferences.edit().remove(PREF_TOKEN).apply()
+    }
 }
