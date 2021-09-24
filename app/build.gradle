@@ -3,11 +3,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
-repositories {
-    mavenCentral()
-    google()
-}
-
 android {
     compileSdkVersion 28
     buildToolsVersion '29.0.0'
@@ -24,9 +19,14 @@ android {
 
         multiDexEnabled = true
     }
+
     buildTypes {
         debug {
+            isDefault.set(true)
+
             applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+
             debuggable true
             minifyEnabled false
             ext.alwaysUpdateBuildId = false
@@ -35,8 +35,15 @@ android {
             debuggable false
             minifyEnabled true
             shrinkResources true
+            zipAlignEnabled true
             crunchPngs false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java', 'src-gen/main/java']
         }
     }
 
@@ -45,11 +52,15 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    lintOptions {
-        abortOnError false
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 
-        disable 'GoogleAppIndexingWarning'
-        disable 'InvalidPackage'
+    lintOptions {
+        abortOnError = false
+        ignoreTestSources = true
+
+        lintConfig = file("${project.rootDir}/quality/lint_rules.xml")
     }
 }
 
