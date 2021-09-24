@@ -2,9 +2,7 @@ package com.semisonfire.cloudgallery
 
 import android.app.Activity
 import android.app.Application
-import android.content.Context
 import android.os.Environment
-import android.support.multidex.MultiDex
 import com.semisonfire.cloudgallery.core.di.AppComponent
 import com.semisonfire.cloudgallery.core.di.DaggerAppComponent
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
@@ -21,11 +19,6 @@ class App : Application(), HasActivityInjector {
 
     override fun activityInjector(): AndroidInjector<Activity> {
         return activityInjector
-    }
-
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(base)
     }
 
     override fun onCreate() {

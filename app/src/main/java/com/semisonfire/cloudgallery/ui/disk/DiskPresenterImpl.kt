@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.ui.disk
 
 import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
@@ -10,7 +11,6 @@ import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import com.semisonfire.cloudgallery.utils.foreground
-import com.semisonfire.cloudgallery.utils.printThrowable
 import io.reactivex.Observable
 import java.net.URL
 

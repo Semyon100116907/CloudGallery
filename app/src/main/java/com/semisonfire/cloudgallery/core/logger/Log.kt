@@ -1,38 +1,13 @@
-package com.semisonfire.cloudgallery.utils
+package com.semisonfire.cloudgallery.core.logger
 
 import android.util.Log
 import com.semisonfire.cloudgallery.BuildConfig
-import com.semisonfire.cloudgallery.utils.Log.d
-import com.semisonfire.cloudgallery.utils.Log.e
-import com.semisonfire.cloudgallery.utils.Log.i
-import com.semisonfire.cloudgallery.utils.Log.log
 
-fun Any.debugLog(message: String) {
-    d(this.javaClass, message)
-}
+internal const val ERROR = 0
+internal const val INFO = 1
+internal const val DEBUG = 2
 
-fun Any.infoLog(message: String, tag: String = "") {
-    if (tag.isNotBlank()) {
-        log(tag, message, INFO)
-    } else {
-        i(this.javaClass, message)
-    }
-}
-
-fun Any.errorLog(message: String) {
-    e(this.javaClass, message)
-}
-
-fun Throwable.printThrowable() {
-    this.printStackTrace()
-    log("ERROR", this.message ?: this.javaClass.simpleName + "\n", ERROR)
-}
-
-const val ERROR = 0
-const val INFO = 1
-const val DEBUG = 2
-
-object Log {
+internal object Log {
 
     private val info = { tag: String, message: String -> Log.i(tag, message) }
     private val debug = { tag: String, message: String -> Log.d(tag, message) }

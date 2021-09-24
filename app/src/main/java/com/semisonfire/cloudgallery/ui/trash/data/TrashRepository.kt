@@ -4,7 +4,7 @@ import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.core.data.remote.api.IMAGE_SIZE_XL
 import com.semisonfire.cloudgallery.core.data.remote.api.SORT_DELETED_DESC
-import com.semisonfire.cloudgallery.utils.printThrowable
+import com.semisonfire.cloudgallery.core.logger.printThrowable
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single

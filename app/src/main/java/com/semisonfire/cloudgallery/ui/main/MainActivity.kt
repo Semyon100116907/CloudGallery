@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.widget.Toolbar
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
@@ -13,7 +14,6 @@ import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
 import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
 import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
 import com.semisonfire.cloudgallery.utils.foreground
-import com.semisonfire.cloudgallery.utils.printThrowable
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
