@@ -7,13 +7,11 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.core.data.remote.interceptors.AuthInterceptor
-import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
 import dagger.Module
 import dagger.Provides
 import okhttp3.Cache
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -30,7 +28,9 @@ private const val CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f"
 const val OAUTH_URL =
     "https://oauth.yandex.ru/authorize?response_type=token&client_id=$CLIENT_ID"
 
-@Module
+@Module(
+    includes = [NetworkInterceptorsModule::class]
+)
 class NetworkModule {
 
     companion object {
@@ -39,7 +39,6 @@ class NetworkModule {
         //Rest api url
         private const val BASE_URL = "https://cloud-api.yandex.net/v1/"
     }
-
 
     @Provides
     @Singleton
@@ -71,73 +70,33 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideHttpClient(
-        cache: Cache,
-        networkConnectionInterceptor: NetworkConnectionInterceptor,
-        loggingInterceptor: HttpLoggingInterceptor,
-        authInterceptor: AuthInterceptor
+        application: Application,
+        interceptors: Set<@JvmSuppressWildcards Interceptor>,
+        @DebugInterceptors debugInterceptors: Set<@JvmSuppressWildcards Interceptor>,
     ): OkHttpClient {
-
-        //Build http client for api
-        val builder = getHttpClientBuilder(
-            cache,
-            networkConnectionInterceptor
-        )
-        builder.addInterceptor(authInterceptor)
-
-        //Add logging in debug
-        if (BuildConfig.DEBUG) {
-            builder.addInterceptor(loggingInterceptor)
-        }
-        return builder.build()
-    }
-
-    private fun getHttpClientBuilder(
-        cache: Cache,
-        networkConnectionInterceptor: NetworkConnectionInterceptor
-    ): OkHttpClient.Builder {
         return OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
-            .cache(cache)
-            .addInterceptor(networkConnectionInterceptor)
+            .cache(
+                Cache(
+                    File(application.cacheDir, cacheName),
+                    DISK_CACHE_SIZE
+                )
+            )
+            .apply {
+                interceptors.forEach { addInterceptor(it) }
+
+                if (BuildConfig.DEBUG) {
+                    debugInterceptors.forEach { addInterceptor(it) }
+                }
+            }
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideConnectivityManager(application: Application): ConnectivityManager {
         return application.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    }
-
-    @Provides
-    @Singleton
-    fun provideNetworkConnectionInterceptor(connectivityManager: ConnectivityManager): NetworkConnectionInterceptor {
-        return object : NetworkConnectionInterceptor() {
-            override val isInternetAvailable: Boolean
-                get() = this@NetworkModule.isInternetAvailable(connectivityManager)
-        }
-    }
-
-    @Provides
-    @Singleton
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        val loggingInterceptor = HttpLoggingInterceptor()
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-        return loggingInterceptor
-    }
-
-    @Provides
-    @Singleton
-    fun provideCache(application: Application): Cache {
-        return Cache(
-            File(application.cacheDir, cacheName),
-            DISK_CACHE_SIZE
-        )
-    }
-
-    /** Get current Internet state.  */
-    private fun isInternetAvailable(connectivityManager: ConnectivityManager): Boolean {
-        val netInfo = connectivityManager.activeNetworkInfo
-        return netInfo != null && netInfo.isConnected
     }
 }

@@ -7,9 +7,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class AuthInterceptor @Inject constructor(
     private val authRepository: AuthRepository
 ) : Interceptor {
