@@ -5,15 +5,15 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Parcelable
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
@@ -201,7 +201,7 @@ class TrashFragment : SelectableFragment<TrashViewModel, TrashView, TrashPresent
         photoAdapter.removeItem(photo)
 
         context?.let {
-            val action = it.string(R.string.msg_restored).toLowerCase(Locale.ROOT)
+            val action = it.string(R.string.msg_restored).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
         }
         setEnabledSelection(false)
@@ -215,7 +215,7 @@ class TrashFragment : SelectableFragment<TrashViewModel, TrashView, TrashPresent
         photoAdapter.removeItem(photo)
 
         context?.let {
-            val action = it.string(R.string.msg_deleted).toLowerCase(Locale.ROOT)
+            val action = it.string(R.string.msg_deleted).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
         }
         setEnabledSelection(false)
@@ -234,11 +234,11 @@ class TrashFragment : SelectableFragment<TrashViewModel, TrashView, TrashPresent
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
-        data: Intent
+        data: Intent?
     ) {
-        super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && requestCode == PhotoDetailActivity.DETAIL_REQUEST) {
-            val isDataChanged = data.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
+            val isDataChanged =
+                data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false) ?: false
             if (isDataChanged) {
                 updateDataSet()
             }

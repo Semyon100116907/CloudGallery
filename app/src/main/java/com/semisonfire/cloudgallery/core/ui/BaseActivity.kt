@@ -1,27 +1,19 @@
 package com.semisonfire.cloudgallery.core.ui
 
 import android.os.Bundle
-import android.support.annotation.CallSuper
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import androidx.annotation.CallSuper
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import dagger.android.AndroidInjection
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.support.DaggerAppCompatActivity
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
-    : AppCompatActivity(), MvpView<M>, HasSupportFragmentInjector {
-
-    @Inject
-    internal lateinit var supportFragmentInjector: DispatchingAndroidInjector<Fragment>
+    : DaggerAppCompatActivity(), MvpView<M> {
 
     @Inject
     lateinit var permissionManager: PermissionManager
@@ -35,14 +27,9 @@ abstract class BaseActivity<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M
     protected val disposables: CompositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(layout())
         bind()
-    }
-
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> {
-        return supportFragmentInjector
     }
 
     @CallSuper

@@ -5,13 +5,13 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.drawable.Drawable
-import android.support.v4.view.PagerAdapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.viewpager.widget.PagerAdapter
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.squareup.picasso.Picasso

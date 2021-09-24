@@ -1,11 +1,11 @@
 package com.semisonfire.cloudgallery.ui.custom
 
 import android.graphics.Rect
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.ItemDecoration
 import android.view.View
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.semisonfire.cloudgallery.ui.disk.adapter.items.TYPE_HEADER
 
 class ItemDecorator(private val space: Int) : ItemDecoration() {

@@ -1,9 +1,7 @@
 package com.semisonfire.cloudgallery.core.ui.navigation
 
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import com.semisonfire.cloudgallery.core.ui.navigation.nav.EXAMPLE_KEY
-import com.semisonfire.cloudgallery.core.ui.navigation.nav.ExampleNavigator
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Command
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
 import com.semisonfire.cloudgallery.ui.disk.DiskNavigator
@@ -116,7 +114,6 @@ class NavigatorImpl(private val fragmentManager: FragmentManager) : Navigator() 
         if (navigatorByKey != null) return navigatorByKey
 
         val navigator = when (key) {
-            EXAMPLE_KEY -> ExampleNavigator()
             DISK_KEY -> DiskNavigator()
             TRASH_KEY -> TrashNavigator()
             SETTINGS_KEY -> SettingsNavigator()

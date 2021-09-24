@@ -6,14 +6,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
-import android.support.v4.app.FragmentActivity
-import android.support.v4.view.ViewPager
-import android.support.v4.view.ViewPager.OnPageChangeListener
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager.widget.ViewPager
+import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.mvp.MvpView
@@ -56,7 +56,7 @@ class PhotoDetailActivity :
         when {
             intent != null -> {
                 currentPosition = intent.getIntExtra(EXTRA_CURRENT_PHOTO, -1)
-                photoList = intent.getParcelableArrayListExtra(EXTRA_PHOTOS)
+                photoList = intent.getParcelableArrayListExtra(EXTRA_PHOTOS) ?: mutableListOf()
                 from = intent.getIntExtra(EXTRA_FROM, -1)
             }
             savedInstanceState != null -> {

@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.core.presentation
 
-import android.support.annotation.CallSuper
+import androidx.annotation.CallSuper
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.mvp.MvpViewModel

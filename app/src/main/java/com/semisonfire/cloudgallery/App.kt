@@ -1,7 +1,5 @@
 package com.semisonfire.cloudgallery
 
-import android.app.Activity
-import android.app.Application
 import android.os.Environment
 import com.semisonfire.cloudgallery.core.di.AppComponent
 import com.semisonfire.cloudgallery.core.di.DaggerAppComponent
@@ -9,20 +7,11 @@ import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.squareup.picasso.Picasso
 import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import javax.inject.Inject
+import dagger.android.DaggerApplication
 
-class App : Application(), HasActivityInjector {
-    @Inject
-    internal lateinit var activityInjector: DispatchingAndroidInjector<Activity>
-
-    override fun activityInjector(): AndroidInjector<Activity> {
-        return activityInjector
-    }
+class App : DaggerApplication() {
 
     override fun onCreate() {
-        super.onCreate()
 
         //Init external file provider
         val fileProvider = ExternalFileProvider()
@@ -36,6 +25,11 @@ class App : Application(), HasActivityInjector {
         component.inject(this)
 
         Picasso.setSingletonInstance(component.picasso())
+        super.onCreate()
+    }
+
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
+        return component
     }
 
     companion object {

@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.photo.di
 
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.core.di.module.ActivityModule
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator

@@ -2,11 +2,11 @@ package com.semisonfire.cloudgallery.ui.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
-import android.support.design.widget.BottomSheetBehavior
-import android.support.design.widget.BottomSheetDialog
-import android.support.v4.app.DialogFragment
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.semisonfire.cloudgallery.R
 
 class BottomDialogFragment : DialogFragment() {
@@ -22,7 +22,7 @@ class BottomDialogFragment : DialogFragment() {
 
         bottomSheetDialog.setContentView(sheetView)
 
-        val behavior = BottomSheetBehavior.from(sheetView.parent as? View)
+        val behavior = BottomSheetBehavior.from(sheetView.parent as View)
         return bottomSheetDialog.apply {
             setOnShowListener {
                 behavior.setPeekHeight(sheetView.height)
@@ -33,7 +33,7 @@ class BottomDialogFragment : DialogFragment() {
     private fun bind(sheetView: View) {
         val clickListener = View.OnClickListener {
             dialogListener?.onItemClick(it)
-            dialog.cancel()
+            dismiss()
         }
 
         val camera = sheetView.findViewById<ViewGroup>(R.id.container_camera)

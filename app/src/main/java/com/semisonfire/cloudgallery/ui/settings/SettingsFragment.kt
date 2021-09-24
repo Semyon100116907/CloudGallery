@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.ui.settings
 
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.widget.SwipeRefreshLayout
 import android.view.View
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseFragment

@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.ui.main
 
 import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
-import android.support.v7.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.mvp.MvpView
@@ -83,7 +83,7 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
             val matcher = pattern.matcher(data.toString())
             if (matcher.find()) {
                 val token = matcher.group(1)
-                if (token.isNotEmpty()) {
+                if (!token.isNullOrEmpty()) {
                     presenter.saveToken(token)
                 }
             }
@@ -92,7 +92,7 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
 
     /** Create navigation instance.  */
     private fun addBottomNavigation() {
-        bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
+        bottomNavigationView?.setOnItemSelectedListener { item ->
             val title: String
             val key = when (item.itemId) {
                 R.id.nav_disk -> {
@@ -107,7 +107,7 @@ class MainActivity : BaseActivity<MainViewModel, MainView, MainPresenter>(), Mai
                     title = string(R.string.msg_settings)
                     SETTINGS_KEY
                 }
-                else -> return@setOnNavigationItemSelectedListener false
+                else -> return@setOnItemSelectedListener false
             }
 
             key.let {

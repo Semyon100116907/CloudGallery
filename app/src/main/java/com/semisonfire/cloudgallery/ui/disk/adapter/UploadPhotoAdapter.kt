@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.ui.disk.adapter
 
-import android.support.v7.util.DiffUtil
 import android.view.View
 import android.widget.ImageView
+import androidx.recyclerview.widget.DiffUtil
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter

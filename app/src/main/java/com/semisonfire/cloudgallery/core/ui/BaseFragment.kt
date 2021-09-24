@@ -1,24 +1,23 @@
 package com.semisonfire.cloudgallery.core.ui
 
 import android.os.Bundle
-import android.support.annotation.CallSuper
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
+import androidx.appcompat.app.AppCompatActivity
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import dagger.android.support.AndroidSupportInjection
+import dagger.android.support.DaggerFragment
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
 abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>>
-    : Fragment(), MvpView<M> {
+    : DaggerFragment(), MvpView<M> {
 
     @Inject
     lateinit var permissionManager: PermissionManager
@@ -30,11 +29,6 @@ abstract class BaseFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M
     lateinit var presenter: P
 
     protected val disposables: CompositeDisposable = CompositeDisposable()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        AndroidSupportInjection.inject(this)
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -1,10 +1,10 @@
 package com.semisonfire.cloudgallery.core.ui.state
 
 import android.content.Context
-import android.support.annotation.LayoutRes
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.LayoutRes
 import com.semisonfire.cloudgallery.core.ui.state.strategy.ShowHideStrategy
 import com.semisonfire.cloudgallery.core.ui.state.strategy.StateChangeStrategy
 

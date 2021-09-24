@@ -2,7 +2,7 @@ package com.semisonfire.cloudgallery.utils
 
 import android.net.Uri
 import android.os.Environment
-import android.support.v4.content.FileProvider
+import androidx.core.content.FileProvider
 import com.semisonfire.cloudgallery.App
 import com.semisonfire.cloudgallery.BuildConfig
 import java.io.File

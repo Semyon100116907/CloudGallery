@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.core.data.local.dao
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import io.reactivex.Single
 

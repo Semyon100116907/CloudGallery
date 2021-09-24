@@ -3,13 +3,13 @@ package com.semisonfire.cloudgallery.utils
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
-import android.support.annotation.ColorInt
-import android.support.annotation.ColorRes
-import android.support.annotation.DimenRes
-import android.support.annotation.StringRes
-import android.support.v4.content.ContextCompat
 import android.view.Menu
 import android.widget.Toast
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.annotation.DimenRes
+import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 

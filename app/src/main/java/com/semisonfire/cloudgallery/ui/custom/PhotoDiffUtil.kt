@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.custom
 
-import android.support.v7.util.DiffUtil
+import androidx.recyclerview.widget.DiffUtil
 import com.semisonfire.cloudgallery.core.data.model.Photo
 
 class PhotoDiffUtil(

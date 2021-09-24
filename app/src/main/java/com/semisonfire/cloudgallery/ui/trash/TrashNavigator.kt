@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.trash
 
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
 

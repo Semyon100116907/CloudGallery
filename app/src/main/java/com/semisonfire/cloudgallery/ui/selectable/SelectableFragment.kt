@@ -2,13 +2,13 @@ package com.semisonfire.cloudgallery.ui.selectable
 
 import android.graphics.Color
 import android.os.Bundle
-import android.support.annotation.CallSuper
-import android.support.annotation.MenuRes
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
+import androidx.annotation.CallSuper
+import androidx.annotation.MenuRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.mvp.MvpView
