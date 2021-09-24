@@ -23,7 +23,7 @@ sealed class UploadResult(open val photo: Photo, val uploaded: Boolean) {
 }
 
 @Singleton
-class UploadRepository @Inject constructor(
+class UploadManager @Inject constructor(
     private val diskApi: DiskApi,
     private val database: LocalDatabase,
     private val diskRepository: DiskRepository

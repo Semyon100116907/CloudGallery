@@ -6,7 +6,7 @@ import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
-import com.semisonfire.cloudgallery.ui.disk.data.UploadRepository
+import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
@@ -30,14 +30,14 @@ interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
 
 class DiskPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
-    private val uploadRepository: UploadRepository
+    private val uploadManager: UploadManager
 ) : BasePresenter<DiskViewModel, DiskView>(), DiskPresenter {
 
     override val viewModel = DiskViewModel()
 
     init {
         compositeDisposable.add(
-            uploadRepository.uploadListener()
+            uploadManager.uploadListener()
                 .subscribeOn(background())
                 .observeOn(foreground())
                 .subscribe({
@@ -90,7 +90,7 @@ class DiskPresenterImpl @Inject constructor(
 
     override fun getUploadingPhotos() {
         compositeDisposable.add(
-            uploadRepository.uploadingPhotos
+            uploadManager.uploadingPhotos
                 .subscribeOn(background())
                 .observeOn(foreground())
                 .subscribe(
@@ -135,10 +135,10 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun uploadPhoto(photo: Photo) {
-        uploadRepository.uploadPhotos(photo)
+        uploadManager.uploadPhotos(photo)
     }
 
     override fun uploadPhotos(photos: List<Photo>) {
-        uploadRepository.uploadPhotos(*photos.toTypedArray())
+        uploadManager.uploadPhotos(*photos.toTypedArray())
     }
 }

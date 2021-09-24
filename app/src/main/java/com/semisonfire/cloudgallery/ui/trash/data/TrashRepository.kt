@@ -9,11 +9,9 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
-import javax.inject.Singleton
 
 private const val TRASH_PATH = "trash:/"
 
-@Singleton
 class TrashRepository @Inject constructor(
     private val diskApi: DiskApi
 ) {

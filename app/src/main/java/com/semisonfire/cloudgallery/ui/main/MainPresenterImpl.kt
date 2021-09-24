@@ -1,7 +1,7 @@
 package com.semisonfire.cloudgallery.ui.main
 
 import com.semisonfire.cloudgallery.core.data.remote.auth.Auth
-import com.semisonfire.cloudgallery.core.data.remote.auth.AuthRepository
+import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
 import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
 import com.semisonfire.cloudgallery.core.presentation.BasePresenter
 import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
@@ -14,17 +14,17 @@ interface MainPresenter : MvpPresenter<MainViewModel, MainView> {
 }
 
 class MainPresenterImpl @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authManager: AuthManager
 ) : BasePresenter<MainViewModel, MainView>(),
     MainPresenter {
 
     override val viewModel = MainViewModel()
 
     override fun saveToken(token: String) {
-        authRepository.saveToken(token)
+        authManager.saveToken(token)
     }
 
     override fun getTokenListener(): Observable<Auth.AuthModel> {
-        return authRepository.getAuthObservable().ofType(Auth.AuthModel::class.java)
+        return authManager.getAuthObservable().ofType(Auth.AuthModel::class.java)
     }
 }

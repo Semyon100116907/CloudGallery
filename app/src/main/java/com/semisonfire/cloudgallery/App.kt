@@ -4,7 +4,7 @@ import android.app.Application
 import android.os.Environment
 import com.semisonfire.cloudgallery.di.AppComponent
 import com.semisonfire.cloudgallery.di.DaggerAppComponent
-import com.semisonfire.cloudgallery.ui.di.ComponentProvider
+import com.semisonfire.cloudgallery.di.provider.ComponentProvider
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.squareup.picasso.Picasso

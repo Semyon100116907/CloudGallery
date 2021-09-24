@@ -21,8 +21,8 @@ import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
 import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
-import com.semisonfire.cloudgallery.ui.di.ComponentProvider
-import com.semisonfire.cloudgallery.ui.di.provideComponent
+import com.semisonfire.cloudgallery.di.provider.ComponentProvider
+import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent
 import com.semisonfire.cloudgallery.ui.photo.di.PhotoDetailComponent
 import com.semisonfire.cloudgallery.ui.photo.model.PhotoDetailViewModel

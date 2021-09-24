@@ -14,7 +14,7 @@ sealed class Auth {
 }
 
 @Singleton
-class AuthRepository @Inject constructor(
+class AuthManager @Inject constructor(
     private val preferences: DiskPreferences
 ) {
 

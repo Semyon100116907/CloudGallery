@@ -13,9 +13,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class DiskRepository @Inject constructor(
     private val diskApi: DiskApi
 ) {
