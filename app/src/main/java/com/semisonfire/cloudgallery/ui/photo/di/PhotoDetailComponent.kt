@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.ui.photo.di
 import androidx.appcompat.app.AppCompatActivity
 import com.semisonfire.cloudgallery.di.AppComponent
 import com.semisonfire.cloudgallery.di.annotation.ActivityScope
-import com.semisonfire.cloudgallery.ui.di.NavigationComponentApi
+import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import dagger.BindsInstance
 import dagger.Component

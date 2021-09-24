@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.di
+package com.semisonfire.cloudgallery.di.api
 
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
 
