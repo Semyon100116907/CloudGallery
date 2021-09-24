@@ -7,10 +7,10 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.di.module.data.remote.OAUTH_URL
 import com.semisonfire.cloudgallery.core.ui.state.State
 import com.semisonfire.cloudgallery.core.ui.state.StateViewDelegate
 import com.semisonfire.cloudgallery.core.ui.state.strategy.EnterActionStrategy
+import com.semisonfire.cloudgallery.di.module.OAUTH_URL
 import com.semisonfire.cloudgallery.utils.string
 import javax.inject.Inject
 import javax.inject.Singleton

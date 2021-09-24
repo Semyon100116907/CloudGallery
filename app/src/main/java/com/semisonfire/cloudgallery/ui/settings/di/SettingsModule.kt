@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.settings.di
 
-import com.semisonfire.cloudgallery.core.di.FragmentScope
+import com.semisonfire.cloudgallery.di.annotation.FragmentScope
 import com.semisonfire.cloudgallery.ui.settings.SettingsPresenter
 import com.semisonfire.cloudgallery.ui.settings.SettingsPresenterImpl
 import dagger.Module

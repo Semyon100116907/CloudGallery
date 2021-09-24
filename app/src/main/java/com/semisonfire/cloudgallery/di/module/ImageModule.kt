@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.di.module.data.remote
+package com.semisonfire.cloudgallery.di.module
 
 import android.app.Application
 import com.semisonfire.cloudgallery.BuildConfig
@@ -16,7 +16,7 @@ import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
-class PicassoModule {
+class ImageModule {
     private val cacheName: String = "picasso-cache"
 
     @Provides

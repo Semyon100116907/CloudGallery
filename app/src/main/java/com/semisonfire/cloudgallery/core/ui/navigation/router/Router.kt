@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.core.ui.navigation.router
 
-import com.semisonfire.cloudgallery.core.di.ActivityScope
 import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
 import com.semisonfire.cloudgallery.core.ui.navigation.NavigatorImpl
+import com.semisonfire.cloudgallery.di.annotation.ActivityScope
 import javax.inject.Inject
 
 sealed class Command {
