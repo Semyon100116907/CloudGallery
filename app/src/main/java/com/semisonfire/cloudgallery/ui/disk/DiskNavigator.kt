@@ -13,7 +13,7 @@ class DiskNavigator @Inject constructor() : Navigator {
 
     override fun container(): NavigatorContainer {
         return NavigatorContainer(
-            containerId = R.id.frame_fragment
+            containerId = R.id.fragment_container
         )
     }
 

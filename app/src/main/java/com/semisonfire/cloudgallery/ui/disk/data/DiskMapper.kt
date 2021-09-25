@@ -10,7 +10,11 @@ import javax.inject.Inject
 
 class DiskMapper @Inject constructor() {
 
-    fun map(photos: List<Photo>): List<Item> {
+    private var id = 0L
+
+    fun map(photos: List<Photo>, page: Int): List<Item> {
+
+        if (page == 0) id = 0
 
         val items = mutableListOf<Item>()
 
@@ -29,8 +33,6 @@ class DiskMapper @Inject constructor() {
                     )
                 )
         }
-
-        var id = 0L
 
         for ((date, photoItems) in photosByDateMap) {
             items.add(

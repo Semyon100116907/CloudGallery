@@ -30,7 +30,7 @@ class DiskRepository @Inject constructor(
                 SORT_MODIFIED_DESC
             )
             .map { response ->
-                response.items?.let { mapper.map(it) } ?: emptyList()
+                response.items?.let { mapper.map(it, page) } ?: emptyList()
             }
             .onErrorReturn { emptyList() }
     }

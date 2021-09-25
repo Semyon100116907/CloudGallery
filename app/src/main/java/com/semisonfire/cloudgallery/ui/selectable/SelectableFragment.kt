@@ -1,6 +1,5 @@
 package com.semisonfire.cloudgallery.ui.selectable
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -13,8 +12,9 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.ui.ContentFragment
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.utils.color
-import com.semisonfire.cloudgallery.utils.colorResDrawable
+import com.semisonfire.cloudgallery.utils.colorDrawable
 import com.semisonfire.cloudgallery.utils.setMenuIconsColor
+import com.semisonfire.cloudgallery.utils.themeColor
 
 private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
@@ -58,13 +58,17 @@ abstract class SelectableFragment : ContentFragment() {
     open fun setEnabledSelection(enabled: Boolean) {
         SelectableHelper.setMultipleSelection(enabled)
 
-        val secondaryColorRes = if (enabled) R.color.white else R.color.black
-        val secondaryColor = context?.color(secondaryColorRes) ?: Color.WHITE
+        val secondaryColor = if (enabled)
+            requireContext().color(R.color.color_white) else requireContext().themeColor(R.attr.colorTextPrimary)
 
         val activity = activity
         if (activity is AppCompatActivity) {
             activity.supportActionBar?.setDisplayHomeAsUpEnabled(enabled)
-            activity.supportActionBar?.setBackgroundDrawable(activity.colorResDrawable(if (enabled) R.color.colorAccent else R.color.white))
+            activity.supportActionBar?.setBackgroundDrawable(
+                activity.colorDrawable(
+                    if (enabled) activity.color(R.color.color_blue_500) else activity.themeColor(R.attr.colorPrimary)
+                )
+            )
 
             activity.findViewById<Toolbar>(R.id.toolbar).setTitleTextColor(secondaryColor)
         }

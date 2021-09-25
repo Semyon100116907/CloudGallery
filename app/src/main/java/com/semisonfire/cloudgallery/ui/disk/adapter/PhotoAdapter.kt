@@ -96,7 +96,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
         override fun bindItem(item: Photo) {
             photoImage.setImageDrawable(null)
             Picasso.get().load(item.preview)
-                .placeholder(R.color.black)
+                .placeholder(R.color.color_black)
                 .error(R.drawable.ic_gallery)
                 .resize(targetWidth, targetHeight)
                 .centerCrop()

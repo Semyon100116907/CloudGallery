@@ -18,7 +18,7 @@ import com.squareup.picasso.Picasso
 import com.squareup.picasso.Picasso.LoadedFrom
 import com.squareup.picasso.Target
 import com.squareup.picasso.Transformation
-import java.util.*
+import java.util.ArrayList
 
 class PhotoDetailAdapter : PagerAdapter() {
 
@@ -84,7 +84,7 @@ class PhotoDetailAdapter : PagerAdapter() {
             .load(photo.preview)
             .transform(FullScreenTransform(maxWidth))
             .noFade()
-            .placeholder(R.color.black)
+            .placeholder(R.color.color_black)
             .into(loadTarget)
         photoImageView.tag = loadTarget
         container.addView(view)

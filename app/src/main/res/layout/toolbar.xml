@@ -9,16 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        app:titleEnabled="false"
-        app:layout_scrollFlags="scroll">
+        app:layout_scrollFlags="scroll"
+        app:titleEnabled="false">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
+            style="@style/Toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            app:title="@string/app_name"
-            app:layout_collapseMode="pin" />
+            app:layout_collapseMode="pin"
+            app:title="@string/app_name" />
 
     </com.google.android.material.appbar.CollapsingToolbarLayout>
 </com.google.android.material.appbar.AppBarLayout>

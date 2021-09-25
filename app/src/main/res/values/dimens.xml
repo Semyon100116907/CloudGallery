@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!--Common-->
+    <dimen name="small_margin">4dp</dimen>
+    <dimen name="default_margin">8dp</dimen>
+    <dimen name="medium_margin">16dp</dimen>
+    <dimen name="large_margin">24dp</dimen>
+
+    <!--Common text size-->
+    <dimen name="text_head_l">24sp</dimen>
+    <dimen name="text_head">20sp</dimen>
+    <dimen name="text_body_l">18sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_caption">14sp</dimen>
+
+    <!--Audio list-->
+    <dimen name="audio_item_name_text_size">16sp</dimen>
+    <dimen name="audio_item_artist_text_size">12sp</dimen>
+    <dimen name="audio_item_cover_size">48dp</dimen>
+
+    <!--Audio detail-->
+    <dimen name="audio_name_text_size">18sp</dimen>
+    <dimen name="audio_artist_text_size">16sp</dimen>
+
+    <dimen name="item_cover_size">48dp</dimen>
+
+    <!--Bottom navigation-->
+    <dimen name="design_bottom_navigation_text_size" tools:override="true">@dimen/text_caption
+    </dimen>
+    <dimen name="design_bottom_navigation_active_text_size" tools:override="true">
+        @dimen/text_caption
+    </dimen>
+
     <!--Toolbar padding-->
     <dimen name="first_keyline">16dp</dimen>
     <dimen name="second_keyline">72dp</dimen>
