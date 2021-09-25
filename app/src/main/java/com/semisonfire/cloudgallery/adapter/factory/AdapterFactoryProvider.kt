@@ -1,5 +1,6 @@
 package com.semisonfire.cloudgallery.adapter.factory
 
+import com.semisonfire.cloudgallery.adapter.di.annotation.GroupItemProvider
 import javax.inject.Inject
 
 interface AdapterFactoryProvider {
@@ -10,10 +11,14 @@ interface AdapterFactoryProvider {
 }
 
 internal class AdapterFactoryProviderImpl @Inject constructor(
-    private val commonProviders: Set<@JvmSuppressWildcards ItemProvider>
+    @GroupItemProvider
+    groupItemProvider: Set<@JvmSuppressWildcards ItemProvider>,
+    commonProviders: Set<@JvmSuppressWildcards ItemProvider>
 ) : AdapterFactoryProvider {
 
+    private val providers = groupItemProvider + commonProviders
+
     override fun create(providers: Set<ItemProvider>): AdapterFactory {
-        return AdapterFactoryImpl(commonProviders + providers)
+        return AdapterFactoryImpl(this.providers + providers)
     }
 }
