@@ -263,7 +263,7 @@ class DiskFragment : SelectableFragment() {
                     override fun onPermissionDenied(permissionList: Array<String>) {
                         val positiveButton = AlertButton(activity.string(R.string.action_ok)) {
                             permissionManager.checkPermissions(
-                                activity,
+                                this@DiskFragment,
                                 this,
                                 *permissionList
                             )
@@ -289,7 +289,7 @@ class DiskFragment : SelectableFragment() {
                     }
                 }
                 permissionManager.checkPermissions(
-                    activity,
+                    this,
                     memoryPermission,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -450,7 +450,7 @@ class DiskFragment : SelectableFragment() {
                 override fun onItemClick(view: View) {
                     when (view.id) {
                         R.id.container_camera -> permissionManager.checkPermissions(
-                            activity,
+                            this@DiskFragment,
                             object : PermissionResultCallback {
                                 override fun onPermissionGranted() {
                                     createCameraIntent()
@@ -460,7 +460,7 @@ class DiskFragment : SelectableFragment() {
                                     val positiveButton =
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.checkPermissions(
-                                                activity,
+                                                this@DiskFragment,
                                                 this,
                                                 *permissionList
                                             )
@@ -493,7 +493,7 @@ class DiskFragment : SelectableFragment() {
                             Manifest.permission.CAMERA
                         )
                         R.id.container_gallery -> permissionManager.checkPermissions(
-                            activity,
+                            this@DiskFragment,
                             object : PermissionResultCallback {
                                 override fun onPermissionGranted() {
                                     createGalleryIntent()
@@ -503,7 +503,7 @@ class DiskFragment : SelectableFragment() {
                                     val positiveButton =
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.checkPermissions(
-                                                activity,
+                                                this@DiskFragment,
                                                 this,
                                                 *permissionList
                                             )

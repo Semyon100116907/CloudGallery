@@ -10,6 +10,7 @@ import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import javax.inject.Inject
 
 interface PermissionResultCallback {
@@ -81,6 +82,25 @@ class PermissionManager @Inject constructor() {
     }
 
     fun checkPermissions(
+        fragment: Fragment,
+        permissionResultCallback: PermissionResultCallback,
+        vararg permissions: String
+    ) {
+        if (permissions.isEmpty()) {
+            return
+        }
+        this.permissionResultCallback = permissionResultCallback
+
+        val isGranted = isGranted(permissions, fragment.requireActivity())
+
+        if (!isGranted) {
+            fragment.requestPermissions(permissions, PERMISSION_REQUEST_CODE)
+        } else {
+            permissionResultCallback.onPermissionGranted()
+        }
+    }
+
+    fun checkPermissions(
         context: Activity,
         permissionResultCallback: PermissionResultCallback,
         vararg permissions: String
@@ -93,6 +113,7 @@ class PermissionManager @Inject constructor() {
         val isGranted = isGranted(permissions, context)
 
         if (!isGranted) {
+
             ActivityCompat.requestPermissions(context, permissions, PERMISSION_REQUEST_CODE)
         } else {
             permissionResultCallback.onPermissionGranted()
