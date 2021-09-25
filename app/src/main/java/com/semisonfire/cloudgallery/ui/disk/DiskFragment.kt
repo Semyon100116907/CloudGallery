@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -19,27 +18,41 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.adapter.LoadMoreListener
+import com.semisonfire.cloudgallery.adapter.holder.Item
+import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.core.ui.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
-import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
-import com.semisonfire.cloudgallery.ui.disk.adapter.items.ProgressItem
 import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
-import com.semisonfire.cloudgallery.utils.*
-import java.util.*
+import com.semisonfire.cloudgallery.utils.FileUtils
+import com.semisonfire.cloudgallery.utils.foreground
+import com.semisonfire.cloudgallery.utils.longToast
+import com.semisonfire.cloudgallery.utils.string
 import javax.inject.Inject
 
 class DiskFragment : SelectableFragment() {
+
+    companion object {
+
+        //Saved state constants
+        private const val STATE_FILE_URI = "STATE_FILE_URI"
+
+        //Requests types
+        private const val GALLERY_IMAGE_REQUEST = 1999
+        private const val CAMERA_REQUEST = 1888
+
+        //Dialog types
+        private const val BOTTOM = "BOTTOM"
+    }
 
     @Inject
     lateinit var presenter: DiskPresenter
@@ -47,9 +60,11 @@ class DiskFragment : SelectableFragment() {
     @Inject
     lateinit var permissionManager: PermissionManager
 
+    @Inject
+    lateinit var adapter: DiskAdapter
+
     //RecyclerView
     private var recyclerView: RecyclerView? = null
-    private val diskAdapter: DiskAdapter = DiskAdapter()
 
     //Uploading
     private val uploadingList: MutableList<Photo> = mutableListOf()
@@ -140,63 +155,72 @@ class DiskFragment : SelectableFragment() {
         floatingActionButton?.show()
         floatingActionButton?.setOnClickListener { showBottomDialog() }
 
-        val progressItem = ProgressItem()
-        diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
-            override fun onPhotoClick(photos: List<Photo>, position: Int) {
-                if (context != null) {
-                    val intent = Intent(context, PhotoDetailActivity::class.java)
-                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
-                    intent.putParcelableArrayListExtra(
-                        PhotoDetailActivity.EXTRA_PHOTOS,
-                        diskModel.photoList as ArrayList<out Parcelable>
-                    )
-                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
-                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
-                }
-            }
+//        val progressItem = ProgressItem()
+//        diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
+//            override fun onPhotoClick(photos: List<Photo>, position: Int) {
+//                if (context != null) {
+//                    val intent = Intent(context, PhotoDetailActivity::class.java)
+//                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
+//                    intent.putParcelableArrayListExtra(
+//                        PhotoDetailActivity.EXTRA_PHOTOS,
+//                        diskModel.photoList as ArrayList<out Parcelable>
+//                    )
+//                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
+//                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
+//                }
+//            }
+//
+//            override fun onPhotoLongClick() {
+//                setEnabledSelection(true)
+//            }
+//
+//            override fun onSelectedPhotoClick(photo: Photo) {
+//                if (photo.isSelected) {
+//                    selectedPhotos.add(photo)
+//                } else {
+//                    selectedPhotos.remove(photo)
+//                }
+//                updateToolbarTitle(selectedPhotos.size.toString())
+//                if (selectedPhotos.isEmpty()) {
+//                    setEnabledSelection(false)
+//                }
+//            }
+//        })
 
-            override fun onPhotoLongClick() {
-                setEnabledSelection(true)
-            }
-
-            override fun onSelectedPhotoClick(photo: Photo) {
-                if (photo.isSelected) {
-                    selectedPhotos.add(photo)
-                } else {
-                    selectedPhotos.remove(photo)
-                }
-                updateToolbarTitle(selectedPhotos.size.toString())
-                if (selectedPhotos.isEmpty()) {
-                    setEnabledSelection(false)
-                }
-            }
-        })
-        diskAdapter.loadMoreListener = object : LoadMoreListener {
-            override fun noMoreLoad() {
-                diskAdapter.progressItem = progressItem
-            }
-
-            override fun onLoadMore() {
+        adapter.loadMoreListener = object : LoadMoreListener {
+            override fun loadMore(position: Int) {
+                super.loadMore(position)
                 presenter.loadMorePhotos()
             }
         }
-        diskAdapter.progressItem = progressItem
-        diskAdapter.endlessScrollThreshold = 2
+        adapter.progressItem = ProgressItem()
+        adapter.endlessScrollThreshold = 8
+
+//        diskAdapter.loadMoreListener = object : LoadMoreListener {
+//            override fun noMoreLoad() {
+//                diskAdapter.progressItem = progressItem
+//            }
+//
+//            override fun onLoadMore() {
+//                presenter.loadMorePhotos()
+//            }
+//        }
+//        diskAdapter.progressItem = progressItem
+//        diskAdapter.endlessScrollThreshold = 2
 
         val layoutManager = LinearLayoutManager(context)
         recyclerView?.layoutManager = layoutManager
-        recyclerView?.adapter = diskAdapter
+        recyclerView?.adapter = adapter
 
-        context?.let {
-            val decorator = ItemDecorator(it.dimen(R.dimen.disk_linear_space))
-            recyclerView?.addItemDecoration(decorator)
-        }
-
+//        context?.let {
+//            val decorator = ItemDecorator(it.dimen(R.dimen.disk_linear_space))
+//            recyclerView?.addItemDecoration(decorator)
+//        }
 
         swipeRefreshLayout?.setOnRefreshListener {
             presenter.getPhotos()
             swipeRefreshLayout?.isRefreshing = true
-            updateDataSet()
+//            updateDataSet()
         }
     }
 
@@ -258,7 +282,7 @@ class DiskFragment : SelectableFragment() {
             it.findItem(R.id.menu_delete)?.isVisible = enabled
             it.findItem(R.id.menu_download)?.isVisible = enabled
         }
-        diskAdapter.setSelection(enabled)
+//        diskAdapter.setSelection(enabled)
 
         swipeRefreshLayout?.isEnabled = !enabled
         floatingActionButton?.apply {
@@ -281,7 +305,7 @@ class DiskFragment : SelectableFragment() {
                 GALLERY_IMAGE_REQUEST -> {
                     data?.let {
                         extractFromGallery(data, photos)
-                        diskAdapter.addUploadPhotos(photos)
+//                        diskAdapter.addUploadPhotos(photos)
                         presenter.uploadPhotos(photos)
                     }
                 }
@@ -291,7 +315,7 @@ class DiskFragment : SelectableFragment() {
                         val photo = getLocalPhoto(uri)
                         if (photo != null) {
                             photos.add(photo)
-                            diskAdapter.addUploadPhotos(photos)
+//                            diskAdapter.addUploadPhotos(photos)
                             presenter.uploadPhoto(photo)
                         }
                     }
@@ -301,7 +325,7 @@ class DiskFragment : SelectableFragment() {
                         data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
                             ?: return
                     if (isDataChanged) {
-                        updateDataSet()
+//                        updateDataSet()
                     }
                     return
                 }
@@ -312,12 +336,12 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun updateDataSet() {
-        diskAdapter.clear()
-        if (uploadingList.isNotEmpty()) {
-            diskAdapter.addUploadPhotos(uploadingList)
-        }
-    }
+//    private fun updateDataSet() {
+//        diskAdapter.clear()
+//        if (uploadingList.isNotEmpty()) {
+//            diskAdapter.addUploadPhotos(uploadingList)
+//        }
+//    }
 
     private fun extractFromGallery(data: Intent, photos: MutableList<Photo>) {
         if (data.clipData == null) {
@@ -368,29 +392,30 @@ class DiskFragment : SelectableFragment() {
     private fun onUploadingPhotos(photos: List<Photo>) {
         if (photos.isNotEmpty()) {
             uploadingList.addAll(photos)
-            diskAdapter.addUploadPhotos(photos)
+//            diskAdapter.addUploadPhotos(photos)
             presenter.uploadPhotos(photos)
         }
     }
 
-    private fun onPhotosLoaded(photos: List<Photo>) {
+    private fun onPhotosLoaded(photos: List<Item>) {
         swipeRefreshLayout?.isRefreshing = false
         if (photos.isNotEmpty()) {
             floatingActionButton?.show()
-            diskAdapter.setPhotos(photos)
+//            diskAdapter.setPhotos(photos)
+            adapter.updateDataSet(photos)
         }
     }
 
     private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
         var uploadState: String? = null
         if (uploaded) {
-            diskAdapter.addPhoto(photo)
+//            diskAdapter.addPhoto(photo)
             uploadingList.remove(photo)
-            diskAdapter.removeUploadedPhoto(photo)
+//            diskAdapter.removeUploadedPhoto(photo)
         } else {
             uploadState = getString(R.string.msg_wait)
         }
-        diskAdapter.changeUploadState(uploadState)
+//        diskAdapter.changeUploadState(uploadState)
     }
 
     private fun onPhotoDownloaded(path: String) {
@@ -399,7 +424,7 @@ class DiskFragment : SelectableFragment() {
 
     private fun onPhotoDeleted(photo: Photo) {
         setEnabledSelection(false)
-        diskAdapter.removePhoto(photo)
+//        diskAdapter.removePhoto(photo)
 
         context?.let {
             val action = getString(R.string.msg_deleted).lowercase()
@@ -407,8 +432,10 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun onLoadMoreComplete(it: List<Photo>) {
-        diskAdapter.addPhotos(it)
+    private fun onLoadMoreComplete(items: List<Item>) {
+//        adapter.addPhotos(items)
+        adapter.onLoadMoreComplete(items)
+        adapter.endlessScrollEnabled = true
     }
 
     override fun onRequestPermissionsResult(
@@ -559,18 +586,5 @@ class DiskFragment : SelectableFragment() {
             positive = positiveButton,
             negative = negativeButton
         )
-    }
-
-    companion object {
-
-        //Saved state constants
-        private const val STATE_FILE_URI = "STATE_FILE_URI"
-
-        //Requests types
-        private const val GALLERY_IMAGE_REQUEST = 1999
-        private const val CAMERA_REQUEST = 1888
-
-        //Dialog types
-        private const val BOTTOM = "BOTTOM"
     }
 }

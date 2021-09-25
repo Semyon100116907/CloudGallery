@@ -16,7 +16,7 @@ import io.reactivex.subjects.PublishSubject
 import java.net.URL
 import javax.inject.Inject
 
-const val LIMIT = 15
+const val LIMIT = 20
 
 interface DiskPresenter : Presenter {
 
@@ -49,7 +49,7 @@ class DiskPresenterImpl @Inject constructor(
             uploadManager.uploadListener()
                 .subscribeOn(background())
                 .subscribe({
-                    viewModel.photoList.add(it.photo)
+//                    viewModel.photoList.add(it.photo)
                     diskResultListener.onNext(DiskResult.PhotoUploaded(it.photo, it.uploaded))
                 }, {
                     it.printThrowable()
@@ -141,7 +141,7 @@ class DiskPresenterImpl @Inject constructor(
                 .concatMap { diskRepository.deletePhoto(it) }
                 .subscribeOn(background())
                 .subscribe({
-                    viewModel.photoList.remove(it)
+//                    viewModel.photoList.remove(it)
                     diskResultListener.onNext(DiskResult.PhotoDeleted(it))
                 }, {
                     it.printThrowable()
