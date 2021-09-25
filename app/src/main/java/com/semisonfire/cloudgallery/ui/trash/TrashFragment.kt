@@ -10,6 +10,8 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -52,7 +54,20 @@ class TrashFragment : SelectableFragment() {
     private var floatingActionButton: FloatingActionButton? = null
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
+    private lateinit var openDetail: ActivityResultLauncher<Intent>
+
     override fun onAttach(context: Context) {
+        openDetail = registerForActivityResult(StartActivityForResult()) { result ->
+            val resultCode = result.resultCode
+            if (resultCode == Activity.RESULT_OK) {
+                val isDataChanged =
+                    result.data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false) ?: false
+                if (isDataChanged) {
+                    updateDataSet()
+                }
+            }
+        }
+
         DaggerTrashBinComponent
             .factory()
             .create(
@@ -72,6 +87,7 @@ class TrashFragment : SelectableFragment() {
 
     public override fun bind(view: View) {
         super.bind(view)
+        _viewBinding = FragmentTrashBinding.bind(view)
 
         activity?.let {
             floatingActionButton = it.findViewById(R.id.btn_add_new)
@@ -81,16 +97,14 @@ class TrashFragment : SelectableFragment() {
 
         photoAdapter.setPhotoListener(object : OnPhotoListener {
             override fun onPhotoClick(photos: List<Photo>, position: Int) {
-                if (context != null) {
-                    val intent = Intent(context, PhotoDetailActivity::class.java)
-                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
-                    intent.putParcelableArrayListExtra(
-                        PhotoDetailActivity.EXTRA_PHOTOS,
-                        trashPhotoList as ArrayList<out Parcelable>
-                    )
-                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
-                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
-                }
+                val intent = Intent(view.context, PhotoDetailActivity::class.java)
+                intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
+                intent.putParcelableArrayListExtra(
+                    PhotoDetailActivity.EXTRA_PHOTOS,
+                    trashPhotoList as ArrayList<out Parcelable>
+                )
+                intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
+                openDetail.launch(intent)
             }
 
             override fun onPhotoLongClick() {
@@ -243,20 +257,6 @@ class TrashFragment : SelectableFragment() {
         trashPhotoList.clear()
         photoAdapter.updateDataSet(ArrayList())
         setEnabledSelection(false)
-    }
-
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?
-    ) {
-        if (resultCode == Activity.RESULT_OK && requestCode == PhotoDetailActivity.DETAIL_REQUEST) {
-            val isDataChanged =
-                data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false) ?: false
-            if (isDataChanged) {
-                updateDataSet()
-            }
-        }
     }
 
     private fun showDialog(title: String, message: String, color: Int) {

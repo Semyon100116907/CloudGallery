@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,10 +46,6 @@ class DiskFragment : SelectableFragment() {
         //Saved state constants
         private const val STATE_FILE_URI = "STATE_FILE_URI"
 
-        //Requests types
-        private const val GALLERY_IMAGE_REQUEST = 1999
-        private const val CAMERA_REQUEST = 1888
-
         //Dialog types
         private const val BOTTOM = "BOTTOM"
     }
@@ -79,10 +77,53 @@ class DiskFragment : SelectableFragment() {
 
     private lateinit var diskModel: DiskViewModel
 
+    private lateinit var pickFromCamera: ActivityResultLauncher<Intent>
+    private lateinit var pickFromGallery: ActivityResultLauncher<Intent>
+    private lateinit var openDetail: ActivityResultLauncher<Intent>
+
     override fun layout() = R.layout.fragment_disk
     override fun menuRes() = R.menu.menu_fragment
 
     override fun onAttach(context: Context) {
+
+        pickFromCamera = registerForActivityResult(StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                val uri = cameraFileUri
+                if (uri != null) {
+                    val photo = getLocalPhoto(uri)
+                    if (photo != null) {
+//                            diskAdapter.addUploadPhotos(photos)
+                        presenter.uploadPhoto(photo)
+                        uploadingList.add(photo)
+                        viewBinding.rvDisk.scrollToPosition(0)
+                    }
+                }
+            }
+        }
+
+        pickFromGallery = registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.let {
+                    val photos = extractFromGallery(it)
+                    uploadingList.addAll(extractFromGallery(it))
+//                    diskAdapter.addUploadPhotos(photos)
+                    presenter.uploadPhotos(photos)
+                    viewBinding.rvDisk.scrollToPosition(0)
+                }
+            }
+        }
+
+        openDetail = registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val isDataChanged =
+                    result.data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
+                        ?: false
+                if (isDataChanged) {
+//                    updateDataSet()
+                }
+            }
+        }
+
         DaggerDiskComponent
             .factory()
             .create(
@@ -102,8 +143,8 @@ class DiskFragment : SelectableFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         _viewBinding = FragmentDiskBinding.bind(view)
+        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun showContent(model: DiskViewModel) {
@@ -167,7 +208,7 @@ class DiskFragment : SelectableFragment() {
 //                        diskModel.photoList as ArrayList<out Parcelable>
 //                    )
 //                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
-//                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
+//                    openDetail.launch(intent)
 //                }
 //            }
 //
@@ -280,45 +321,6 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            val photos = mutableListOf<Photo>()
-            when (requestCode) {
-                GALLERY_IMAGE_REQUEST -> {
-                    data?.let {
-                        extractFromGallery(data, photos)
-//                        diskAdapter.addUploadPhotos(photos)
-                        presenter.uploadPhotos(photos)
-                    }
-                }
-                CAMERA_REQUEST -> {
-                    val uri = cameraFileUri
-                    if (uri != null) {
-                        val photo = getLocalPhoto(uri)
-                        if (photo != null) {
-                            photos.add(photo)
-//                            diskAdapter.addUploadPhotos(photos)
-                            presenter.uploadPhoto(photo)
-                        }
-                    }
-                }
-                PhotoDetailActivity.DETAIL_REQUEST -> {
-                    val isDataChanged =
-                        data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
-                            ?: return
-                    if (isDataChanged) {
-//                        updateDataSet()
-                    }
-                    return
-                }
-            }
-            uploadingList.addAll(photos)
-
-            viewBinding.rvDisk.scrollToPosition(0)
-        }
-    }
-
 //    private fun updateDataSet() {
 //        diskAdapter.clear()
 //        if (uploadingList.isNotEmpty()) {
@@ -326,24 +328,27 @@ class DiskFragment : SelectableFragment() {
 //        }
 //    }
 
-    private fun extractFromGallery(data: Intent, photos: MutableList<Photo>) {
+    private fun extractFromGallery(data: Intent): List<Photo> {
+        val photos = mutableListOf<Photo>()
         if (data.clipData == null) {
-            if (data.data == null) return
+            if (data.data == null) return emptyList()
 
-            val imageUri = data.data ?: return
+            val imageUri = data.data ?: return emptyList()
             getLocalPhoto(imageUri)?.let {
                 photos.add(it)
             }
-            return
+            return emptyList()
         }
 
-        val clipData = data.clipData ?: return
+        val clipData = data.clipData ?: return emptyList()
         for (i in 0 until clipData.itemCount) {
             val imageUri = clipData.getItemAt(i).uri
             getLocalPhoto(imageUri)?.let {
                 photos.add(it)
             }
         }
+
+        return photos
     }
 
     /**
@@ -541,18 +546,22 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun createCameraIntent() {
-        val resultIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         cameraFileUri = FileUtils.localFileUri
-        resultIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraFileUri)
-        startActivityForResult(resultIntent, CAMERA_REQUEST)
+
+        pickFromCamera.launch(
+            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                .putExtra(MediaStore.EXTRA_OUTPUT, cameraFileUri)
+        )
     }
 
     private fun createGalleryIntent() {
-        val resultIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        resultIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        startActivityForResult(
-            Intent.createChooser(resultIntent, getString(R.string.msg_image_chooser)),
-            GALLERY_IMAGE_REQUEST
+
+        pickFromGallery.launch(
+            Intent.createChooser(
+                Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true),
+                requireContext().string(R.string.msg_image_chooser)
+            )
         )
     }
 
