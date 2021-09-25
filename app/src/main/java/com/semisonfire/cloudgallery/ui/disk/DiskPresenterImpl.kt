@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
@@ -16,7 +17,7 @@ import io.reactivex.subjects.PublishSubject
 import java.net.URL
 import javax.inject.Inject
 
-const val LIMIT = 20
+const val LIMIT = 15
 
 interface DiskPresenter : Presenter {
 
@@ -34,12 +35,15 @@ interface DiskPresenter : Presenter {
 
 class DiskPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
-    private val uploadManager: UploadManager
+    private val uploadManager: UploadManager,
+    private val mapper: DiskMapper
 ) : DiskPresenter {
 
     private val compositeDisposable = CompositeDisposable()
 
     private val viewModel = DiskViewModel()
+
+    private val loadListener = PublishSubject.create<Unit>()
 
     private val contentListener = BehaviorSubject.createDefault(viewModel)
     private val diskResultListener = PublishSubject.create<DiskResult>()
@@ -55,6 +59,40 @@ class DiskPresenterImpl @Inject constructor(
                     it.printThrowable()
                 })
         )
+
+        compositeDisposable.add(
+            loadListener
+                .subscribeOn(background())
+                .observeOn(background())
+                .concatMapSingle {
+                    val page = viewModel.currentPage.getAndIncrement()
+
+                    diskRepository
+                        .getPhotos(page, LIMIT)
+                        .map { mapper.map(it, page) }
+                        .map { itemMap ->
+                            val hasMore = itemMap.isNotEmpty()
+                            viewModel.hasMore.set(hasMore)
+
+                            if (page == 0) {
+                                viewModel.setItems(itemMap)
+                                DiskResult.Loaded(
+                                    photos = viewModel.getListItems(),
+                                    hasMore = hasMore
+                                )
+                            } else {
+                                viewModel.mergeItems(itemMap)
+                                DiskResult.LoadMoreCompleted(
+                                    photos = viewModel.getListItems(),
+                                    hasMore = hasMore
+                                )
+                            }
+                        }
+                }
+                .subscribe {
+                    diskResultListener.onNext(it)
+                }
+        )
     }
 
     override fun observeContent(): Observable<DiskViewModel> {
@@ -66,36 +104,12 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun getPhotos() {
-        val currentPage = viewModel.currentPage
-        currentPage.set(0)
-        compositeDisposable.add(
-            diskRepository
-                .getPhotos(currentPage.get(), LIMIT)
-                .subscribeOn(background())
-                .doOnSuccess { currentPage.getAndIncrement() }
-                .subscribe({
-
-                    viewModel.setItems(it)
-                    diskResultListener.onNext(DiskResult.Loaded(it))
-                }, {
-                    it.printThrowable()
-                })
-        )
+        viewModel.currentPage.set(0)
+        loadListener.onNext(Unit)
     }
 
     override fun loadMorePhotos() {
-        val currentPage = viewModel.currentPage
-        compositeDisposable.add(
-            diskRepository
-                .getPhotos(currentPage.incrementAndGet(), LIMIT)
-                .subscribeOn(background())
-                .subscribe({
-                    viewModel.addItems(it)
-                    diskResultListener.onNext(DiskResult.LoadMoreCompleted(it))
-                }, {
-                    it.printThrowable()
-                })
-        )
+        loadListener.onNext(Unit)
     }
 
     override fun getUploadingPhotos() {

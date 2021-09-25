@@ -13,12 +13,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.adapter.LoadMoreListener
-import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
@@ -165,8 +165,8 @@ class DiskFragment : SelectableFragment() {
                 .observeOn(foreground())
                 .subscribe {
                     when (it) {
-                        is DiskResult.Loaded -> onPhotosLoaded(it.photos)
-                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it.photos)
+                        is DiskResult.Loaded -> onPhotosLoaded(it)
+                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it)
                         is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
                         is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
                         is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
@@ -238,6 +238,7 @@ class DiskFragment : SelectableFragment() {
         adapter.progressItem = ProgressItem()
         adapter.endlessScrollThreshold = 8
 
+        viewBinding.rvDisk.itemAnimator = DefaultItemAnimator().apply { this.changeDuration = 0 }
         viewBinding.rvDisk.layoutManager = LinearLayoutManager(context)
         viewBinding.rvDisk.adapter = adapter
 
@@ -385,12 +386,14 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun onPhotosLoaded(photos: List<Item>) {
+    private fun onPhotosLoaded(result: DiskResult.Loaded) {
         swipeRefreshLayout?.isRefreshing = false
+        val photos = result.photos
         if (photos.isNotEmpty()) {
             floatingActionButton?.show()
 //            diskAdapter.setPhotos(photos)
             adapter.updateDataSet(photos)
+            adapter.endlessScrollEnabled = result.hasMore
         }
     }
 
@@ -420,10 +423,11 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun onLoadMoreComplete(items: List<Item>) {
+    private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {
 //        adapter.addPhotos(items)
-        adapter.onLoadMoreComplete(items)
-        adapter.endlessScrollEnabled = true
+        adapter.onLoadMoreComplete(emptyList())
+        adapter.updateDataSet(result.photos)
+        adapter.endlessScrollEnabled = result.hasMore
     }
 
     override fun onRequestPermissionsResult(

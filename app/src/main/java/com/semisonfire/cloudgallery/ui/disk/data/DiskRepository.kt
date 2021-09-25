@@ -1,6 +1,5 @@
 package com.semisonfire.cloudgallery.ui.disk.data
 
-import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.core.data.remote.api.IMAGE_MEDIA_TYPE
@@ -16,11 +15,10 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
 class DiskRepository @Inject constructor(
-    private val diskApi: DiskApi,
-    private val mapper: DiskMapper
+    private val diskApi: DiskApi
 ) {
 
-    fun getPhotos(page: Int, limit: Int): Single<List<Item>> {
+    fun getPhotos(page: Int, limit: Int): Single<List<Photo>> {
         return diskApi
             .getDiskImages(
                 limit,
@@ -29,9 +27,7 @@ class DiskRepository @Inject constructor(
                 IMAGE_SIZE_XL,
                 SORT_MODIFIED_DESC
             )
-            .map { response ->
-                response.items?.let { mapper.map(it, page) } ?: emptyList()
-            }
+            .map { it.items ?: emptyList() }
             .onErrorReturn { emptyList() }
     }
 

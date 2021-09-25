@@ -15,6 +15,7 @@ class HorizontalViewHolder(view: View, providers: Set<ItemProvider>) :
     private val viewBinding = ItemScrollBinding.bind(view)
 
     init {
+        viewBinding.rvHorizontalScroll.itemAnimator = null
         viewBinding.rvHorizontalScroll.adapter = adapter
         viewBinding.rvHorizontalScroll.addItemDecoration(SpaceItemDecorator())
     }
