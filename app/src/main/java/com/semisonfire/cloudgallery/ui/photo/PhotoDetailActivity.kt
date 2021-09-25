@@ -20,25 +20,19 @@ import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
-import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
-import com.semisonfire.cloudgallery.di.provider.ComponentProvider
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent
-import com.semisonfire.cloudgallery.ui.photo.di.PhotoDetailComponent
 import com.semisonfire.cloudgallery.utils.*
 import java.util.*
 import javax.inject.Inject
 
-class PhotoDetailActivity : ContentActivity(),
-    ComponentProvider<NavigationComponentApi> {
+class PhotoDetailActivity : ContentActivity() {
 
     @Inject
     lateinit var presenter: PhotoDetailPresenter
 
     @Inject
     lateinit var permissionManager: PermissionManager
-
-    private var component: PhotoDetailComponent? = null
 
     private val adapter = PhotoDetailAdapter()
     private var photoList = mutableListOf<Photo>()
@@ -49,19 +43,14 @@ class PhotoDetailActivity : ContentActivity(),
     //Orientation
     private var orientation = 0
 
-    override fun component(): NavigationComponentApi? {
-        return component
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        component = DaggerPhotoDetailComponent
+        DaggerPhotoDetailComponent
             .factory()
             .create(
-                this,
                 provideComponent()
             )
-        component?.inject(this)
+            .inject(this)
 
         setUpFullScreen()
         super.onCreate(savedInstanceState)

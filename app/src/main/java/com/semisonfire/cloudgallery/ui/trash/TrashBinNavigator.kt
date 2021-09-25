@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.disk
+package com.semisonfire.cloudgallery.ui.trash
 
 import androidx.fragment.app.Fragment
 import com.semisonfire.cloudgallery.R
@@ -7,9 +7,9 @@ import com.semisonfire.cloudgallery.navigation.navigator.Navigator
 import com.semisonfire.cloudgallery.navigation.navigator.NavigatorContainer
 import javax.inject.Inject
 
-class DiskNavigator @Inject constructor() : Navigator {
+class TrashBinNavigator @Inject constructor() : Navigator {
 
-    override val key: String = ScreenKey.DISK.name
+    override val key: String = ScreenKey.TRASH_BIN.name
 
     override fun container(): NavigatorContainer {
         return NavigatorContainer(
@@ -18,6 +18,6 @@ class DiskNavigator @Inject constructor() : Navigator {
     }
 
     override fun createFragment(): Fragment {
-        return DiskFragment()
+        return TrashFragment()
     }
 }

@@ -71,7 +71,6 @@ class DiskFragment : SelectableFragment() {
         DaggerDiskComponent
             .factory()
             .create(
-                context.provideComponent(),
                 context.provideComponent()
             )
             .inject(this)

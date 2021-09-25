@@ -6,23 +6,19 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
-import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
-import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
-import com.semisonfire.cloudgallery.di.provider.ComponentProvider
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.navigation.ScreenKey
+import com.semisonfire.cloudgallery.navigation.destination.Destination
+import com.semisonfire.cloudgallery.navigation.router.Router
 import com.semisonfire.cloudgallery.ui.main.di.DaggerMainComponent
-import com.semisonfire.cloudgallery.ui.main.di.MainComponent
 import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
-import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
-import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi> {
+class MainActivity : ContentActivity() {
 
     @Inject
     lateinit var router: Router
@@ -33,23 +29,18 @@ class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi
     @Inject
     lateinit var stateViewController: StateViewController
 
-    private var component: MainComponent? = null
-
     private var toolbar: Toolbar? = null
     private var bottomNavigationView: BottomNavigationView? = null
 
-    override fun component(): NavigationComponentApi? {
-        return component
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        component = DaggerMainComponent
+        DaggerMainComponent
             .factory()
             .create(
-                this,
                 provideComponent()
             )
-        component?.inject(this)
+            .inject(this)
+
+        router.bind(supportFragmentManager)
 
         super.onCreate(savedInstanceState)
         if (intent != null && intent.data != null) {
@@ -57,7 +48,7 @@ class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi
         }
 
         if (savedInstanceState == null) {
-            router.replaceScreen(DISK_KEY)
+            router.open(Destination(ScreenKey.DISK))
         }
     }
 
@@ -115,22 +106,22 @@ class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi
             val key = when (item.itemId) {
                 R.id.nav_disk -> {
                     title = string(R.string.msg_disk)
-                    DISK_KEY
+                    ScreenKey.DISK
                 }
                 R.id.nav_trash -> {
                     title = string(R.string.msg_trash)
-                    TRASH_KEY
+                    ScreenKey.TRASH_BIN
                 }
                 R.id.nav_settings -> {
                     title = string(R.string.msg_settings)
-                    SETTINGS_KEY
+                    ScreenKey.SETTINGS
                 }
                 else -> return@setOnItemSelectedListener false
             }
 
             key.let {
                 toolbar?.title = title
-                router.replaceScreen(key)
+                router.replaceScreen(Destination(key))
             }
             true
         }
@@ -142,6 +133,11 @@ class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi
         } else {
             bottomNavigationView?.selectedItemId = R.id.nav_disk
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        router.unbind()
     }
 
     override fun layout(): Int {

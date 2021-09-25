@@ -50,7 +50,6 @@ class TrashFragment : SelectableFragment() {
         DaggerTrashBinComponent
             .factory()
             .create(
-                context.provideComponent(),
                 context.provideComponent()
             )
             .inject(this)

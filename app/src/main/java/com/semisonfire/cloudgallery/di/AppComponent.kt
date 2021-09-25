@@ -8,6 +8,9 @@ import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
 import com.semisonfire.cloudgallery.di.module.ImageModule
 import com.semisonfire.cloudgallery.di.module.NetworkModule
 import com.semisonfire.cloudgallery.di.module.StorageModule
+import com.semisonfire.cloudgallery.navigation.di.annotation.NavigationScope
+import com.semisonfire.cloudgallery.navigation.di.module.NavigationModule
+import com.semisonfire.cloudgallery.navigation.router.Router
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
 import com.squareup.picasso.Picasso
@@ -17,11 +20,13 @@ import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Singleton
+@NavigationScope
 @Component(
     modules = [
         StorageModule::class,
         NetworkModule::class,
-        ImageModule::class
+        ImageModule::class,
+        NavigationModule::class
     ]
 )
 interface AppComponent {
@@ -32,6 +37,8 @@ interface AppComponent {
     fun preferences(): SharedPreferences
     fun retrofit(): Retrofit
     fun stateViewController(): StateViewController
+
+    fun router(): Router
 
     fun diskApi(): DiskApi
 
