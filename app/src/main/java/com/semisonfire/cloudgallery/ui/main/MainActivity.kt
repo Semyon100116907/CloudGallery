@@ -5,15 +5,14 @@ import androidx.appcompat.widget.Toolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.ui.BaseActivity
+import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
 import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
 import com.semisonfire.cloudgallery.di.provider.ComponentProvider
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
 import com.semisonfire.cloudgallery.ui.main.di.DaggerMainComponent
 import com.semisonfire.cloudgallery.ui.main.di.MainComponent
-import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
 import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
@@ -23,16 +22,18 @@ import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-interface MainView : MvpView<MainViewModel>
+class MainActivity : BaseActivity(), ComponentProvider<NavigationComponentApi> {
 
-class MainActivity :
-    BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView,
-    ComponentProvider<NavigationComponentApi> {
+    @Inject
+    lateinit var router: Router
+
+    @Inject
+    lateinit var presenter: MainPresenter
 
     @Inject
     lateinit var stateViewController: StateViewController
 
-    var component: MainComponent? = null
+    private var component: MainComponent? = null
 
     private var toolbar: Toolbar? = null
     private var bottomNavigationView: BottomNavigationView? = null
@@ -79,7 +80,7 @@ class MainActivity :
         stateViewController.updateStateView(MainStateView.LOADER)
         disposables.addAll(
             presenter
-                .getTokenListener()
+                .observeAuth()
                 .observeOn(foreground())
                 .subscribe({
                     val state =

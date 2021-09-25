@@ -2,35 +2,57 @@ package com.semisonfire.cloudgallery.ui.photo
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
-import com.semisonfire.cloudgallery.core.presentation.BasePresenter
+import com.semisonfire.cloudgallery.core.mvp.Presenter
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
-import com.semisonfire.cloudgallery.ui.photo.model.PhotoDetailViewModel
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
-import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.PublishSubject
 import java.net.URL
 import javax.inject.Inject
 
-interface PhotoDetailPresenter : MvpPresenter<PhotoDetailViewModel, PhotoDetailView> {
+interface PhotoDetailPresenter : Presenter {
 
     fun download(photo: Photo)
     fun delete(photo: Photo, from: Int)
     fun restore(photo: Photo)
     fun createShareFile(bitmap: Bitmap)
+
+    fun observePhotoDownloaded(): Observable<String>
+    fun observeFileChanged(): Observable<Photo>
+    fun observeFilePrepared(): Observable<Uri>
+
 }
 
 class PhotoDetailPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
     private val trashRepository: TrashRepository
-) : BasePresenter<PhotoDetailViewModel, PhotoDetailView>(), PhotoDetailPresenter {
+) : PhotoDetailPresenter {
 
-    override val viewModel = PhotoDetailViewModel()
+    private val compositeDisposable = CompositeDisposable()
+
+    private val photoDownloadListener = PublishSubject.create<String>()
+
+    private val filePreparedListener = PublishSubject.create<Uri>()
+    private val fileChangedListener = PublishSubject.create<Photo>()
+
+    override fun observePhotoDownloaded(): Observable<String> {
+        return photoDownloadListener
+    }
+
+    override fun observeFileChanged(): Observable<Photo> {
+        return fileChangedListener
+    }
+
+    override fun observeFilePrepared(): Observable<Uri> {
+        return filePreparedListener
+    }
 
     override fun download(photo: Photo) {
         compositeDisposable.add(
@@ -41,9 +63,8 @@ class PhotoDetailPresenterImpl @Inject constructor(
                     FileUtils.savePublicFile(bitmap, photo.name)
                 }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onPhotoDownloaded(it) },
+                    { photoDownloadListener.onNext(it) },
                     { it.printThrowable() }
                 )
         )
@@ -59,9 +80,8 @@ class PhotoDetailPresenterImpl @Inject constructor(
         compositeDisposable.add(
             delete
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onFilesChanged(it) },
+                    { fileChangedListener.onNext(it) },
                     { it.printThrowable() }
                 )
         )
@@ -71,9 +91,8 @@ class PhotoDetailPresenterImpl @Inject constructor(
         compositeDisposable.add(
             trashRepository.restoreTrashPhoto(photo)
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onFilesChanged(it) },
+                    { fileChangedListener.onNext(it) },
                     { it.printThrowable() }
                 )
         )
@@ -84,12 +103,14 @@ class PhotoDetailPresenterImpl @Inject constructor(
             Single.just(bitmap)
                 .map { FileUtils.createShareFile(it) }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onFilePrepared(it) },
+                    { filePreparedListener.onNext(it) },
                     { it.printThrowable() }
                 )
         )
     }
 
+    override fun dispose() {
+        compositeDisposable.clear()
+    }
 }
