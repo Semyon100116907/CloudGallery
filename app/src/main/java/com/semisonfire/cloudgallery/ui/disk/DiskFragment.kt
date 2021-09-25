@@ -77,6 +77,11 @@ class DiskFragment : SelectableFragment() {
         super.onAttach(context)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        presenter.getPhotos()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -90,11 +95,6 @@ class DiskFragment : SelectableFragment() {
 
     private fun showContent(model: DiskViewModel) {
         this.diskModel = model
-    }
-
-    override fun onResume() {
-        super.onResume()
-        presenter.getPhotos()
     }
 
     override fun onStart() {

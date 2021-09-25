@@ -27,7 +27,7 @@ class DiskRepository @Inject constructor(
                 IMAGE_SIZE_XL,
                 SORT_MODIFIED_DESC
             )
-            .map { it.photos ?: emptyList() }
+            .map { it.items ?: emptyList() }
             .onErrorReturn { emptyList() }
     }
 

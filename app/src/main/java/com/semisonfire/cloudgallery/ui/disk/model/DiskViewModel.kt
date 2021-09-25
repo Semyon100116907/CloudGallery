@@ -9,5 +9,4 @@ data class DiskViewModel(
 ) {
 
     val currentPage = AtomicInteger(0)
-    var selectionMode: Boolean = false
 }

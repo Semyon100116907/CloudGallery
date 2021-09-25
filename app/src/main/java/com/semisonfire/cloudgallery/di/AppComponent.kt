@@ -2,6 +2,7 @@ package com.semisonfire.cloudgallery.di
 
 import android.app.Application
 import android.content.SharedPreferences
+import com.semisonfire.cloudgallery.adapter.di.AdapterModule
 import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
@@ -26,7 +27,8 @@ import javax.inject.Singleton
         StorageModule::class,
         NetworkModule::class,
         ImageModule::class,
-        NavigationModule::class
+        NavigationModule::class,
+        AdapterModule::class
     ]
 )
 interface AppComponent {
