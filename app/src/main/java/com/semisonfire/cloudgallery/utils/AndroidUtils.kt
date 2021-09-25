@@ -3,6 +3,8 @@ package com.semisonfire.cloudgallery.utils
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
+import android.util.Log
+import android.util.TypedValue
 import android.view.Menu
 import android.widget.Toast
 import androidx.annotation.ColorInt
@@ -31,6 +33,15 @@ fun Context.colorDrawable(@ColorInt color: Int) = ColorDrawable(color)
 fun Context.colorResDrawable(@ColorRes colorRes: Int): ColorDrawable {
     val color = color(colorRes)
     return ColorDrawable(color)
+}
+
+fun Context.themeColor(resId: Int): Int {
+    val outValue = TypedValue()
+    val isValid = theme.resolveAttribute(resId, outValue, true)
+
+    if (!isValid) Log.e(this::class.simpleName, "Fail to get theme color for resource $resId")
+
+    return outValue.data
 }
 
 /** Change menu items icon color  */

@@ -83,7 +83,7 @@ class PhotoDetailActivity : ContentActivity() {
 
     private fun bind() {
         setUpViewPager()
-        viewBinding.toolbar.setTitleTextColor(color(R.color.white))
+        viewBinding.toolbar.setTitleTextColor(color(R.color.color_white))
         setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         updateToolbarTitle(currentPosition)
@@ -221,7 +221,7 @@ class PhotoDetailActivity : ContentActivity() {
                 restore.isVisible = true
             }
         }
-        setMenuIconsColor(menu, color(R.color.white))
+        setMenuIconsColor(menu, color(R.color.color_white))
         return super.onCreateOptionsMenu(menu)
     }
 

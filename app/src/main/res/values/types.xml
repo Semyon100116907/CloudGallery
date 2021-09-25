@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Text">
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:textColor">?attr/colorTextPrimary</item>
+    </style>
+
+    <style name="Text.Head">
+        <item name="android:fontFamily">@font/roboto_bold</item>
+        <item name="android:textSize">@dimen/text_head</item>
+    </style>
+
+    <style name="Text.Head.L">
+        <item name="android:textSize">@dimen/text_head_l</item>
+    </style>
+
+    <style name="Text.Body">
+        <item name="android:textSize">@dimen/text_body</item>
+    </style>
+
+    <style name="Text.Body.L">
+        <item name="android:textSize">@dimen/text_body_l</item>
+    </style>
+
+    <style name="Text.Body.L.Bold">
+        <item name="android:fontFamily">@font/roboto_bold</item>
+    </style>
+
+    <style name="Text.Body.L.Secondary">
+        <item name="android:textColor">?attr/colorTextSecondary</item>
+    </style>
+
+    <style name="Text.Caption">
+        <item name="android:textSize">@dimen/text_caption</item>
+    </style>
+
+    <style name="Text.Caption.Secondary">
+        <item name="android:textColor">?attr/colorTextSecondary</item>
+    </style>
+
+    <style name="Text.Caption.Bold">
+        <item name="android:fontFamily">@font/roboto_bold</item>
+    </style>
+
+    <style name="Text.Caption.Bold.Secondary">
+        <item name="android:textColor">?attr/colorTextSecondary</item>
+    </style>
+
+</resources>

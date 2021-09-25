@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialog</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+        <item name="toolbarStyle">@style/Toolbar</item>
+        <item name="cardViewStyle">@style/Card</item>
+        <item name="actionOverflowMenuStyle">@style/OverflowMenu</item>
+        <item name="popupTheme">@style/PopupMenu</item>
+        <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
+    </style>
+
+    <!--Light-->
+    <style name="AppTheme.Light" parent="AppTheme">
+        <item name="colorPrimary">@color/cg_color_primary</item>
+        <item name="colorPrimaryDark">@color/cg_color_primary_dark</item>
+        <item name="colorAccent">@color/cg_color_accent</item>
+        <item name="colorTextPrimary">@color/cg_color_text_primary</item>
+        <item name="colorTextSecondary">@color/cg_color_text_secondary</item>
+        <item name="colorSecondary">@color/cg_color_accent</item>
+
+        <item name="android:colorBackground">@color/cg_color_body</item>
+        <item name="colorControlNormal">@color/color_dark</item>
+
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">
+            @color/cg_color_primary_dark
+        </item>
+        <item name="android:windowDrawsSystemBarBackgrounds" tools:targetApi="lollipop">true</item>
+    </style>
+
+    <!--Dark-->
+    <style name="AppTheme.Dark" parent="AppTheme">
+        <item name="colorPrimary">@color/cgdt_color_primary</item>
+        <item name="colorPrimaryDark">@color/cgdt_color_primary_dark</item>
+        <item name="colorAccent">@color/cgdt_color_accent</item>
+        <item name="colorTextPrimary">@color/cgdt_color_text_primary</item>
+        <item name="colorTextSecondary">@color/cgdt_color_text_secondary</item>
+        <item name="colorSecondary">@color/cgdt_color_accent</item>
+
+        <item name="android:colorBackground">@color/cgdt_color_body</item>
+        <item name="colorControlNormal">@color/color_white</item>
+
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/color_dark</item>
+    </style>
+
+    <style name="AppTheme.FullScreen" parent="AppTheme.Light">
+        <item name="android:textColorSecondary">@color/color_white</item>
+    </style>
+
+</resources>

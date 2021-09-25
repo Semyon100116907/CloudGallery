@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Parcelable
 import android.view.Menu
 import android.view.MenuInflater
@@ -28,11 +27,11 @@ import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.ui.trash.di.DaggerTrashBinComponent
-import com.semisonfire.cloudgallery.utils.color
 import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
+import com.semisonfire.cloudgallery.utils.themeColor
 import java.util.ArrayList
 import javax.inject.Inject
 
@@ -200,7 +199,7 @@ class TrashFragment : SelectableFragment() {
                         showDialog(
                             getString(R.string.msg_clear_trash),
                             getString(R.string.msg_clear_trash_description),
-                            context?.color(R.color.colorAccent) ?: Color.BLUE
+                            requireContext().themeColor(R.attr.colorAccent)
                         )
                     }
                 }

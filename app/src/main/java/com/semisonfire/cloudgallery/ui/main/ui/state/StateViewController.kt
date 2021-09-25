@@ -31,7 +31,7 @@ class StateViewController @Inject constructor() {
         val context = view.context
 
         stateViewDelegate = StateViewDelegate(
-            State(MainStateView.CONTENT, view.findViewById<View>(R.id.frame_fragment)),
+            State(MainStateView.CONTENT, view.findViewById<View>(R.id.fragment_container)),
             State(MainStateView.LOADER, view.findViewById<View>(R.id.progress_loader))
         )
 
