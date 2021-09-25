@@ -10,10 +10,7 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
-import com.semisonfire.cloudgallery.core.mvp.MvpView
-import com.semisonfire.cloudgallery.core.mvp.MvpViewModel
-import com.semisonfire.cloudgallery.core.ui.BaseFragment
+import com.semisonfire.cloudgallery.core.ui.ContentFragment
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.utils.color
 import com.semisonfire.cloudgallery.utils.colorResDrawable
@@ -21,8 +18,7 @@ import com.semisonfire.cloudgallery.utils.setMenuIconsColor
 
 private const val STATE_SELECTABLE = "STATE_SELECTABLE"
 
-abstract class SelectableFragment<M : MvpViewModel, V : MvpView<M>, P : MvpPresenter<M, V>> :
-    BaseFragment<M, V, P>() {
+abstract class SelectableFragment : ContentFragment() {
 
     protected var menu: Menu? = null
     protected var isSelectable = false

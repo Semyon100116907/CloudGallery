@@ -2,17 +2,18 @@ package com.semisonfire.cloudgallery.ui.trash
 
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
-import com.semisonfire.cloudgallery.core.presentation.BasePresenter
+import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
-import com.semisonfire.cloudgallery.ui.trash.model.TrashViewModel
 import com.semisonfire.cloudgallery.utils.background
-import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
-interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
+interface TrashPresenter : Presenter {
+
+    fun observeTrashBinResult(): Observable<TrashBinResult>
 
     fun getPhotos(page: Int)
     fun restorePhotos(photos: List<Photo>)
@@ -22,9 +23,15 @@ interface TrashPresenter : MvpPresenter<TrashViewModel, TrashView> {
 
 class TrashPresenterImpl @Inject constructor(
     private val trashRepository: TrashRepository
-) : BasePresenter<TrashViewModel, TrashView>(), TrashPresenter {
+) : TrashPresenter {
 
-    override val viewModel = TrashViewModel()
+    private val compositeDisposable = CompositeDisposable()
+
+    private val trashBinResultListener = PublishSubject.create<TrashBinResult>()
+
+    override fun observeTrashBinResult(): Observable<TrashBinResult> {
+        return trashBinResultListener
+    }
 
     override fun getPhotos(page: Int) {
         compositeDisposable.add(
@@ -36,9 +43,8 @@ class TrashPresenterImpl @Inject constructor(
                         .toList()
                 }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onTrashLoaded(it) },
+                    { trashBinResultListener.onNext(TrashBinResult.Loaded(it)) },
                     { it.printThrowable() }
                 )
         )
@@ -49,9 +55,8 @@ class TrashPresenterImpl @Inject constructor(
             Observable.fromIterable(photos.toMutableList())
                 .concatMap { trashRepository.restoreTrashPhoto(it) }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onPhotoRestored(it) },
+                    { trashBinResultListener.onNext(TrashBinResult.PhotoRestored(it)) },
                     { it.printThrowable() }
                 )
         )
@@ -62,9 +67,8 @@ class TrashPresenterImpl @Inject constructor(
             Observable.fromIterable(photos.toMutableList())
                 .concatMap { trashRepository.deleteTrashPhoto(it) }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onPhotoDeleted(it) },
+                    { trashBinResultListener.onNext(TrashBinResult.PhotoDeleted(it)) },
                     { it.printThrowable() }
                 )
         )
@@ -74,11 +78,15 @@ class TrashPresenterImpl @Inject constructor(
         compositeDisposable.add(
             trashRepository.clearTrash()
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onTrashCleared() },
+                    { trashBinResultListener.onNext(TrashBinResult.Cleared) },
                     { it.printThrowable() }
                 )
         )
+    }
+
+    override fun dispose() {
+        super.dispose()
+        compositeDisposable.clear()
     }
 }

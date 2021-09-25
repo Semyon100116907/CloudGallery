@@ -20,8 +20,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
+import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.di.provider.provideComponent
@@ -35,23 +35,17 @@ import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
-import com.semisonfire.cloudgallery.utils.FileUtils
-import com.semisonfire.cloudgallery.utils.dimen
-import com.semisonfire.cloudgallery.utils.longToast
-import com.semisonfire.cloudgallery.utils.string
+import com.semisonfire.cloudgallery.utils.*
 import java.util.*
+import javax.inject.Inject
 
-interface DiskView : MvpView<DiskViewModel> {
+class DiskFragment : SelectableFragment() {
 
-    fun onPhotosLoaded(photos: List<Photo>)
-    fun onUploadingPhotos(photos: List<Photo>)
-    fun onPhotoUploaded(photo: Photo, uploaded: Boolean)
-    fun onPhotoDownloaded(path: String)
-    fun onPhotoDeleted(photo: Photo)
-    fun loadMoreComplete(it: List<Photo>)
-}
+    @Inject
+    lateinit var presenter: DiskPresenter
 
-class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(), DiskView {
+    @Inject
+    lateinit var permissionManager: PermissionManager
 
     //RecyclerView
     private var recyclerView: RecyclerView? = null
@@ -95,14 +89,38 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun showContent(model: DiskViewModel) {
-        super.showContent(model)
+    private fun showContent(model: DiskViewModel) {
         this.diskModel = model
     }
 
     override fun onResume() {
         super.onResume()
         presenter.getPhotos()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        disposables.addAll(
+            presenter
+                .observeContent()
+                .observeOn(foreground())
+                .subscribe {
+                    showContent(it)
+                },
+            presenter
+                .observeDiskResult()
+                .observeOn(foreground())
+                .subscribe {
+                    when (it) {
+                        is DiskResult.Loaded -> onPhotosLoaded(it.photos)
+                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it.photos)
+                        is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
+                        is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
+                        is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
+                        is DiskResult.Uploading -> onUploadingPhotos(it.photos)
+                    }
+                }
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -205,7 +223,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                         }
 
                         val action =
-                            activity.string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            activity.string(R.string.action_download).lowercase()
                         val message =
                             "${activity.string(R.string.text_memory_rights_description)} $action"
                         showPermissionDialogWithCancelButton(activity, message, positiveButton)
@@ -217,7 +235,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                         }
 
                         val action =
-                            activity.string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            activity.string(R.string.action_download).lowercase()
                         val message =
                             "${activity.string(R.string.text_memory_rights_settings_description)} $action"
                         showPermissionDialogWithCancelButton(activity, message, positiveButton)
@@ -348,7 +366,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         return photo
     }
 
-    override fun onUploadingPhotos(photos: List<Photo>) {
+    private fun onUploadingPhotos(photos: List<Photo>) {
         if (photos.isNotEmpty()) {
             uploadingList.addAll(photos)
             diskAdapter.addUploadPhotos(photos)
@@ -356,7 +374,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         }
     }
 
-    override fun onPhotosLoaded(photos: List<Photo>) {
+    private fun onPhotosLoaded(photos: List<Photo>) {
         swipeRefreshLayout?.isRefreshing = false
         if (photos.isNotEmpty()) {
             floatingActionButton?.show()
@@ -364,7 +382,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         }
     }
 
-    override fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
+    private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
         var uploadState: String? = null
         if (uploaded) {
             diskAdapter.addPhoto(photo)
@@ -376,22 +394,38 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         diskAdapter.changeUploadState(uploadState)
     }
 
-    override fun onPhotoDownloaded(path: String) {
+    private fun onPhotoDownloaded(path: String) {
         context?.longToast(getString(R.string.msg_file_saved) + " " + path)
     }
 
-    override fun onPhotoDeleted(photo: Photo) {
+    private fun onPhotoDeleted(photo: Photo) {
         setEnabledSelection(false)
         diskAdapter.removePhoto(photo)
 
         context?.let {
-            val action = getString(R.string.msg_deleted).toLowerCase(Locale.ROOT)
+            val action = getString(R.string.msg_deleted).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
         }
     }
 
-    override fun loadMoreComplete(it: List<Photo>) {
+    private fun onLoadMoreComplete(it: List<Photo>) {
         diskAdapter.addPhotos(it)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        activity?.let {
+            permissionManager.onRequestPermissionsResult(
+                it,
+                requestCode,
+                permissions,
+                grantResults
+            )
+        }
     }
 
     private fun showBottomDialog() {
@@ -417,8 +451,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                                 *permissionList
                                             )
                                         }
-                                    val action = activity.string(R.string.action_photo)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action = activity.string(R.string.action_photo).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_camera_rights_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -433,8 +466,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.openApplicationSettings(activity)
                                         }
-                                    val action = activity.string(R.string.action_photo)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action = activity.string(R.string.action_photo).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_camera_rights_settings_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -462,8 +494,8 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                                 *permissionList
                                             )
                                         }
-                                    val action = activity.string(R.string.action_download)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action =
+                                        activity.string(R.string.action_download).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_memory_rights_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -478,8 +510,8 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.openApplicationSettings(activity)
                                         }
-                                    val action = activity.string(R.string.action_download)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action =
+                                        activity.string(R.string.action_download).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_memory_rights_settings_description)} $action"
                                     showPermissionDialogWithCancelButton(
