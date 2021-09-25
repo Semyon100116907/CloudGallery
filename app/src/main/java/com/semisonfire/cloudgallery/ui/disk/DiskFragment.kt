@@ -18,7 +18,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.adapter.LoadMoreListener
-import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
@@ -165,8 +164,8 @@ class DiskFragment : SelectableFragment() {
                 .observeOn(foreground())
                 .subscribe {
                     when (it) {
-                        is DiskResult.Loaded -> onPhotosLoaded(it.photos)
-                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it.photos)
+                        is DiskResult.Loaded -> onPhotosLoaded(it)
+                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it)
                         is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
                         is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
                         is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
@@ -385,12 +384,14 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun onPhotosLoaded(photos: List<Item>) {
+    private fun onPhotosLoaded(result: DiskResult.Loaded) {
         swipeRefreshLayout?.isRefreshing = false
+        val photos = result.photos
         if (photos.isNotEmpty()) {
             floatingActionButton?.show()
 //            diskAdapter.setPhotos(photos)
             adapter.updateDataSet(photos)
+            adapter.endlessScrollEnabled = result.hasMore
         }
     }
 
@@ -420,10 +421,10 @@ class DiskFragment : SelectableFragment() {
         }
     }
 
-    private fun onLoadMoreComplete(items: List<Item>) {
+    private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {
 //        adapter.addPhotos(items)
-        adapter.onLoadMoreComplete(items)
-        adapter.endlessScrollEnabled = true
+        adapter.onLoadMoreComplete(result.photos)
+        adapter.endlessScrollEnabled = result.hasMore
     }
 
     override fun onRequestPermissionsResult(

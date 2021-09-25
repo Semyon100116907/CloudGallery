@@ -41,6 +41,8 @@ class DiskPresenterImpl @Inject constructor(
 
     private val viewModel = DiskViewModel()
 
+    private val loadListener = PublishSubject.create<Unit>()
+
     private val contentListener = BehaviorSubject.createDefault(viewModel)
     private val diskResultListener = PublishSubject.create<DiskResult>()
 
@@ -55,6 +57,31 @@ class DiskPresenterImpl @Inject constructor(
                     it.printThrowable()
                 })
         )
+
+        compositeDisposable.add(
+            loadListener
+                .subscribeOn(background())
+                .observeOn(background())
+                .concatMapSingle {
+                    val page = viewModel.currentPage.getAndIncrement()
+
+                    diskRepository
+                        .getPhotos(page, LIMIT)
+                        .map {
+                            val hasMore = it.size >= LIMIT
+                            if (page == 0) {
+                                viewModel.setItems(it)
+                                DiskResult.Loaded(it, hasMore)
+                            } else {
+                                viewModel.addItems(it)
+                                DiskResult.LoadMoreCompleted(it, hasMore)
+                            }
+                        }
+                }
+                .subscribe {
+                    diskResultListener.onNext(it)
+                }
+        )
     }
 
     override fun observeContent(): Observable<DiskViewModel> {
@@ -66,36 +93,11 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun getPhotos() {
-        val currentPage = viewModel.currentPage
-        currentPage.set(0)
-        compositeDisposable.add(
-            diskRepository
-                .getPhotos(currentPage.get(), LIMIT)
-                .subscribeOn(background())
-                .doOnSuccess { currentPage.getAndIncrement() }
-                .subscribe({
-
-                    viewModel.setItems(it)
-                    diskResultListener.onNext(DiskResult.Loaded(it))
-                }, {
-                    it.printThrowable()
-                })
-        )
+        loadListener.onNext(Unit)
     }
 
     override fun loadMorePhotos() {
-        val currentPage = viewModel.currentPage
-        compositeDisposable.add(
-            diskRepository
-                .getPhotos(currentPage.incrementAndGet(), LIMIT)
-                .subscribeOn(background())
-                .subscribe({
-                    viewModel.addItems(it)
-                    diskResultListener.onNext(DiskResult.LoadMoreCompleted(it))
-                }, {
-                    it.printThrowable()
-                })
-        )
+        loadListener.onNext(Unit)
     }
 
     override fun getUploadingPhotos() {
