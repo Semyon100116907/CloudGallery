@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -237,6 +238,7 @@ class DiskFragment : SelectableFragment() {
         adapter.progressItem = ProgressItem()
         adapter.endlessScrollThreshold = 8
 
+        viewBinding.rvDisk.itemAnimator = DefaultItemAnimator().apply { this.changeDuration = 0 }
         viewBinding.rvDisk.layoutManager = LinearLayoutManager(context)
         viewBinding.rvDisk.adapter = adapter
 
@@ -423,7 +425,8 @@ class DiskFragment : SelectableFragment() {
 
     private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {
 //        adapter.addPhotos(items)
-        adapter.onLoadMoreComplete(result.photos)
+        adapter.onLoadMoreComplete(emptyList())
+        adapter.updateDataSet(result.photos)
         adapter.endlessScrollEnabled = result.hasMore
     }
 

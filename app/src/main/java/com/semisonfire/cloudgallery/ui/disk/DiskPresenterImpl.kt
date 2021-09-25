@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
@@ -16,7 +17,7 @@ import io.reactivex.subjects.PublishSubject
 import java.net.URL
 import javax.inject.Inject
 
-const val LIMIT = 20
+const val LIMIT = 15
 
 interface DiskPresenter : Presenter {
 
@@ -34,7 +35,8 @@ interface DiskPresenter : Presenter {
 
 class DiskPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
-    private val uploadManager: UploadManager
+    private val uploadManager: UploadManager,
+    private val mapper: DiskMapper
 ) : DiskPresenter {
 
     private val compositeDisposable = CompositeDisposable()
@@ -67,14 +69,23 @@ class DiskPresenterImpl @Inject constructor(
 
                     diskRepository
                         .getPhotos(page, LIMIT)
-                        .map {
-                            val hasMore = it.size >= LIMIT
+                        .map { mapper.map(it, page) }
+                        .map { itemMap ->
+                            val hasMore = itemMap.isNotEmpty()
+                            viewModel.hasMore.set(hasMore)
+
                             if (page == 0) {
-                                viewModel.setItems(it)
-                                DiskResult.Loaded(it, hasMore)
+                                viewModel.setItems(itemMap)
+                                DiskResult.Loaded(
+                                    photos = viewModel.getListItems(),
+                                    hasMore = hasMore
+                                )
                             } else {
-                                viewModel.addItems(it)
-                                DiskResult.LoadMoreCompleted(it, hasMore)
+                                viewModel.mergeItems(itemMap)
+                                DiskResult.LoadMoreCompleted(
+                                    photos = viewModel.getListItems(),
+                                    hasMore = hasMore
+                                )
                             }
                         }
                 }
@@ -93,6 +104,7 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun getPhotos() {
+        viewModel.currentPage.set(0)
         loadListener.onNext(Unit)
     }
 

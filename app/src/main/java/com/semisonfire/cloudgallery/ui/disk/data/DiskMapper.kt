@@ -1,6 +1,5 @@
 package com.semisonfire.cloudgallery.ui.disk.data
 
-import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.common.title.TitleItem
@@ -12,11 +11,12 @@ class DiskMapper @Inject constructor() {
 
     private var id = 0L
 
-    fun map(photos: List<Photo>, page: Int): List<Item> {
+    fun map(
+        photos: List<Photo>,
+        page: Int
+    ): MutableMap<TitleItem, HorizontalScrollItem<PhotoItem>> {
 
         if (page == 0) id = 0
-
-        val items = mutableListOf<Item>()
 
         val photosByDateMap = mutableMapOf<String, MutableList<PhotoItem>>()
         for (photo in photos) {
@@ -34,22 +34,21 @@ class DiskMapper @Inject constructor() {
                 )
         }
 
+        val result = mutableMapOf<TitleItem, HorizontalScrollItem<PhotoItem>>()
         for ((date, photoItems) in photosByDateMap) {
-            items.add(
-                TitleItem(
-                    id = id++,
-                    title = date,
-                    subtitle = "${photoItems.size} photo"
-                )
+            val titleItem = TitleItem(
+                id = date.hashCode().toLong(),
+                title = date,
+                subtitle = "${photoItems.size} photo"
             )
-            items.add(
-                HorizontalScrollItem(
-                    id = id++,
-                    items = photoItems
-                )
+            val horizontalScrollItem = HorizontalScrollItem(
+                id = date.hashCode().toLong(),
+                items = photoItems
             )
+
+            result[titleItem] = horizontalScrollItem
         }
 
-        return items
+        return result
     }
 }
