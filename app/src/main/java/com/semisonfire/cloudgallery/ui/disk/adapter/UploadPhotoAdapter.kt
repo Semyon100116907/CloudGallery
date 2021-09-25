@@ -7,10 +7,9 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
+import com.semisonfire.cloudgallery.image.utils.loadRoundedImage
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil
 import com.semisonfire.cloudgallery.utils.dimen
-import com.squareup.picasso.Picasso
-import java.io.File
 
 class UploadPhotoAdapter :
     BaseAdapter<Photo, UploadPhotoAdapter.UploadViewHolder>() {
@@ -39,12 +38,7 @@ class UploadPhotoAdapter :
         private val photoImageView: ImageView = itemView.findViewById(R.id.image_photo)
 
         override fun bindItem(item: Photo) {
-            Picasso.get()
-                .load(File(item.localPath))
-                .resize(targetWidth, targetHeight)
-                .onlyScaleDown()
-                .centerCrop()
-                .into(photoImageView)
+            photoImageView.loadRoundedImage(item.localPath, targetWidth, targetHeight)
         }
     }
 }

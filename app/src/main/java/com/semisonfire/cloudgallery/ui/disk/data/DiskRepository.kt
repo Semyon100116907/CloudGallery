@@ -10,9 +10,9 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import java.io.File
 import javax.inject.Inject
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 
 class DiskRepository @Inject constructor(
     private val diskApi: DiskApi
@@ -33,7 +33,7 @@ class DiskRepository @Inject constructor(
 
     fun savePhoto(photo: Photo, link: Link): Observable<Photo> {
         val file = File(photo.localPath)
-        val reqFile = RequestBody.create(MediaType.parse("image/*"), file)
+        val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData(
             "file",
             file.name,

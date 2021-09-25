@@ -5,8 +5,8 @@ import androidx.core.view.isVisible
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.adapter.holder.ItemViewHolder
 import com.semisonfire.cloudgallery.databinding.ItemPhotoBinding
+import com.semisonfire.cloudgallery.image.utils.loadRoundedImage
 import com.semisonfire.cloudgallery.utils.dimen
-import com.squareup.picasso.Picasso
 
 class PhotoViewHolder(view: View) : ItemViewHolder<PhotoItem>(view) {
 
@@ -21,11 +21,6 @@ class PhotoViewHolder(view: View) : ItemViewHolder<PhotoItem>(view) {
 
     override fun bind(item: PhotoItem) {
         super.bind(item)
-        Picasso.get().load(item.url)
-            .placeholder(R.color.color_black)
-            .error(R.drawable.ic_gallery)
-            .resize(targetWidth, targetHeight)
-            .centerCrop()
-            .into(viewBinding.imagePhoto)
+        viewBinding.imagePhoto.loadRoundedImage(item.url, targetWidth, targetHeight)
     }
 }

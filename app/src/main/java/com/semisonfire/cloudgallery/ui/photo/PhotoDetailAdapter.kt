@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Point
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,10 +13,6 @@ import android.widget.ProgressBar
 import androidx.viewpager.widget.PagerAdapter
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.squareup.picasso.Picasso
-import com.squareup.picasso.Picasso.LoadedFrom
-import com.squareup.picasso.Target
-import com.squareup.picasso.Transformation
 import java.util.ArrayList
 
 class PhotoDetailAdapter : PagerAdapter() {
@@ -78,16 +73,16 @@ class PhotoDetailAdapter : PagerAdapter() {
         progressLoader.visibility = View.VISIBLE
 
         //Load image
-        val loadTarget = LoadTarget(photoImageView, progressLoader)
-        val photo = photoList[position]
-        Picasso.get()
-            .load(photo.preview)
-            .transform(FullScreenTransform(maxWidth))
-            .noFade()
-            .placeholder(R.color.color_black)
-            .into(loadTarget)
-        photoImageView.tag = loadTarget
-        container.addView(view)
+//        val loadTarget = LoadTarget(photoImageView, progressLoader)
+//        val photo = photoList[position]
+//        Picasso.get()
+//            .load(photo.preview)
+//            .transform(FullScreenTransform(maxWidth))
+//            .noFade()
+//            .placeholder(R.color.color_black)
+//            .into(loadTarget)
+//        photoImageView.tag = loadTarget
+//        container.addView(view)
         return view
     }
 
@@ -111,40 +106,40 @@ class PhotoDetailAdapter : PagerAdapter() {
         return POSITION_NONE
     }
 
-    internal inner class LoadTarget(
-        private val imageView: ImageView,
-        private val progressBar: ProgressBar
-    ) : Target {
-
-        override fun onBitmapLoaded(bitmap: Bitmap, from: LoadedFrom) {
-            currentItemBitmap = bitmap
-            imageView.setImageBitmap(bitmap)
-            progressBar.visibility = View.GONE
-        }
-
-        override fun onBitmapFailed(e: Exception, errorDrawable: Drawable) {
-            progressBar.visibility = View.GONE
-        }
-
-        override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
-    }
-
-    internal inner class FullScreenTransform(private val targetWidth: Int) : Transformation {
-
-        override fun transform(source: Bitmap): Bitmap {
-            val aspectRatio = source.height.toDouble() / source.width.toDouble()
-            val height = (targetWidth * aspectRatio).toInt()
-            val transformed = Bitmap.createScaledBitmap(source, targetWidth, height, false)
-            if (transformed != source) {
-                source.recycle()
-                return transformed
-            }
-            return source
-        }
-
-        override fun key(): String {
-            return "transform_$targetWidth"
-        }
-
-    }
+//    internal inner class LoadTarget(
+//        private val imageView: ImageView,
+//        private val progressBar: ProgressBar
+//    ) : Target {
+//
+//        override fun onBitmapLoaded(bitmap: Bitmap, from: LoadedFrom) {
+//            currentItemBitmap = bitmap
+//            imageView.setImageBitmap(bitmap)
+//            progressBar.visibility = View.GONE
+//        }
+//
+//        override fun onBitmapFailed(e: Exception, errorDrawable: Drawable) {
+//            progressBar.visibility = View.GONE
+//        }
+//
+//        override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
+//    }
+//
+//    internal inner class FullScreenTransform(private val targetWidth: Int) : Transformation {
+//
+//        override fun transform(source: Bitmap): Bitmap {
+//            val aspectRatio = source.height.toDouble() / source.width.toDouble()
+//            val height = (targetWidth * aspectRatio).toInt()
+//            val transformed = Bitmap.createScaledBitmap(source, targetWidth, height, false)
+//            if (transformed != source) {
+//                source.recycle()
+//                return transformed
+//            }
+//            return source
+//        }
+//
+//        override fun key(): String {
+//            return "transform_$targetWidth"
+//        }
+//
+//    }
 }

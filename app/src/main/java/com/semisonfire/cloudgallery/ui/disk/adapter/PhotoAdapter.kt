@@ -8,12 +8,12 @@ import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseAdapter
 import com.semisonfire.cloudgallery.core.ui.adapter.BaseViewHolder
+import com.semisonfire.cloudgallery.image.utils.loadRoundedImage
 import com.semisonfire.cloudgallery.ui.custom.PhotoDiffUtil
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter.PhotoViewHolder
 import com.semisonfire.cloudgallery.utils.dimen
-import com.squareup.picasso.Picasso
 
 class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
 
@@ -95,12 +95,7 @@ class PhotoAdapter : BaseAdapter<Photo, PhotoViewHolder>() {
 
         override fun bindItem(item: Photo) {
             photoImage.setImageDrawable(null)
-            Picasso.get().load(item.preview)
-                .placeholder(R.color.color_black)
-                .error(R.drawable.ic_gallery)
-                .resize(targetWidth, targetHeight)
-                .centerCrop()
-                .into(photoImage)
+            photoImage.loadRoundedImage(item.preview, targetWidth, targetHeight)
             selectImage.visibility = if (item.isSelected) View.VISIBLE else View.GONE
         }
     }
