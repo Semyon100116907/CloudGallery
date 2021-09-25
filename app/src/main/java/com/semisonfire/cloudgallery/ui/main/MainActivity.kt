@@ -5,7 +5,7 @@ import androidx.appcompat.widget.Toolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.ui.BaseActivity
+import com.semisonfire.cloudgallery.core.ui.ContentActivity
 import com.semisonfire.cloudgallery.core.ui.navigation.router.Router
 import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
 import com.semisonfire.cloudgallery.di.provider.ComponentProvider
@@ -22,7 +22,7 @@ import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-class MainActivity : BaseActivity(), ComponentProvider<NavigationComponentApi> {
+class MainActivity : ContentActivity(), ComponentProvider<NavigationComponentApi> {
 
     @Inject
     lateinit var router: Router

@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.disposables.CompositeDisposable
 
 @Suppress("UNCHECKED_CAST")
-abstract class BaseActivity : AppCompatActivity() {
+abstract class ContentActivity : AppCompatActivity() {
 
     protected val disposables: CompositeDisposable = CompositeDisposable()
 
