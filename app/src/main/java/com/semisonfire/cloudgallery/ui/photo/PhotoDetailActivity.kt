@@ -10,9 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentActivity
-import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
@@ -20,6 +18,7 @@ import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
+import com.semisonfire.cloudgallery.databinding.ActivityPhotoDetailBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent
 import com.semisonfire.cloudgallery.utils.*
@@ -33,6 +32,8 @@ class PhotoDetailActivity : ContentActivity() {
 
     @Inject
     lateinit var permissionManager: PermissionManager
+
+    private lateinit var viewBinding: ActivityPhotoDetailBinding
 
     private val adapter = PhotoDetailAdapter()
     private var photoList = mutableListOf<Photo>()
@@ -54,6 +55,11 @@ class PhotoDetailActivity : ContentActivity() {
 
         setUpFullScreen()
         super.onCreate(savedInstanceState)
+
+        viewBinding = ActivityPhotoDetailBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
+        bind()
+
         //Device orientation state
         orientation = resources.configuration.orientation
         val intent = intent
@@ -75,12 +81,10 @@ class PhotoDetailActivity : ContentActivity() {
         }
     }
 
-    public override fun bind() {
-        super.bind()
+    private fun bind() {
         setUpViewPager()
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setTitleTextColor(color(R.color.white))
-        setSupportActionBar(toolbar)
+        viewBinding.toolbar.setTitleTextColor(color(R.color.white))
+        setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         updateToolbarTitle(currentPosition)
     }
@@ -104,7 +108,7 @@ class PhotoDetailActivity : ContentActivity() {
         adapter.setItems(photoList)
 
         //ViewPager
-        val viewPager = findViewById<ViewPager>(R.id.vp_detailed_photos)
+        val viewPager = viewBinding.vpDetailedPhotos
         viewPager.adapter = adapter
         viewPager.setCurrentItem(currentPosition, false)
         viewPager.pageMargin = dimen(R.dimen.photo_detail_space)
@@ -217,7 +221,7 @@ class PhotoDetailActivity : ContentActivity() {
                 restore.isVisible = true
             }
         }
-        setMenuIconsColor(menu, resources.getColor(R.color.white))
+        setMenuIconsColor(menu, color(R.color.white))
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -245,7 +249,7 @@ class PhotoDetailActivity : ContentActivity() {
                                     *permissionList
                                 )
                             }
-                            val action = string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            val action = string(R.string.action_download).lowercase()
                             val message =
                                 "${string(R.string.text_memory_rights_description)} $action"
                             showPermissionDialogWithCancelButton(
@@ -259,7 +263,7 @@ class PhotoDetailActivity : ContentActivity() {
                             val positiveButton = AlertButton(string(R.string.action_ok)) {
                                 permissionManager.openApplicationSettings(this@PhotoDetailActivity)
                             }
-                            val action = string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            val action = string(R.string.action_download).lowercase()
                             val message =
                                 "${string(R.string.text_memory_rights_settings_description)} $action"
                             showPermissionDialogWithCancelButton(
@@ -302,10 +306,6 @@ class PhotoDetailActivity : ContentActivity() {
             STATE_PHOTO_LIST,
             photoList as ArrayList<out Parcelable>
         )
-    }
-
-    override fun layout(): Int {
-        return R.layout.activity_photo_detail
     }
 
     override fun onDestroy() {

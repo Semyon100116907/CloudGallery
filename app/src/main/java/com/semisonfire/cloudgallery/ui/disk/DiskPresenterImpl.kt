@@ -75,11 +75,7 @@ class DiskPresenterImpl @Inject constructor(
                 .doOnSuccess { currentPage.getAndIncrement() }
                 .subscribe({
 
-                    viewModel.photoList.apply {
-                        clear()
-                        addAll(it)
-                    }
-
+                    viewModel.setItems(it)
                     diskResultListener.onNext(DiskResult.Loaded(it))
                 }, {
                     it.printThrowable()
@@ -94,7 +90,7 @@ class DiskPresenterImpl @Inject constructor(
                 .getPhotos(currentPage.incrementAndGet(), LIMIT)
                 .subscribeOn(background())
                 .subscribe({
-                    viewModel.photoList.addAll(it)
+                    viewModel.addItems(it)
                     diskResultListener.onNext(DiskResult.LoadMoreCompleted(it))
                 }, {
                     it.printThrowable()

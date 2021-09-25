@@ -7,14 +7,11 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
@@ -25,6 +22,7 @@ import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
+import com.semisonfire.cloudgallery.databinding.FragmentDiskBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
@@ -63,8 +61,10 @@ class DiskFragment : SelectableFragment() {
     @Inject
     lateinit var adapter: DiskAdapter
 
-    //RecyclerView
-    private var recyclerView: RecyclerView? = null
+    private var _viewBinding: FragmentDiskBinding? = null
+
+    private val viewBinding: FragmentDiskBinding
+        get() = _viewBinding!!
 
     //Uploading
     private val uploadingList: MutableList<Photo> = mutableListOf()
@@ -95,17 +95,15 @@ class DiskFragment : SelectableFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.getPhotos()
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
         if (savedInstanceState != null) {
             cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
         }
-        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _viewBinding = FragmentDiskBinding.bind(view)
     }
 
     private fun showContent(model: DiskViewModel) {
@@ -142,6 +140,11 @@ class DiskFragment : SelectableFragment() {
         outState.putParcelable(STATE_FILE_URI, cameraFileUri)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _viewBinding = null
+    }
+
     public override fun bind(view: View) {
         super.bind(view)
         activity?.let {
@@ -149,13 +152,11 @@ class DiskFragment : SelectableFragment() {
             swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
         }
 
-        recyclerView = view.findViewById(R.id.rv_disk)
         presenter.getUploadingPhotos()
 
         floatingActionButton?.show()
         floatingActionButton?.setOnClickListener { showBottomDialog() }
 
-//        val progressItem = ProgressItem()
 //        diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
 //            override fun onPhotoClick(photos: List<Photo>, position: Int) {
 //                if (context != null) {
@@ -196,26 +197,8 @@ class DiskFragment : SelectableFragment() {
         adapter.progressItem = ProgressItem()
         adapter.endlessScrollThreshold = 8
 
-//        diskAdapter.loadMoreListener = object : LoadMoreListener {
-//            override fun noMoreLoad() {
-//                diskAdapter.progressItem = progressItem
-//            }
-//
-//            override fun onLoadMore() {
-//                presenter.loadMorePhotos()
-//            }
-//        }
-//        diskAdapter.progressItem = progressItem
-//        diskAdapter.endlessScrollThreshold = 2
-
-        val layoutManager = LinearLayoutManager(context)
-        recyclerView?.layoutManager = layoutManager
-        recyclerView?.adapter = adapter
-
-//        context?.let {
-//            val decorator = ItemDecorator(it.dimen(R.dimen.disk_linear_space))
-//            recyclerView?.addItemDecoration(decorator)
-//        }
+        viewBinding.rvDisk.layoutManager = LinearLayoutManager(context)
+        viewBinding.rvDisk.adapter = adapter
 
         swipeRefreshLayout?.setOnRefreshListener {
             presenter.getPhotos()
@@ -332,7 +315,7 @@ class DiskFragment : SelectableFragment() {
             }
             uploadingList.addAll(photos)
 
-            recyclerView?.scrollToPosition(0)
+            viewBinding.rvDisk.scrollToPosition(0)
         }
     }
 

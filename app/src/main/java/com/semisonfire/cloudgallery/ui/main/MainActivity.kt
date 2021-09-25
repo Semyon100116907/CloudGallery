@@ -1,11 +1,10 @@
 package com.semisonfire.cloudgallery.ui.main
 
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
+import com.semisonfire.cloudgallery.databinding.ActivityMainBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.navigation.ScreenKey
 import com.semisonfire.cloudgallery.navigation.destination.Destination
@@ -29,8 +28,7 @@ class MainActivity : ContentActivity() {
     @Inject
     lateinit var stateViewController: StateViewController
 
-    private var toolbar: Toolbar? = null
-    private var bottomNavigationView: BottomNavigationView? = null
+    private lateinit var viewBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DaggerMainComponent
@@ -43,6 +41,12 @@ class MainActivity : ContentActivity() {
         router.bind(supportFragmentManager)
 
         super.onCreate(savedInstanceState)
+
+        viewBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
+
+        bind()
+
         if (intent != null && intent.data != null) {
             login()
         }
@@ -52,13 +56,8 @@ class MainActivity : ContentActivity() {
         }
     }
 
-    public override fun bind() {
-        super.bind()
-
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        bottomNavigationView = findViewById(R.id.nav_bottom)
+    fun bind() {
+        setSupportActionBar(viewBinding.includeToolbar.toolbar)
         addBottomNavigation()
 
         stateViewController.bindStateDelegate(findViewById(android.R.id.content))
@@ -101,7 +100,7 @@ class MainActivity : ContentActivity() {
 
     /** Create navigation instance.  */
     private fun addBottomNavigation() {
-        bottomNavigationView?.setOnItemSelectedListener { item ->
+        viewBinding.navBottom.setOnItemSelectedListener { item ->
             val title: String
             val key = when (item.itemId) {
                 R.id.nav_disk -> {
@@ -119,28 +118,22 @@ class MainActivity : ContentActivity() {
                 else -> return@setOnItemSelectedListener false
             }
 
-            key.let {
-                toolbar?.title = title
-                router.replaceScreen(Destination(key))
-            }
+            viewBinding.includeToolbar.toolbar.title = title
+            router.replaceScreen(Destination(key))
             true
         }
     }
 
     override fun onBackPressed() {
-        if (bottomNavigationView?.selectedItemId == R.id.nav_disk) {
+        if (viewBinding.navBottom.selectedItemId == R.id.nav_disk) {
             super.onBackPressed()
         } else {
-            bottomNavigationView?.selectedItemId = R.id.nav_disk
+            viewBinding.navBottom.selectedItemId = R.id.nav_disk
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         router.unbind()
-    }
-
-    override fun layout(): Int {
-        return R.layout.activity_main
     }
 }

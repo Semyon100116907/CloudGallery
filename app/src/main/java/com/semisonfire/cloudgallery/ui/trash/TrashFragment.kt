@@ -12,11 +12,11 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.databinding.FragmentTrashBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
@@ -27,16 +27,22 @@ import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.ui.trash.di.DaggerTrashBinComponent
 import com.semisonfire.cloudgallery.utils.color
+import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
-import java.util.*
+import java.util.ArrayList
 import javax.inject.Inject
 
 class TrashFragment : SelectableFragment() {
 
     @Inject
     lateinit var presenter: TrashPresenter
+
+    private var _viewBinding: FragmentTrashBinding? = null
+
+    private val viewBinding: FragmentTrashBinding
+        get() = _viewBinding!!
 
     private val photoAdapter = PhotoAdapter()
 
@@ -105,19 +111,16 @@ class TrashFragment : SelectableFragment() {
         })
         photoAdapter.updateDataSet(trashPhotoList)
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.rv_trash)
-        recyclerView.adapter = photoAdapter
+        viewBinding.rvTrash.adapter = photoAdapter
 
         val orientation = resources.configuration.orientation
-        val gridLayoutManager = GridLayoutManager(
+        viewBinding.rvTrash.layoutManager = GridLayoutManager(
             context,
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) 4 else 3
         )
-        recyclerView.layoutManager = gridLayoutManager
 
-        val itemDecorator =
-            ItemDecorator(resources.getDimensionPixelOffset(R.dimen.disk_grid_space))
-        recyclerView.addItemDecoration(itemDecorator)
+        val itemDecorator = ItemDecorator(view.context.dimen(R.dimen.disk_grid_space))
+        viewBinding.rvTrash.addItemDecoration(itemDecorator)
         swipeRefreshLayout?.setOnRefreshListener {
             swipeRefreshLayout?.isRefreshing = true
             updateDataSet()
@@ -143,6 +146,7 @@ class TrashFragment : SelectableFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _viewBinding = null
         presenter.dispose()
     }
 
