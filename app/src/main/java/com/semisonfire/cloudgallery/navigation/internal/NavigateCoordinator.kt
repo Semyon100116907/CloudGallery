@@ -52,12 +52,12 @@ internal class NavigateCoordinator @Inject constructor(
 
         val key = destination.screenKey.name
 
+        val navigator = getNavigatorByKey(key)
+        val navigatorContainer = navigator.container()
+        val navigatorContainerId = navigatorContainer.containerId
+
         val fragmentByTag = fragmentManager.findFragmentByTag(key)
         if (fragmentByTag == null) {
-
-            val navigator = getNavigatorByKey(key)
-            val navigatorContainer = navigator.container()
-            val navigatorContainerId = navigatorContainer.containerId
 
             val bundle = destination.params?.toBundle() ?: Bundle()
             val fragment = navigator.createFragment()
@@ -74,7 +74,7 @@ internal class NavigateCoordinator @Inject constructor(
         } else {
             fragmentManager
                 .beginTransaction()
-                .show(fragmentByTag)
+                .replace(navigatorContainerId, fragmentByTag, key)
                 .commit()
         }
     }
