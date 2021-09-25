@@ -2,7 +2,6 @@ package com.semisonfire.cloudgallery.ui.disk.di
 
 import com.semisonfire.cloudgallery.di.AppComponent
 import com.semisonfire.cloudgallery.di.annotation.FragmentScope
-import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
 import com.semisonfire.cloudgallery.ui.disk.DiskFragment
 import dagger.Component
 
@@ -11,8 +10,7 @@ import dagger.Component
         DiskModule::class
     ],
     dependencies = [
-        AppComponent::class,
-        NavigationComponentApi::class
+        AppComponent::class
     ]
 )
 @FragmentScope
@@ -24,8 +22,7 @@ interface DiskComponent {
     interface Factory {
 
         fun create(
-            appComponent: AppComponent,
-            navigationComponentApi: NavigationComponentApi
+            appComponent: AppComponent
         ): DiskComponent
     }
 }

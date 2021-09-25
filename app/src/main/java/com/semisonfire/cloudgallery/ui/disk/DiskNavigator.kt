@@ -2,21 +2,22 @@ package com.semisonfire.cloudgallery.ui.disk
 
 import androidx.fragment.app.Fragment
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
+import com.semisonfire.cloudgallery.navigation.ScreenKey
+import com.semisonfire.cloudgallery.navigation.navigator.Navigator
+import com.semisonfire.cloudgallery.navigation.navigator.NavigatorContainer
+import javax.inject.Inject
 
-const val DISK_KEY = "DISK_KEY"
-const val DISK_CONTAINER_ID = R.id.frame_fragment
+class DiskNavigator @Inject constructor() : Navigator {
 
-class DiskNavigator : Navigator() {
-    override val key: String
-        get() = DISK_KEY
-    override val containerId: Int
-        get() = DISK_CONTAINER_ID
+    override val key: String = ScreenKey.DISK.name
 
-    override fun createFragment(key: String, bundle: Any?): Fragment? {
-        return when (key) {
-            DISK_KEY -> DiskFragment()
-            else -> null
-        }
+    override fun container(): NavigatorContainer {
+        return NavigatorContainer(
+            containerId = R.id.frame_fragment
+        )
+    }
+
+    override fun createFragment(): Fragment {
+        return DiskFragment()
     }
 }

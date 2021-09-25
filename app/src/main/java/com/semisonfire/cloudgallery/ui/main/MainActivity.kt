@@ -1,72 +1,63 @@
 package com.semisonfire.cloudgallery.ui.main
 
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.mvp.MvpView
-import com.semisonfire.cloudgallery.core.ui.BaseActivity
-import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
-import com.semisonfire.cloudgallery.di.provider.ComponentProvider
+import com.semisonfire.cloudgallery.core.ui.ContentActivity
+import com.semisonfire.cloudgallery.databinding.ActivityMainBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.disk.DISK_KEY
+import com.semisonfire.cloudgallery.navigation.ScreenKey
+import com.semisonfire.cloudgallery.navigation.destination.Destination
+import com.semisonfire.cloudgallery.navigation.router.Router
 import com.semisonfire.cloudgallery.ui.main.di.DaggerMainComponent
-import com.semisonfire.cloudgallery.ui.main.di.MainComponent
-import com.semisonfire.cloudgallery.ui.main.model.MainViewModel
 import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
-import com.semisonfire.cloudgallery.ui.settings.SETTINGS_KEY
-import com.semisonfire.cloudgallery.ui.trash.TRASH_KEY
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.string
 import java.util.regex.Pattern
 import javax.inject.Inject
 
-interface MainView : MvpView<MainViewModel>
+class MainActivity : ContentActivity() {
 
-class MainActivity :
-    BaseActivity<MainViewModel, MainView, MainPresenter>(), MainView,
-    ComponentProvider<NavigationComponentApi> {
+    @Inject
+    lateinit var router: Router
+
+    @Inject
+    lateinit var presenter: MainPresenter
 
     @Inject
     lateinit var stateViewController: StateViewController
 
-    var component: MainComponent? = null
-
-    private var toolbar: Toolbar? = null
-    private var bottomNavigationView: BottomNavigationView? = null
-
-    override fun component(): NavigationComponentApi? {
-        return component
-    }
+    private lateinit var viewBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component = DaggerMainComponent
+        DaggerMainComponent
             .factory()
             .create(
-                this,
                 provideComponent()
             )
-        component?.inject(this)
+            .inject(this)
+
+        router.bind(supportFragmentManager)
 
         super.onCreate(savedInstanceState)
+
+        viewBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
+
+        bind()
+
         if (intent != null && intent.data != null) {
             login()
         }
 
         if (savedInstanceState == null) {
-            router.replaceScreen(DISK_KEY)
+            router.open(Destination(ScreenKey.DISK))
         }
     }
 
-    public override fun bind() {
-        super.bind()
-
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        bottomNavigationView = findViewById(R.id.nav_bottom)
+    fun bind() {
+        setSupportActionBar(viewBinding.includeToolbar.toolbar)
         addBottomNavigation()
 
         stateViewController.bindStateDelegate(findViewById(android.R.id.content))
@@ -79,7 +70,7 @@ class MainActivity :
         stateViewController.updateStateView(MainStateView.LOADER)
         disposables.addAll(
             presenter
-                .getTokenListener()
+                .observeAuth()
                 .observeOn(foreground())
                 .subscribe({
                     val state =
@@ -109,41 +100,40 @@ class MainActivity :
 
     /** Create navigation instance.  */
     private fun addBottomNavigation() {
-        bottomNavigationView?.setOnItemSelectedListener { item ->
+        viewBinding.navBottom.setOnItemSelectedListener { item ->
             val title: String
             val key = when (item.itemId) {
                 R.id.nav_disk -> {
                     title = string(R.string.msg_disk)
-                    DISK_KEY
+                    ScreenKey.DISK
                 }
                 R.id.nav_trash -> {
                     title = string(R.string.msg_trash)
-                    TRASH_KEY
+                    ScreenKey.TRASH_BIN
                 }
                 R.id.nav_settings -> {
                     title = string(R.string.msg_settings)
-                    SETTINGS_KEY
+                    ScreenKey.SETTINGS
                 }
                 else -> return@setOnItemSelectedListener false
             }
 
-            key.let {
-                toolbar?.title = title
-                router.replaceScreen(key)
-            }
+            viewBinding.includeToolbar.toolbar.title = title
+            router.replaceScreen(Destination(key))
             true
         }
     }
 
     override fun onBackPressed() {
-        if (bottomNavigationView?.selectedItemId == R.id.nav_disk) {
+        if (viewBinding.navBottom.selectedItemId == R.id.nav_disk) {
             super.onBackPressed()
         } else {
-            bottomNavigationView?.selectedItemId = R.id.nav_disk
+            viewBinding.navBottom.selectedItemId = R.id.nav_disk
         }
     }
 
-    override fun layout(): Int {
-        return R.layout.activity_main
+    override fun onDestroy() {
+        super.onDestroy()
+        router.unbind()
     }
 }

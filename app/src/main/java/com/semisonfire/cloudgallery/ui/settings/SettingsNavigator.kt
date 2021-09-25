@@ -2,21 +2,24 @@ package com.semisonfire.cloudgallery.ui.settings
 
 import androidx.fragment.app.Fragment
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.ui.navigation.Navigator
+import com.semisonfire.cloudgallery.navigation.ScreenKey
+import com.semisonfire.cloudgallery.navigation.navigator.Navigator
+import com.semisonfire.cloudgallery.navigation.navigator.NavigatorContainer
+import javax.inject.Inject
 
 const val SETTINGS_KEY = "SETTINGS_KEY"
-const val SETTINGS_CONTAINER_ID = R.id.frame_fragment
 
-class SettingsNavigator : Navigator() {
-    override val key: String
-        get() = SETTINGS_KEY
-    override val containerId: Int
-        get() = SETTINGS_CONTAINER_ID
+class SettingsNavigator @Inject constructor() : Navigator {
 
-    override fun createFragment(key: String, bundle: Any?): Fragment? {
-        return when (key) {
-            SETTINGS_KEY -> SettingsFragment()
-            else -> null
-        }
+    override val key: String = ScreenKey.SETTINGS.name
+
+    override fun container(): NavigatorContainer {
+        return NavigatorContainer(
+            containerId = R.id.frame_fragment
+        )
+    }
+
+    override fun createFragment(): Fragment {
+        return SettingsFragment()
     }
 }

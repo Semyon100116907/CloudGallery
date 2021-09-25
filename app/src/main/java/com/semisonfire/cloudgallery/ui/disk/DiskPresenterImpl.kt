@@ -3,21 +3,22 @@ package com.semisonfire.cloudgallery.ui.disk
 import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.logger.printThrowable
-import com.semisonfire.cloudgallery.core.mvp.MvpPresenter
-import com.semisonfire.cloudgallery.core.presentation.BasePresenter
+import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
-import com.semisonfire.cloudgallery.utils.foreground
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import java.net.URL
 import javax.inject.Inject
 
-const val LIMIT = 15
+const val LIMIT = 20
 
-interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
+interface DiskPresenter : Presenter {
 
     fun getPhotos()
     fun uploadPhotos(photos: List<Photo>)
@@ -26,27 +27,42 @@ interface DiskPresenter : MvpPresenter<DiskViewModel, DiskView> {
     fun downloadPhotos(photos: List<Photo>)
     fun deletePhotos(photos: List<Photo>)
     fun loadMorePhotos()
+
+    fun observeContent(): Observable<DiskViewModel>
+    fun observeDiskResult(): Observable<DiskResult>
 }
 
 class DiskPresenterImpl @Inject constructor(
     private val diskRepository: DiskRepository,
     private val uploadManager: UploadManager
-) : BasePresenter<DiskViewModel, DiskView>(), DiskPresenter {
+) : DiskPresenter {
 
-    override val viewModel = DiskViewModel()
+    private val compositeDisposable = CompositeDisposable()
+
+    private val viewModel = DiskViewModel()
+
+    private val contentListener = BehaviorSubject.createDefault(viewModel)
+    private val diskResultListener = PublishSubject.create<DiskResult>()
 
     init {
         compositeDisposable.add(
             uploadManager.uploadListener()
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe({
-                    viewModel.photoList.add(it.photo)
-                    view?.onPhotoUploaded(it.photo, it.uploaded)
+//                    viewModel.photoList.add(it.photo)
+                    diskResultListener.onNext(DiskResult.PhotoUploaded(it.photo, it.uploaded))
                 }, {
                     it.printThrowable()
                 })
         )
+    }
+
+    override fun observeContent(): Observable<DiskViewModel> {
+        return contentListener
+    }
+
+    override fun observeDiskResult(): Observable<DiskResult> {
+        return diskResultListener
     }
 
     override fun getPhotos() {
@@ -56,16 +72,11 @@ class DiskPresenterImpl @Inject constructor(
             diskRepository
                 .getPhotos(currentPage.get(), LIMIT)
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .doOnSuccess { currentPage.getAndIncrement() }
                 .subscribe({
 
-                    viewModel.photoList.apply {
-                        clear()
-                        addAll(it)
-                    }
-
-                    view?.onPhotosLoaded(it)
+                    viewModel.setItems(it)
+                    diskResultListener.onNext(DiskResult.Loaded(it))
                 }, {
                     it.printThrowable()
                 })
@@ -78,10 +89,9 @@ class DiskPresenterImpl @Inject constructor(
             diskRepository
                 .getPhotos(currentPage.incrementAndGet(), LIMIT)
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe({
-                    viewModel.photoList.addAll(it)
-                    view?.loadMoreComplete(it)
+                    viewModel.addItems(it)
+                    diskResultListener.onNext(DiskResult.LoadMoreCompleted(it))
                 }, {
                     it.printThrowable()
                 })
@@ -92,9 +102,10 @@ class DiskPresenterImpl @Inject constructor(
         compositeDisposable.add(
             uploadManager.uploadingPhotos
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onUploadingPhotos(it) },
+                    {
+                        diskResultListener.onNext(DiskResult.Uploading(it))
+                    },
                     { it.printThrowable() }
                 )
         )
@@ -111,9 +122,10 @@ class DiskPresenterImpl @Inject constructor(
                     FileUtils.savePublicFile(bitmap, it.photo.name)
                 }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe(
-                    { view?.onPhotoDownloaded(it) },
+                    {
+                        diskResultListener.onNext(DiskResult.PhotoDownloaded(it))
+                    },
                     { it.printThrowable() }
                 )
         )
@@ -124,10 +136,9 @@ class DiskPresenterImpl @Inject constructor(
             Observable.fromIterable(photos.toMutableList())
                 .concatMap { diskRepository.deletePhoto(it) }
                 .subscribeOn(background())
-                .observeOn(foreground())
                 .subscribe({
-                    viewModel.photoList.remove(it)
-                    view?.onPhotoDeleted(it)
+//                    viewModel.photoList.remove(it)
+                    diskResultListener.onNext(DiskResult.PhotoDeleted(it))
                 }, {
                     it.printThrowable()
                 })

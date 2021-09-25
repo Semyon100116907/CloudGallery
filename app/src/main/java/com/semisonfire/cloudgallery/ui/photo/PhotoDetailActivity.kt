@@ -10,41 +10,30 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentActivity
-import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
+import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.core.ui.BaseActivity
-import com.semisonfire.cloudgallery.di.api.NavigationComponentApi
-import com.semisonfire.cloudgallery.di.provider.ComponentProvider
+import com.semisonfire.cloudgallery.core.ui.ContentActivity
+import com.semisonfire.cloudgallery.databinding.ActivityPhotoDetailBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent
-import com.semisonfire.cloudgallery.ui.photo.di.PhotoDetailComponent
-import com.semisonfire.cloudgallery.ui.photo.model.PhotoDetailViewModel
-import com.semisonfire.cloudgallery.utils.dimen
-import com.semisonfire.cloudgallery.utils.longToast
-import com.semisonfire.cloudgallery.utils.setMenuIconsColor
-import com.semisonfire.cloudgallery.utils.string
+import com.semisonfire.cloudgallery.utils.*
 import java.util.*
+import javax.inject.Inject
 
-interface PhotoDetailView : MvpView<PhotoDetailViewModel> {
+class PhotoDetailActivity : ContentActivity() {
 
-    fun onPhotoDownloaded(path: String)
-    fun onFilePrepared(uri: Uri)
-    fun onFilesChanged(photo: Photo)
-}
+    @Inject
+    lateinit var presenter: PhotoDetailPresenter
 
-class PhotoDetailActivity :
-    BaseActivity<PhotoDetailViewModel, PhotoDetailView, PhotoDetailPresenter>(),
-    PhotoDetailView,
-    ComponentProvider<NavigationComponentApi> {
+    @Inject
+    lateinit var permissionManager: PermissionManager
 
-    var component: PhotoDetailComponent? = null
+    private lateinit var viewBinding: ActivityPhotoDetailBinding
 
     private val adapter = PhotoDetailAdapter()
     private var photoList = mutableListOf<Photo>()
@@ -55,22 +44,22 @@ class PhotoDetailActivity :
     //Orientation
     private var orientation = 0
 
-    override fun component(): NavigationComponentApi? {
-        return component
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        component = DaggerPhotoDetailComponent
+        DaggerPhotoDetailComponent
             .factory()
             .create(
-                this,
                 provideComponent()
             )
-        component?.inject(this)
+            .inject(this)
 
         setUpFullScreen()
         super.onCreate(savedInstanceState)
+
+        viewBinding = ActivityPhotoDetailBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
+        bind()
+
         //Device orientation state
         orientation = resources.configuration.orientation
         val intent = intent
@@ -92,12 +81,10 @@ class PhotoDetailActivity :
         }
     }
 
-    public override fun bind() {
-        super.bind()
+    private fun bind() {
         setUpViewPager()
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setTitleTextColor(resources.getColor(R.color.white))
-        setSupportActionBar(toolbar)
+        viewBinding.toolbar.setTitleTextColor(color(R.color.white))
+        setSupportActionBar(viewBinding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         updateToolbarTitle(currentPosition)
     }
@@ -121,7 +108,7 @@ class PhotoDetailActivity :
         adapter.setItems(photoList)
 
         //ViewPager
-        val viewPager = findViewById<ViewPager>(R.id.vp_detailed_photos)
+        val viewPager = viewBinding.vpDetailedPhotos
         viewPager.adapter = adapter
         viewPager.setCurrentItem(currentPosition, false)
         viewPager.pageMargin = dimen(R.dimen.photo_detail_space)
@@ -152,19 +139,47 @@ class PhotoDetailActivity :
         supportActionBar?.title = "${position + 1} ${string(R.string.msg_of)} ${photoList.size}"
     }
 
-    override fun onPhotoDownloaded(path: String) {
+    override fun onStart() {
+        super.onStart()
+
+        disposables.addAll(
+            presenter
+                .observePhotoDownloaded()
+                .observeOn(foreground())
+                .subscribe {
+                    onPhotoDownloaded(it)
+                },
+            presenter
+                .observeFilePrepared()
+                .observeOn(foreground())
+                .subscribe {
+                    onFilePrepared(it)
+                },
+            presenter
+                .observeFileChanged()
+                .observeOn(foreground())
+                .subscribe {
+                    onFilesChanged(it)
+                }
+        )
+    }
+
+    private fun onPhotoDownloaded(path: String) {
         longToast("${string(R.string.msg_file_saved)} $path")
     }
 
-    override fun onFilePrepared(uri: Uri) {
+    private fun onFilePrepared(uri: Uri) {
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "image/jpg"
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
         startActivity(Intent.createChooser(shareIntent, getString(R.string.msg_share_chooser)))
     }
 
-    override fun onFilesChanged(photo: Photo) {
-        createReturnIntent(true)
+    private fun onFilesChanged(photo: Photo) {
+        val returnIntent = Intent()
+        returnIntent.putExtra(EXTRA_CHANGED, true)
+        setResult(Activity.RESULT_OK, returnIntent)
+
         photoList.remove(photo)
         if (photoList.isEmpty()) {
             finish()
@@ -175,10 +190,18 @@ class PhotoDetailActivity :
         updateToolbarTitle(currentPosition)
     }
 
-    private fun createReturnIntent(isDataChanged: Boolean) {
-        val returnIntent = Intent()
-        returnIntent.putExtra(EXTRA_CHANGED, isDataChanged)
-        setResult(Activity.RESULT_OK, returnIntent)
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionManager.onRequestPermissionsResult(
+            this,
+            requestCode,
+            permissions,
+            grantResults
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -198,7 +221,7 @@ class PhotoDetailActivity :
                 restore.isVisible = true
             }
         }
-        setMenuIconsColor(menu, resources.getColor(R.color.white))
+        setMenuIconsColor(menu, color(R.color.white))
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -226,7 +249,7 @@ class PhotoDetailActivity :
                                     *permissionList
                                 )
                             }
-                            val action = string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            val action = string(R.string.action_download).lowercase()
                             val message =
                                 "${string(R.string.text_memory_rights_description)} $action"
                             showPermissionDialogWithCancelButton(
@@ -240,7 +263,7 @@ class PhotoDetailActivity :
                             val positiveButton = AlertButton(string(R.string.action_ok)) {
                                 permissionManager.openApplicationSettings(this@PhotoDetailActivity)
                             }
-                            val action = string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            val action = string(R.string.action_download).lowercase()
                             val message =
                                 "${string(R.string.text_memory_rights_settings_description)} $action"
                             showPermissionDialogWithCancelButton(
@@ -285,8 +308,9 @@ class PhotoDetailActivity :
         )
     }
 
-    override fun layout(): Int {
-        return R.layout.activity_photo_detail
+    override fun onDestroy() {
+        super.onDestroy()
+        presenter.dispose()
     }
 
     companion object {

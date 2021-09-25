@@ -6,56 +6,63 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.provider.MediaStore
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.adapter.LoadMoreListener
+import com.semisonfire.cloudgallery.adapter.holder.Item
+import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
 import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.mvp.MvpView
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
+import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
-import com.semisonfire.cloudgallery.core.ui.adapter.LoadMoreListener
+import com.semisonfire.cloudgallery.databinding.FragmentDiskBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
-import com.semisonfire.cloudgallery.ui.custom.SelectableHelper
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
-import com.semisonfire.cloudgallery.ui.disk.adapter.items.ProgressItem
 import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.utils.FileUtils
-import com.semisonfire.cloudgallery.utils.dimen
+import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
-import java.util.*
+import javax.inject.Inject
 
-interface DiskView : MvpView<DiskViewModel> {
+class DiskFragment : SelectableFragment() {
 
-    fun onPhotosLoaded(photos: List<Photo>)
-    fun onUploadingPhotos(photos: List<Photo>)
-    fun onPhotoUploaded(photo: Photo, uploaded: Boolean)
-    fun onPhotoDownloaded(path: String)
-    fun onPhotoDeleted(photo: Photo)
-    fun loadMoreComplete(it: List<Photo>)
-}
+    companion object {
 
-class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(), DiskView {
+        //Saved state constants
+        private const val STATE_FILE_URI = "STATE_FILE_URI"
 
-    //RecyclerView
-    private var recyclerView: RecyclerView? = null
-    private val diskAdapter: DiskAdapter = DiskAdapter()
+        //Dialog types
+        private const val BOTTOM = "BOTTOM"
+    }
+
+    @Inject
+    lateinit var presenter: DiskPresenter
+
+    @Inject
+    lateinit var permissionManager: PermissionManager
+
+    @Inject
+    lateinit var adapter: DiskAdapter
+
+    private var _viewBinding: FragmentDiskBinding? = null
+
+    private val viewBinding: FragmentDiskBinding
+        get() = _viewBinding!!
 
     //Uploading
     private val uploadingList: MutableList<Photo> = mutableListOf()
@@ -70,44 +77,113 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
 
     private lateinit var diskModel: DiskViewModel
 
+    private lateinit var pickFromCamera: ActivityResultLauncher<Intent>
+    private lateinit var pickFromGallery: ActivityResultLauncher<Intent>
+    private lateinit var openDetail: ActivityResultLauncher<Intent>
+
     override fun layout() = R.layout.fragment_disk
     override fun menuRes() = R.menu.menu_fragment
 
     override fun onAttach(context: Context) {
+
+        pickFromCamera = registerForActivityResult(StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                val uri = cameraFileUri
+                if (uri != null) {
+                    val photo = getLocalPhoto(uri)
+                    if (photo != null) {
+//                            diskAdapter.addUploadPhotos(photos)
+                        presenter.uploadPhoto(photo)
+                        uploadingList.add(photo)
+                        viewBinding.rvDisk.scrollToPosition(0)
+                    }
+                }
+            }
+        }
+
+        pickFromGallery = registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.let {
+                    val photos = extractFromGallery(it)
+                    uploadingList.addAll(extractFromGallery(it))
+//                    diskAdapter.addUploadPhotos(photos)
+                    presenter.uploadPhotos(photos)
+                    viewBinding.rvDisk.scrollToPosition(0)
+                }
+            }
+        }
+
+        openDetail = registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val isDataChanged =
+                    result.data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
+                        ?: false
+                if (isDataChanged) {
+//                    updateDataSet()
+                }
+            }
+        }
+
         DaggerDiskComponent
             .factory()
             .create(
-                context.provideComponent(),
                 context.provideComponent()
             )
             .inject(this)
         super.onAttach(context)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        presenter.getPhotos()
+
         if (savedInstanceState != null) {
             cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
         }
-        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun showContent(model: DiskViewModel) {
-        super.showContent(model)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        _viewBinding = FragmentDiskBinding.bind(view)
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    private fun showContent(model: DiskViewModel) {
         this.diskModel = model
     }
 
-    override fun onResume() {
-        super.onResume()
-        presenter.getPhotos()
+    override fun onStart() {
+        super.onStart()
+        disposables.addAll(
+            presenter
+                .observeContent()
+                .observeOn(foreground())
+                .subscribe {
+                    showContent(it)
+                },
+            presenter
+                .observeDiskResult()
+                .observeOn(foreground())
+                .subscribe {
+                    when (it) {
+                        is DiskResult.Loaded -> onPhotosLoaded(it.photos)
+                        is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it.photos)
+                        is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
+                        is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
+                        is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
+                        is DiskResult.Uploading -> onUploadingPhotos(it.photos)
+                    }
+                }
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable(STATE_FILE_URI, cameraFileUri)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _viewBinding = null
     }
 
     public override fun bind(view: View) {
@@ -117,69 +193,58 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
             swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
         }
 
-        recyclerView = view.findViewById(R.id.rv_disk)
         presenter.getUploadingPhotos()
 
         floatingActionButton?.show()
         floatingActionButton?.setOnClickListener { showBottomDialog() }
 
-        val progressItem = ProgressItem()
-        diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
-            override fun onPhotoClick(photos: List<Photo>, position: Int) {
-                if (context != null) {
-                    val intent = Intent(context, PhotoDetailActivity::class.java)
-                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
-                    intent.putParcelableArrayListExtra(
-                        PhotoDetailActivity.EXTRA_PHOTOS,
-                        diskModel.photoList as ArrayList<out Parcelable>
-                    )
-                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
-                    startActivityForResult(intent, PhotoDetailActivity.DETAIL_REQUEST)
-                }
-            }
+//        diskAdapter.setPhotoClickListener(object : SelectableHelper.OnPhotoListener {
+//            override fun onPhotoClick(photos: List<Photo>, position: Int) {
+//                if (context != null) {
+//                    val intent = Intent(context, PhotoDetailActivity::class.java)
+//                    intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
+//                    intent.putParcelableArrayListExtra(
+//                        PhotoDetailActivity.EXTRA_PHOTOS,
+//                        diskModel.photoList as ArrayList<out Parcelable>
+//                    )
+//                    intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
+//                    openDetail.launch(intent)
+//                }
+//            }
+//
+//            override fun onPhotoLongClick() {
+//                setEnabledSelection(true)
+//            }
+//
+//            override fun onSelectedPhotoClick(photo: Photo) {
+//                if (photo.isSelected) {
+//                    selectedPhotos.add(photo)
+//                } else {
+//                    selectedPhotos.remove(photo)
+//                }
+//                updateToolbarTitle(selectedPhotos.size.toString())
+//                if (selectedPhotos.isEmpty()) {
+//                    setEnabledSelection(false)
+//                }
+//            }
+//        })
 
-            override fun onPhotoLongClick() {
-                setEnabledSelection(true)
-            }
-
-            override fun onSelectedPhotoClick(photo: Photo) {
-                if (photo.isSelected) {
-                    selectedPhotos.add(photo)
-                } else {
-                    selectedPhotos.remove(photo)
-                }
-                updateToolbarTitle(selectedPhotos.size.toString())
-                if (selectedPhotos.isEmpty()) {
-                    setEnabledSelection(false)
-                }
-            }
-        })
-        diskAdapter.loadMoreListener = object : LoadMoreListener {
-            override fun noMoreLoad() {
-                diskAdapter.progressItem = progressItem
-            }
-
-            override fun onLoadMore() {
+        adapter.loadMoreListener = object : LoadMoreListener {
+            override fun loadMore(position: Int) {
+                super.loadMore(position)
                 presenter.loadMorePhotos()
             }
         }
-        diskAdapter.progressItem = progressItem
-        diskAdapter.endlessScrollThreshold = 2
+        adapter.progressItem = ProgressItem()
+        adapter.endlessScrollThreshold = 8
 
-        val layoutManager = LinearLayoutManager(context)
-        recyclerView?.layoutManager = layoutManager
-        recyclerView?.adapter = diskAdapter
-
-        context?.let {
-            val decorator = ItemDecorator(it.dimen(R.dimen.disk_linear_space))
-            recyclerView?.addItemDecoration(decorator)
-        }
-
+        viewBinding.rvDisk.layoutManager = LinearLayoutManager(context)
+        viewBinding.rvDisk.adapter = adapter
 
         swipeRefreshLayout?.setOnRefreshListener {
             presenter.getPhotos()
             swipeRefreshLayout?.isRefreshing = true
-            updateDataSet()
+//            updateDataSet()
         }
     }
 
@@ -198,14 +263,14 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                     override fun onPermissionDenied(permissionList: Array<String>) {
                         val positiveButton = AlertButton(activity.string(R.string.action_ok)) {
                             permissionManager.checkPermissions(
-                                activity,
+                                this@DiskFragment,
                                 this,
                                 *permissionList
                             )
                         }
 
                         val action =
-                            activity.string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            activity.string(R.string.action_download).lowercase()
                         val message =
                             "${activity.string(R.string.text_memory_rights_description)} $action"
                         showPermissionDialogWithCancelButton(activity, message, positiveButton)
@@ -217,14 +282,14 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                         }
 
                         val action =
-                            activity.string(R.string.action_download).toLowerCase(Locale.ROOT)
+                            activity.string(R.string.action_download).lowercase()
                         val message =
                             "${activity.string(R.string.text_memory_rights_settings_description)} $action"
                         showPermissionDialogWithCancelButton(activity, message, positiveButton)
                     }
                 }
                 permissionManager.checkPermissions(
-                    activity,
+                    this,
                     memoryPermission,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -241,7 +306,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
             it.findItem(R.id.menu_delete)?.isVisible = enabled
             it.findItem(R.id.menu_download)?.isVisible = enabled
         }
-        diskAdapter.setSelection(enabled)
+//        diskAdapter.setSelection(enabled)
 
         swipeRefreshLayout?.isEnabled = !enabled
         floatingActionButton?.apply {
@@ -256,70 +321,34 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            val photos = mutableListOf<Photo>()
-            when (requestCode) {
-                GALLERY_IMAGE_REQUEST -> {
-                    data?.let {
-                        extractFromGallery(data, photos)
-                        diskAdapter.addUploadPhotos(photos)
-                        presenter.uploadPhotos(photos)
-                    }
-                }
-                CAMERA_REQUEST -> {
-                    val uri = cameraFileUri
-                    if (uri != null) {
-                        val photo = getLocalPhoto(uri)
-                        if (photo != null) {
-                            photos.add(photo)
-                            diskAdapter.addUploadPhotos(photos)
-                            presenter.uploadPhoto(photo)
-                        }
-                    }
-                }
-                PhotoDetailActivity.DETAIL_REQUEST -> {
-                    val isDataChanged =
-                        data?.getBooleanExtra(PhotoDetailActivity.EXTRA_CHANGED, false)
-                            ?: return
-                    if (isDataChanged) {
-                        updateDataSet()
-                    }
-                    return
-                }
-            }
-            uploadingList.addAll(photos)
+//    private fun updateDataSet() {
+//        diskAdapter.clear()
+//        if (uploadingList.isNotEmpty()) {
+//            diskAdapter.addUploadPhotos(uploadingList)
+//        }
+//    }
 
-            recyclerView?.scrollToPosition(0)
-        }
-    }
-
-    private fun updateDataSet() {
-        diskAdapter.clear()
-        if (uploadingList.isNotEmpty()) {
-            diskAdapter.addUploadPhotos(uploadingList)
-        }
-    }
-
-    private fun extractFromGallery(data: Intent, photos: MutableList<Photo>) {
+    private fun extractFromGallery(data: Intent): List<Photo> {
+        val photos = mutableListOf<Photo>()
         if (data.clipData == null) {
-            if (data.data == null) return
+            if (data.data == null) return emptyList()
 
-            val imageUri = data.data ?: return
+            val imageUri = data.data ?: return emptyList()
             getLocalPhoto(imageUri)?.let {
                 photos.add(it)
             }
-            return
+            return emptyList()
         }
 
-        val clipData = data.clipData ?: return
+        val clipData = data.clipData ?: return emptyList()
         for (i in 0 until clipData.itemCount) {
             val imageUri = clipData.getItemAt(i).uri
             getLocalPhoto(imageUri)?.let {
                 photos.add(it)
             }
         }
+
+        return photos
     }
 
     /**
@@ -348,50 +377,69 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
         return photo
     }
 
-    override fun onUploadingPhotos(photos: List<Photo>) {
+    private fun onUploadingPhotos(photos: List<Photo>) {
         if (photos.isNotEmpty()) {
             uploadingList.addAll(photos)
-            diskAdapter.addUploadPhotos(photos)
+//            diskAdapter.addUploadPhotos(photos)
             presenter.uploadPhotos(photos)
         }
     }
 
-    override fun onPhotosLoaded(photos: List<Photo>) {
+    private fun onPhotosLoaded(photos: List<Item>) {
         swipeRefreshLayout?.isRefreshing = false
         if (photos.isNotEmpty()) {
             floatingActionButton?.show()
-            diskAdapter.setPhotos(photos)
+//            diskAdapter.setPhotos(photos)
+            adapter.updateDataSet(photos)
         }
     }
 
-    override fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
+    private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
         var uploadState: String? = null
         if (uploaded) {
-            diskAdapter.addPhoto(photo)
+//            diskAdapter.addPhoto(photo)
             uploadingList.remove(photo)
-            diskAdapter.removeUploadedPhoto(photo)
+//            diskAdapter.removeUploadedPhoto(photo)
         } else {
             uploadState = getString(R.string.msg_wait)
         }
-        diskAdapter.changeUploadState(uploadState)
+//        diskAdapter.changeUploadState(uploadState)
     }
 
-    override fun onPhotoDownloaded(path: String) {
+    private fun onPhotoDownloaded(path: String) {
         context?.longToast(getString(R.string.msg_file_saved) + " " + path)
     }
 
-    override fun onPhotoDeleted(photo: Photo) {
+    private fun onPhotoDeleted(photo: Photo) {
         setEnabledSelection(false)
-        diskAdapter.removePhoto(photo)
+//        diskAdapter.removePhoto(photo)
 
         context?.let {
-            val action = getString(R.string.msg_deleted).toLowerCase(Locale.ROOT)
+            val action = getString(R.string.msg_deleted).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
         }
     }
 
-    override fun loadMoreComplete(it: List<Photo>) {
-        diskAdapter.addPhotos(it)
+    private fun onLoadMoreComplete(items: List<Item>) {
+//        adapter.addPhotos(items)
+        adapter.onLoadMoreComplete(items)
+        adapter.endlessScrollEnabled = true
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        activity?.let {
+            permissionManager.onRequestPermissionsResult(
+                it,
+                requestCode,
+                permissions,
+                grantResults
+            )
+        }
     }
 
     private fun showBottomDialog() {
@@ -402,7 +450,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                 override fun onItemClick(view: View) {
                     when (view.id) {
                         R.id.container_camera -> permissionManager.checkPermissions(
-                            activity,
+                            this@DiskFragment,
                             object : PermissionResultCallback {
                                 override fun onPermissionGranted() {
                                     createCameraIntent()
@@ -412,13 +460,12 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                     val positiveButton =
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.checkPermissions(
-                                                activity,
+                                                this@DiskFragment,
                                                 this,
                                                 *permissionList
                                             )
                                         }
-                                    val action = activity.string(R.string.action_photo)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action = activity.string(R.string.action_photo).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_camera_rights_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -433,8 +480,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.openApplicationSettings(activity)
                                         }
-                                    val action = activity.string(R.string.action_photo)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action = activity.string(R.string.action_photo).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_camera_rights_settings_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -447,7 +493,7 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                             Manifest.permission.CAMERA
                         )
                         R.id.container_gallery -> permissionManager.checkPermissions(
-                            activity,
+                            this@DiskFragment,
                             object : PermissionResultCallback {
                                 override fun onPermissionGranted() {
                                     createGalleryIntent()
@@ -457,13 +503,13 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                     val positiveButton =
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.checkPermissions(
-                                                activity,
+                                                this@DiskFragment,
                                                 this,
                                                 *permissionList
                                             )
                                         }
-                                    val action = activity.string(R.string.action_download)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action =
+                                        activity.string(R.string.action_download).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_memory_rights_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -478,8 +524,8 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
                                         AlertButton(activity.string(R.string.action_ok)) {
                                             permissionManager.openApplicationSettings(activity)
                                         }
-                                    val action = activity.string(R.string.action_download)
-                                        .toLowerCase(Locale.ROOT)
+                                    val action =
+                                        activity.string(R.string.action_download).lowercase()
                                     val message =
                                         "${activity.string(R.string.text_memory_rights_settings_description)} $action"
                                     showPermissionDialogWithCancelButton(
@@ -500,18 +546,22 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
     }
 
     private fun createCameraIntent() {
-        val resultIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         cameraFileUri = FileUtils.localFileUri
-        resultIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraFileUri)
-        startActivityForResult(resultIntent, CAMERA_REQUEST)
+
+        pickFromCamera.launch(
+            Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                .putExtra(MediaStore.EXTRA_OUTPUT, cameraFileUri)
+        )
     }
 
     private fun createGalleryIntent() {
-        val resultIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        resultIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        startActivityForResult(
-            Intent.createChooser(resultIntent, getString(R.string.msg_image_chooser)),
-            GALLERY_IMAGE_REQUEST
+
+        pickFromGallery.launch(
+            Intent.createChooser(
+                Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true),
+                requireContext().string(R.string.msg_image_chooser)
+            )
         )
     }
 
@@ -528,18 +578,5 @@ class DiskFragment : SelectableFragment<DiskViewModel, DiskView, DiskPresenter>(
             positive = positiveButton,
             negative = negativeButton
         )
-    }
-
-    companion object {
-
-        //Saved state constants
-        private const val STATE_FILE_URI = "STATE_FILE_URI"
-
-        //Requests types
-        private const val GALLERY_IMAGE_REQUEST = 1999
-        private const val CAMERA_REQUEST = 1888
-
-        //Dialog types
-        private const val BOTTOM = "BOTTOM"
     }
 }
