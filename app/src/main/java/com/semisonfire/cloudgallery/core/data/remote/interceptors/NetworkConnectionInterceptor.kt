@@ -2,10 +2,10 @@ package com.semisonfire.cloudgallery.core.data.remote.interceptors
 
 import android.net.ConnectivityManager
 import com.semisonfire.cloudgallery.core.data.remote.exceptions.InternetUnavailableException
-import okhttp3.Interceptor
-import okhttp3.Response
 import java.io.IOException
 import javax.inject.Inject
+import okhttp3.Interceptor
+import okhttp3.Response
 
 private const val MAX_STALE = 60 * 60 * 24 //24 hours
 
@@ -31,7 +31,7 @@ class NetworkConnectionInterceptor @Inject constructor(
                 .build()
 
             val response = chain.proceed(request)
-            if (response.cacheResponse() == null) throw InternetUnavailableException()
+            if (response.cacheResponse == null) throw InternetUnavailableException()
 
             return response
         }

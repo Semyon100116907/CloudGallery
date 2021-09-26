@@ -7,7 +7,6 @@ import com.semisonfire.cloudgallery.di.DaggerAppComponent
 import com.semisonfire.cloudgallery.di.provider.ComponentProvider
 import com.semisonfire.cloudgallery.utils.ExternalFileProvider
 import com.semisonfire.cloudgallery.utils.FileUtils
-import com.squareup.picasso.Picasso
 
 class App : Application(), ComponentProvider<AppComponent> {
 
@@ -25,8 +24,6 @@ class App : Application(), ComponentProvider<AppComponent> {
         FileUtils.fileProvider = fileProvider
 
         component = DaggerAppComponent.factory().create(this)
-
-        Picasso.setSingletonInstance(component.picasso())
         super.onCreate()
     }
 
