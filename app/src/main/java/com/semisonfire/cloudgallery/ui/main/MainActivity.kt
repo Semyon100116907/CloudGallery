@@ -52,7 +52,7 @@ class MainActivity : ContentActivity() {
         }
 
         if (savedInstanceState == null) {
-            router.open(Destination(ScreenKey.DISK))
+            router.replaceScreen(Destination(ScreenKey.DISK))
         }
     }
 
