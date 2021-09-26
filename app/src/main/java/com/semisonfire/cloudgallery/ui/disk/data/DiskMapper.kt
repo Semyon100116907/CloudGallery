@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.ui.disk.data
 import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.common.title.TitleItem
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.utils.DateUtils
 import javax.inject.Inject
 

@@ -1,7 +1,11 @@
-package com.semisonfire.cloudgallery.core.data.local.dao
+package com.semisonfire.cloudgallery.data.local.dao
 
-import androidx.room.*
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.semisonfire.cloudgallery.data.model.Photo
 import io.reactivex.Single
 
 @Dao

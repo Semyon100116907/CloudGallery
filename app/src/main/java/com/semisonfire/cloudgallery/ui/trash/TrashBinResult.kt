@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.trash
 
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 
 sealed class TrashBinResult {
 

@@ -1,7 +1,7 @@
 package com.semisonfire.cloudgallery.ui.custom
 
 import androidx.recyclerview.widget.DiffUtil
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 
 class PhotoDiffUtil(
     private val newList: List<Photo>,

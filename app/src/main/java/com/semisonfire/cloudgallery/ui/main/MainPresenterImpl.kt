@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.ui.main
 
-import com.semisonfire.cloudgallery.core.data.remote.auth.Auth
-import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.data.remote.auth.Auth
+import com.semisonfire.cloudgallery.data.remote.auth.AuthManager
 import io.reactivex.Observable
 import javax.inject.Inject
 

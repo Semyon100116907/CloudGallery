@@ -5,11 +5,11 @@ import android.content.SharedPreferences
 import com.semisonfire.cloudgallery.adapter.di.AdapterModule
 import com.semisonfire.cloudgallery.adapter.di.annotation.AdapterScope
 import com.semisonfire.cloudgallery.adapter.factory.AdapterFactoryProvider
-import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
-import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
-import com.semisonfire.cloudgallery.di.module.NetworkModule
-import com.semisonfire.cloudgallery.di.module.StorageModule
+import com.semisonfire.cloudgallery.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.data.local.di.StorageModule
+import com.semisonfire.cloudgallery.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.data.remote.auth.AuthManager
+import com.semisonfire.cloudgallery.data.remote.di.NetworkModule
 import com.semisonfire.cloudgallery.image.di.ImageHttpClient
 import com.semisonfire.cloudgallery.image.di.ImageModule
 import com.semisonfire.cloudgallery.navigation.di.annotation.NavigationScope

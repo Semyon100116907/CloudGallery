@@ -1,8 +1,8 @@
 package com.semisonfire.cloudgallery.ui.trash
 
-import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.background

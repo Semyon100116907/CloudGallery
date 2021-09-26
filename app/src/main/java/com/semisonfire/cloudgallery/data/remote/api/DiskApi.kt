@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.data.remote.api
+package com.semisonfire.cloudgallery.data.remote.api
 
 import com.semisonfire.cloudgallery.ui.disk.model.remote.DiskResponse
 import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
@@ -7,7 +7,13 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import okhttp3.MultipartBody
-import retrofit2.http.*
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Multipart
+import retrofit2.http.PUT
+import retrofit2.http.Part
+import retrofit2.http.Query
+import retrofit2.http.Url
 
 const val IMAGE_MEDIA_TYPE = "image"
 

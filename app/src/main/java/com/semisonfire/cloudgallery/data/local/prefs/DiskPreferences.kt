@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.data.local.prefs
+package com.semisonfire.cloudgallery.data.local.prefs
 
 import android.content.SharedPreferences
 import javax.inject.Inject

@@ -1,10 +1,10 @@
 package com.semisonfire.cloudgallery.ui.disk.data
 
-import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.core.data.remote.api.IMAGE_MEDIA_TYPE
-import com.semisonfire.cloudgallery.core.data.remote.api.IMAGE_SIZE_XL
-import com.semisonfire.cloudgallery.core.data.remote.api.SORT_MODIFIED_DESC
+import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.data.remote.api.IMAGE_MEDIA_TYPE
+import com.semisonfire.cloudgallery.data.remote.api.IMAGE_SIZE_XL
+import com.semisonfire.cloudgallery.data.remote.api.SORT_MODIFIED_DESC
 import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import io.reactivex.Observable
 import io.reactivex.Single

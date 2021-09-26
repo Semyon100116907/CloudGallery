@@ -1,21 +1,21 @@
 package com.semisonfire.cloudgallery.ui.disk.data
 
-import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
-import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.core.data.remote.exceptions.InternetUnavailableException
+import com.semisonfire.cloudgallery.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
 import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.subjects.PublishSubject
-import retrofit2.HttpException
 import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import retrofit2.HttpException
 
 sealed class UploadResult(open val photo: Photo, val uploaded: Boolean) {
     data class Complete(override val photo: Photo) : UploadResult(photo, true)

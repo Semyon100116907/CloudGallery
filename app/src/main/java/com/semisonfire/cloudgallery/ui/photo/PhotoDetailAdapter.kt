@@ -12,7 +12,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.viewpager.widget.PagerAdapter
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 import java.util.ArrayList
 
 class PhotoDetailAdapter : PagerAdapter() {

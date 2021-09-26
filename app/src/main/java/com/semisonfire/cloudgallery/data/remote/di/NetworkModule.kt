@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.di.module
+package com.semisonfire.cloudgallery.data.remote.di
 
 import android.app.Application
 import android.content.Context
@@ -6,20 +6,18 @@ import android.net.ConnectivityManager
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.semisonfire.cloudgallery.BuildConfig
-import com.semisonfire.cloudgallery.core.data.remote.api.DiskApi
+import com.semisonfire.cloudgallery.data.remote.api.DiskApi
 import dagger.Module
 import dagger.Provides
+import java.io.File
+import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
-import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
-
-const val DISK_CACHE_SIZE = 10 * 1024 * 1024L
 
 //App client id
 private const val CLIENT_ID = "07bfc4a28ea8403f807fd3dd91dad11f"
@@ -81,7 +79,7 @@ class NetworkModule {
             .cache(
                 Cache(
                     File(application.cacheDir, cacheName),
-                    DISK_CACHE_SIZE
+                    10 * 1024 * 1024L
                 )
             )
             .apply {

@@ -1,6 +1,6 @@
 package com.semisonfire.cloudgallery.ui.custom;
 
-import com.semisonfire.cloudgallery.core.data.model.Photo;
+import com.semisonfire.cloudgallery.data.model.Photo;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.logger
+package com.semisonfire.cloudgallery.logger
 
 fun Any.debugLog(message: String) {
     Log.d(this.javaClass, message)
