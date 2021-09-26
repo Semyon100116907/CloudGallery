@@ -7,6 +7,7 @@ import com.semisonfire.cloudgallery.adapter.progress.ProgressItemProvider
 import com.semisonfire.cloudgallery.common.photo.PhotoItemProvider
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItemProvider
 import com.semisonfire.cloudgallery.common.title.TitleItemProvider
+import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItemProvider
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
@@ -28,6 +29,11 @@ internal abstract class AdapterProvidersModule {
     @IntoSet
     @AdapterScope
     abstract fun bindPhotoItemProvider(impl: PhotoItemProvider): ItemProvider
+
+    @Binds
+    @IntoSet
+    @AdapterScope
+    abstract fun bindUploadItemProvider(impl: UploadItemProvider): ItemProvider
 
     @Binds
     @IntoSet
