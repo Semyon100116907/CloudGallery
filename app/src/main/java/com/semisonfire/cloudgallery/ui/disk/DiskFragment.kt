@@ -18,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
+import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
@@ -35,6 +36,7 @@ import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
+import java.util.UUID
 import javax.inject.Inject
 
 class DiskFragment : SelectableFragment() {
@@ -86,9 +88,9 @@ class DiskFragment : SelectableFragment() {
                 if (uri != null) {
                     val photo = getLocalPhoto(uri)
                     if (photo != null) {
-//                            diskAdapter.addUploadPhotos(photos)
+//                      diskAdapter.addUploadPhotos(photos)
                         presenter.uploadPhoto(photo)
-                        uploadingList.add(photo)
+//                      uploadingList.add(photo)
                         viewBinding.rvDisk.scrollToPosition(0)
                     }
                 }
@@ -99,7 +101,7 @@ class DiskFragment : SelectableFragment() {
             if (result.resultCode == Activity.RESULT_OK) {
                 result.data?.let {
                     val photos = extractFromGallery(it)
-                    uploadingList.addAll(extractFromGallery(it))
+//                    uploadingList.addAll(extractFromGallery(it))
 //                    diskAdapter.addUploadPhotos(photos)
                     presenter.uploadPhotos(photos)
                     viewBinding.rvDisk.scrollToPosition(0)
@@ -128,6 +130,7 @@ class DiskFragment : SelectableFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         presenter.getPhotos()
+        presenter.getUploadingPhotos()
 
         if (savedInstanceState != null) {
             cameraFileUri = savedInstanceState.getParcelable(STATE_FILE_URI)
@@ -163,10 +166,15 @@ class DiskFragment : SelectableFragment() {
                         is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
                         is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
                         is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
-                        is DiskResult.Uploading -> onUploadingPhotos(it.photos)
+                        is DiskResult.Uploading -> onUploadingPhotos(it)
                     }
                 }
         )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        disposables.clear()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -185,8 +193,6 @@ class DiskFragment : SelectableFragment() {
             floatingActionButton = it.findViewById(R.id.btn_add_new)
             swipeRefreshLayout = it.findViewById(R.id.swipe_refresh)
         }
-
-        presenter.getUploadingPhotos()
 
         floatingActionButton?.show()
         floatingActionButton?.setOnClickListener { showBottomDialog() }
@@ -364,6 +370,7 @@ class DiskFragment : SelectableFragment() {
         }
 
         val photo = Photo()
+        photo.id = UUID.randomUUID().toString()
         photo.isUploaded = false
         photo.preview = contentUri.toString()
         photo.localPath = path
@@ -371,12 +378,24 @@ class DiskFragment : SelectableFragment() {
         return photo
     }
 
-    private fun onUploadingPhotos(photos: List<Photo>) {
-        if (photos.isNotEmpty()) {
-            uploadingList.addAll(photos)
-//            diskAdapter.addUploadPhotos(photos)
-            presenter.uploadPhotos(photos)
+    private fun onUploadingPhotos(result: DiskResult.Uploading) {
+
+        val uploading = result.uploading
+        if (uploading.items.isEmpty()) {
+            adapter.removeIf {
+                it is HorizontalScrollItem<*> && it.id == uploading.id
+            }
+        } else {
+            adapter.insertOrUpdate(uploading, 0)
+            viewBinding.rvDisk.scrollToPosition(0)
+//            presenter.uploadPhotos(uploading.items)
         }
+
+//        if (result.isNotEmpty()) {
+//            uploadingList.addAll(result)
+////            diskAdapter.addUploadPhotos(photos)
+//            presenter.uploadPhotos(result)
+//        }
     }
 
     private fun onPhotosLoaded(result: DiskResult.Loaded) {

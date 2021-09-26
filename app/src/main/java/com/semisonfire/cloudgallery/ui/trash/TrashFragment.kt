@@ -168,6 +168,11 @@ class TrashFragment : SelectableFragment() {
         )
     }
 
+    override fun onStop() {
+        super.onStop()
+        disposables.clear()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _viewBinding = null

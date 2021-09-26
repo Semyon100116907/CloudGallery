@@ -9,7 +9,7 @@ import com.semisonfire.cloudgallery.adapter.factory.AdapterFactoryImpl
 import com.semisonfire.cloudgallery.adapter.factory.ItemProvider
 import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.adapter.holder.ItemViewHolder
-import java.util.*
+import java.util.Collections
 
 @Suppress("UNCHECKED_CAST")
 abstract class ItemAdapter<I : Item>(
@@ -150,6 +150,18 @@ abstract class ItemAdapter<I : Item>(
             if (isInBounds(position)) {
                 items.removeAt(position)
                 notifyItemRemoved(position)
+            }
+            i++
+        }
+    }
+
+    fun removeIf(predicate: (I) -> Boolean) {
+        var i = 0
+        val iterator = items.iterator()
+        while (iterator.hasNext()) {
+            if (predicate(iterator.next())) {
+                iterator.remove()
+                notifyItemRemoved(i)
             }
             i++
         }

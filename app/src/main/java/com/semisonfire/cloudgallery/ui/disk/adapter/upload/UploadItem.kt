@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.ui.disk.adapter.upload
 import com.semisonfire.cloudgallery.adapter.holder.Item
 
 data class UploadItem(
-    val id: Long,
+    val id: String,
     val imagePath: String
 ) : Item {
     override fun areItemsTheSame(item: Item): Boolean {
