@@ -1,5 +1,7 @@
 package com.semisonfire.cloudgallery.ui.trash
 
+import com.semisonfire.cloudgallery.adapter.holder.Item
+import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.logger.printThrowable
@@ -21,8 +23,19 @@ interface TrashPresenter : Presenter {
     fun clear()
 }
 
+class TrashBinMapper @Inject constructor() {
+
+    fun map(photos: List<Photo>): List<Item> {
+        return photos
+            .asSequence()
+            .map { PhotoItem(it.id, it.name, it.preview) }
+            .toList()
+    }
+}
+
 class TrashPresenterImpl @Inject constructor(
-    private val trashRepository: TrashRepository
+    private val trashRepository: TrashRepository,
+    private val trashBinMapper: TrashBinMapper
 ) : TrashPresenter {
 
     private val compositeDisposable = CompositeDisposable()
@@ -36,12 +49,7 @@ class TrashPresenterImpl @Inject constructor(
     override fun getPhotos(page: Int) {
         compositeDisposable.add(
             trashRepository.getTrashPhotos(LIMIT, page)
-                .map { photoList ->
-                    photoList.asSequence()
-                        .filter { it.mediaType.isNotEmpty() }
-                        .filter { it.mediaType == "image" }
-                        .toList()
-                }
+                .map { trashBinMapper.map(it) }
                 .subscribeOn(background())
                 .subscribe(
                     { trashBinResultListener.onNext(TrashBinResult.Loaded(it)) },

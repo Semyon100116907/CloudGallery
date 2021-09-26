@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.os.Parcelable
+import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -16,14 +16,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.adapter.LoadMoreAdapter
+import com.semisonfire.cloudgallery.adapter.factory.AdapterFactory
+import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.FragmentTrashBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
-import com.semisonfire.cloudgallery.ui.custom.SelectableHelper.OnPhotoListener
 import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
-import com.semisonfire.cloudgallery.ui.disk.adapter.PhotoAdapter
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.selectable.SelectableFragment
 import com.semisonfire.cloudgallery.ui.trash.di.DaggerTrashBinComponent
@@ -35,17 +36,22 @@ import com.semisonfire.cloudgallery.utils.themeColor
 import java.util.ArrayList
 import javax.inject.Inject
 
+class TrashBinAdapter @Inject constructor(factory: AdapterFactory) : LoadMoreAdapter<Item>(factory)
+
 class TrashFragment : SelectableFragment() {
 
     @Inject
     lateinit var presenter: TrashPresenter
+
+    @Inject
+    lateinit var adapter: TrashBinAdapter
 
     private var _viewBinding: FragmentTrashBinding? = null
 
     private val viewBinding: FragmentTrashBinding
         get() = _viewBinding!!
 
-    private val photoAdapter = PhotoAdapter()
+//    private val photoAdapter = PhotoAdapter()
 
     private val trashPhotoList: MutableList<Photo> = mutableListOf()
     private val selectedPhotos: MutableList<Photo> = ArrayList()
@@ -76,6 +82,11 @@ class TrashFragment : SelectableFragment() {
         super.onAttach(context)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        presenter.getPhotos(0)
+    }
+
     override fun layout(): Int {
         return R.layout.fragment_trash
     }
@@ -94,37 +105,37 @@ class TrashFragment : SelectableFragment() {
         }
         floatingActionButton?.hide()
 
-        photoAdapter.setPhotoListener(object : OnPhotoListener {
-            override fun onPhotoClick(photos: List<Photo>, position: Int) {
-                val intent = Intent(view.context, PhotoDetailActivity::class.java)
-                intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
-                intent.putParcelableArrayListExtra(
-                    PhotoDetailActivity.EXTRA_PHOTOS,
-                    trashPhotoList as ArrayList<out Parcelable>
-                )
-                intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
-                openDetail.launch(intent)
-            }
+//        photoAdapter.setPhotoListener(object : OnPhotoListener {
+//            override fun onPhotoClick(photos: List<Photo>, position: Int) {
+//                val intent = Intent(view.context, PhotoDetailActivity::class.java)
+//                intent.putExtra(PhotoDetailActivity.EXTRA_CURRENT_PHOTO, position)
+//                intent.putParcelableArrayListExtra(
+//                    PhotoDetailActivity.EXTRA_PHOTOS,
+//                    trashPhotoList as ArrayList<out Parcelable>
+//                )
+//                intent.putExtra(PhotoDetailActivity.EXTRA_FROM, PhotoDetailActivity.FROM_DISK)
+//                openDetail.launch(intent)
+//            }
+//
+//            override fun onPhotoLongClick() {
+//                setEnabledSelection(true)
+//            }
+//
+//            override fun onSelectedPhotoClick(photo: Photo) {
+//                if (photo.isSelected) {
+//                    selectedPhotos.add(photo)
+//                } else {
+//                    selectedPhotos.remove(photo)
+//                }
+//                updateToolbarTitle(selectedPhotos.size.toString())
+//                if (selectedPhotos.isEmpty()) {
+//                    setEnabledSelection(false)
+//                }
+//            }
+//        })
+//        photoAdapter.updateDataSet(trashPhotoList)
 
-            override fun onPhotoLongClick() {
-                setEnabledSelection(true)
-            }
-
-            override fun onSelectedPhotoClick(photo: Photo) {
-                if (photo.isSelected) {
-                    selectedPhotos.add(photo)
-                } else {
-                    selectedPhotos.remove(photo)
-                }
-                updateToolbarTitle(selectedPhotos.size.toString())
-                if (selectedPhotos.isEmpty()) {
-                    setEnabledSelection(false)
-                }
-            }
-        })
-        photoAdapter.updateDataSet(trashPhotoList)
-
-        viewBinding.rvTrash.adapter = photoAdapter
+        viewBinding.rvTrash.adapter = adapter
 
         val orientation = resources.configuration.orientation
         viewBinding.rvTrash.layoutManager = GridLayoutManager(
@@ -165,7 +176,7 @@ class TrashFragment : SelectableFragment() {
 
     private fun updateDataSet() {
         trashPhotoList.clear()
-        photoAdapter.updateDataSet(trashPhotoList)
+//        photoAdapter.updateDataSet(trashPhotoList)
         presenter.getPhotos(0)
     }
 
@@ -213,7 +224,7 @@ class TrashFragment : SelectableFragment() {
 
         swipeRefreshLayout?.isEnabled = !enabled
 
-        photoAdapter.setSelection(enabled)
+//        photoAdapter.setSelection(enabled)
         if (!enabled) {
             selectedPhotos.clear()
             updateToolbarTitle(getString(R.string.msg_trash))
@@ -222,18 +233,13 @@ class TrashFragment : SelectableFragment() {
         }
     }
 
-    private fun onTrashLoaded(photos: List<Photo>) {
+    private fun onTrashLoaded(photos: List<Item>) {
         swipeRefreshLayout?.isRefreshing = false
-        if (photos.isNotEmpty()) {
-            trashPhotoList.addAll(photos)
-            photoAdapter.addItems(photos)
-        }
+//            trashPhotoList.addAll(photos)
+        adapter.updateDataSet(photos)
     }
 
     private fun onPhotoRestored(photo: Photo) {
-        trashPhotoList.remove(photo)
-        photoAdapter.removeItem(photo)
-
         context?.let {
             val action = it.string(R.string.msg_restored).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
@@ -242,9 +248,6 @@ class TrashFragment : SelectableFragment() {
     }
 
     private fun onPhotoDeleted(photo: Photo) {
-        trashPhotoList.remove(photo)
-        photoAdapter.removeItem(photo)
-
         context?.let {
             val action = it.string(R.string.msg_deleted).lowercase()
             it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
@@ -254,7 +257,7 @@ class TrashFragment : SelectableFragment() {
 
     private fun onTrashCleared() {
         trashPhotoList.clear()
-        photoAdapter.updateDataSet(ArrayList())
+        adapter.updateDataSet(emptyList())
         setEnabledSelection(false)
     }
 

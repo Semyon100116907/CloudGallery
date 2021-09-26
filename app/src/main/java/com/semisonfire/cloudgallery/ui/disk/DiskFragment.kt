@@ -64,17 +64,13 @@ class DiskFragment : SelectableFragment() {
 
     //Uploading
     private val uploadingList: MutableList<Photo> = mutableListOf()
-
-    //Camera/gallery request
-    private var cameraFileUri: Uri? = null
-
     private val selectedPhotos = mutableListOf<Photo>()
 
     private var floatingActionButton: FloatingActionButton? = null
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
-    private lateinit var diskModel: DiskViewModel
-
+    // Activity Result
+    private var cameraFileUri: Uri? = null
     private lateinit var pickFromCamera: ActivityResultLauncher<Intent>
     private lateinit var pickFromGallery: ActivityResultLauncher<Intent>
     private lateinit var openDetail: ActivityResultLauncher<Intent>
@@ -124,9 +120,7 @@ class DiskFragment : SelectableFragment() {
 
         DaggerDiskComponent
             .factory()
-            .create(
-                context.provideComponent()
-            )
+            .create(context.provideComponent())
             .inject(this)
         super.onAttach(context)
     }
@@ -146,7 +140,8 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun showContent(model: DiskViewModel) {
-        this.diskModel = model
+        adapter.updateDataSet(model.getListItems())
+        adapter.endlessScrollEnabled = model.hasMore.get()
     }
 
     override fun onStart() {
@@ -386,13 +381,11 @@ class DiskFragment : SelectableFragment() {
 
     private fun onPhotosLoaded(result: DiskResult.Loaded) {
         swipeRefreshLayout?.isRefreshing = false
+
         val photos = result.photos
-        if (photos.isNotEmpty()) {
-            floatingActionButton?.show()
-//            diskAdapter.setPhotos(photos)
-            adapter.updateDataSet(photos)
-            adapter.endlessScrollEnabled = result.hasMore
-        }
+        floatingActionButton?.show()
+        adapter.updateDataSet(photos)
+        adapter.endlessScrollEnabled = result.hasMore
     }
 
     private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
@@ -422,7 +415,6 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {
-//        adapter.addPhotos(items)
         adapter.onLoadMoreComplete(emptyList())
         adapter.updateDataSet(result.photos)
         adapter.endlessScrollEnabled = result.hasMore
