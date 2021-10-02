@@ -4,7 +4,7 @@ import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.common.title.TitleItem
 import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItem
+import com.semisonfire.cloudgallery.upload.adapter.UploadItem
 import com.semisonfire.cloudgallery.utils.DateUtils
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
@@ -19,17 +19,16 @@ class DiskMapper @Inject constructor() {
     fun map(
         photos: List<Photo>,
         page: Int
-    ): MutableMap<TitleItem, HorizontalScrollItem<PhotoItem>> {
+    ): Map<DiskKey, DiskValue> {
 
         if (page == 0) id.set(0)
 
-        val photosByDateMap = mutableMapOf<String, MutableList<PhotoItem>>()
+        val photosByDateMap = mutableMapOf<DiskKey, MutableList<PhotoItem>>()
         for (photo in photos) {
-            val date = DateUtils.getDateString(photo.modifiedAt, DateUtils.DATE_FORMAT)
-                ?: continue
+            val date = DateUtils.dateString(photo.modifiedAt)
 
             photosByDateMap
-                .getOrPut(date) { mutableListOf() }
+                .getOrPut(DiskKey(date)) { mutableListOf() }
                 .add(
                     PhotoItem(
                         id = photo.id,
@@ -39,8 +38,10 @@ class DiskMapper @Inject constructor() {
                 )
         }
 
-        val result = mutableMapOf<TitleItem, HorizontalScrollItem<PhotoItem>>()
-        for ((date, photoItems) in photosByDateMap) {
+        val result = mutableMapOf<DiskKey, DiskValue>()
+        for ((key, photoItems) in photosByDateMap) {
+            val date = key.date
+
             val titleItem = TitleItem(
                 id = date,
                 title = date,
@@ -51,7 +52,7 @@ class DiskMapper @Inject constructor() {
                 items = photoItems
             )
 
-            result[titleItem] = horizontalScrollItem
+            result[DiskKey(date)] = DiskValue(titleItem, horizontalScrollItem)
         }
 
         return result

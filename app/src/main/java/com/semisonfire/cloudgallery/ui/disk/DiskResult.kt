@@ -3,9 +3,13 @@ package com.semisonfire.cloudgallery.ui.disk
 import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.data.model.Photo
-import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItem
+import com.semisonfire.cloudgallery.upload.adapter.UploadItem
 
 sealed class DiskResult {
+
+    data class Update(
+        val photos: List<Item>
+    ) : DiskResult()
 
     data class Loaded(
         val photos: List<Item>,

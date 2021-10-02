@@ -4,12 +4,10 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
-import com.semisonfire.cloudgallery.utils.DateUtils.getDateString
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.*
 
 object FileUtils {
 
@@ -95,18 +93,10 @@ object FileUtils {
      * Get local file uri with today`s date name
      */
     val localFileUri: Uri
-        get() = getLocalFileUri(Date())
-
-    /**
-     * Get local file uri with {@param date}
-     */
-    fun getLocalFileUri(date: Date?): Uri {
-        val time = "IMG_" + getDateString(
-            date,
-            DateUtils.DATE_TIME_FORMAT
-        )
-        return getLocalFileUri(time)
-    }
+        get() {
+            val time = "IMG_" + DateUtils.currentDate
+            return getLocalFileUri(time)
+        }
 
     /**
      * Get local file uri

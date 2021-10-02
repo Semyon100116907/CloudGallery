@@ -134,6 +134,10 @@ class TrashFragment : ContentFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _viewBinding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         presenter.dispose()
     }
 

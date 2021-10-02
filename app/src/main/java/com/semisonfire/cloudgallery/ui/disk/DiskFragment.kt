@@ -35,6 +35,7 @@ import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
 import com.semisonfire.cloudgallery.utils.string
+import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
@@ -150,6 +151,9 @@ class DiskFragment : ContentFragment() {
                 .observeOn(foreground())
                 .subscribe {
                     when (it) {
+                        is DiskResult.Update -> {
+                            adapter.updateDataSet(it.photos)
+                        }
                         is DiskResult.Loaded -> onPhotosLoaded(it)
                         is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it)
                         is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
@@ -174,6 +178,11 @@ class DiskFragment : ContentFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _viewBinding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        presenter.dispose()
     }
 
     public override fun bind(view: View) {
@@ -248,13 +257,17 @@ class DiskFragment : ContentFragment() {
             }
         }
 
-        val photo = Photo()
-        photo.id = UUID.randomUUID().toString()
-        photo.isUploaded = false
-        photo.preview = contentUri.toString()
-        photo.localPath = path
-        photo.name = path.substring(path.lastIndexOf('/') + 1)
-        return photo
+        val uuid = UUID.randomUUID().toString()
+        val file = File(path)
+        val name = file.nameWithoutExtension
+        val extension = file.extension
+
+        return Photo(
+            id = uuid,
+            preview = contentUri.toString(),
+            localPath = path,
+            name = "$name-$uuid.$extension"
+        )
     }
 
     private fun onUploadingPhotos(result: DiskResult.Uploading) {
@@ -280,14 +293,9 @@ class DiskFragment : ContentFragment() {
     }
 
     private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
-////        var uploadState: String? = null
-//        if (uploaded) {
-////            diskAdapter.addPhoto(photo)
-////            diskAdapter.removeUploadedPhoto(photo)
-//        } else {
-////            uploadState = getString(R.string.msg_wait)
+//        if (!uploaded) {
+//            requireContext().shortToast(getString(R.string.msg_wait))
 //        }
-////        diskAdapter.changeUploadState(uploadState)
     }
 
     private fun onPhotoDownloaded(path: String) {

@@ -1,96 +1,28 @@
 package com.semisonfire.cloudgallery.data.model
 
-import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 @Entity(tableName = "photo")
-class Photo : Parcelable {
-
+data class Photo(
     @PrimaryKey
     @SerializedName("resource_id")
-    var id: String = ""
-
-    var name: String = ""
-
-    var preview: String = ""
-
+    val id: String = "",
+    val name: String = "",
+    val preview: String = "",
+    val localPath: String = "",
+    val file: String = "",
     @ColumnInfo(name = "upload")
-    var isUploaded = false
-
-    @ColumnInfo(name = "local_path")
-    var localPath: String = ""
-
-    var file: String = ""
-
+    var isUploaded: Boolean = false,
     @SerializedName("path")
-    @ColumnInfo(name = "remote_path")
-    var remotePath: String = ""
-
+    val remotePath: String = "",
     @SerializedName("media_type")
-    @Ignore
-    var mediaType: String = ""
-        private set
-
+    val mediaType: String = "",
     @SerializedName("modified")
-    @ColumnInfo(name = "modified_at")
-    var modifiedAt: String = ""
-
-    @Ignore
-    var isSelected = false
-
-    constructor()
-
-    protected constructor(`in`: Parcel) {
-        name = `in`.readString() ?: ""
-        preview = `in`.readString() ?: ""
-        isUploaded = `in`.readByte().toInt() != 0
-        isSelected = `in`.readByte().toInt() != 0
-        localPath = `in`.readString() ?: ""
-        remotePath = `in`.readString() ?: ""
-        mediaType = `in`.readString() ?: ""
-        modifiedAt = `in`.readString() ?: ""
-    }
-
-    override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(name)
-        dest.writeString(preview)
-        dest.writeByte((if (isUploaded) 1 else 0).toByte())
-        dest.writeByte((if (isSelected) 1 else 0).toByte())
-        dest.writeString(localPath)
-        dest.writeString(remotePath)
-        dest.writeString(mediaType)
-        dest.writeString(modifiedAt)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Photo) return false
-
-        if (name != other.name) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return name.hashCode()
-    }
-
-    companion object CREATOR : Parcelable.Creator<Photo> {
-        override fun createFromParcel(parcel: Parcel): Photo {
-            return Photo(parcel)
-        }
-
-        override fun newArray(size: Int): Array<Photo?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
+    val modifiedAt: String = ""
+) : Parcelable

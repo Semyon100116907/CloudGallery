@@ -4,11 +4,11 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.logger.printThrowable
-import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItem
 import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
-import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
+import com.semisonfire.cloudgallery.upload.UploadManager
+import com.semisonfire.cloudgallery.upload.adapter.UploadItem
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
@@ -51,11 +51,35 @@ class DiskPresenterImpl @Inject constructor(
 
     init {
         compositeDisposable.add(
-            uploadManager.uploadListener()
+            uploadManager
+                .uploadListener()
                 .subscribeOn(background())
-                .subscribe({
-//                    viewModel.photoList.add(it.photo)
-                    diskResultListener.onNext(DiskResult.PhotoUploaded(it.photo, it.uploaded))
+                .subscribe({ uploadResult ->
+                    val uploading = viewModel.uploading
+                    val uploadedPhoto = uploadResult.photo
+                    if (uploadResult.uploaded) {
+                        if (uploading != null) {
+                            uploading.items as MutableList<UploadItem>
+                            uploading.items.removeAll {
+                                it.id == uploadedPhoto.id
+                            }
+
+                            if (uploading.items.isEmpty()) {
+                                viewModel.uploading = null
+                            }
+
+                            val itemsMap =
+                                mapper.map(listOf(uploadedPhoto), -1)
+
+                            viewModel.mergeItems(itemsMap)
+
+                            diskResultListener.onNext(DiskResult.Update(viewModel.getListItems()))
+                        }
+                    } else {
+                        diskResultListener.onNext(
+                            DiskResult.PhotoUploaded(uploadedPhoto, uploadResult.uploaded)
+                        )
+                    }
                 }, {
                     it.printThrowable()
                 })
@@ -70,8 +94,8 @@ class DiskPresenterImpl @Inject constructor(
 
                     diskRepository
                         .getPhotos(page, LIMIT)
-                        .map { mapper.map(it, page) }
-                        .map { itemMap ->
+                        .map {
+                            val itemMap = mapper.map(it, page)
                             val hasMore = itemMap.isNotEmpty()
                             viewModel.hasMore.set(hasMore)
 
@@ -154,7 +178,6 @@ class DiskPresenterImpl @Inject constructor(
                 .concatMap { diskRepository.deletePhoto(it) }
                 .subscribeOn(background())
                 .subscribe({
-//                    viewModel.photoList.remove(it)
                     diskResultListener.onNext(DiskResult.PhotoDeleted(it))
                 }, {
                     it.printThrowable()
@@ -165,13 +188,13 @@ class DiskPresenterImpl @Inject constructor(
     override fun uploadPhoto(photo: Photo) {
         createFakeUploads(listOf(photo))
 
-//      uploadManager.uploadPhotos(photo)
+        uploadManager.uploadPhotos(photo)
     }
 
     override fun uploadPhotos(photos: List<Photo>) {
         createFakeUploads(photos)
 
-//      uploadManager.uploadPhotos(*photos.toTypedArray())
+        uploadManager.uploadPhotos(*photos.toTypedArray())
     }
 
     private fun createFakeUploads(photos: List<Photo>) {
@@ -187,5 +210,10 @@ class DiskPresenterImpl @Inject constructor(
         }
 
         diskResultListener.onNext(DiskResult.Uploading(uploading))
+    }
+
+    override fun dispose() {
+        super.dispose()
+        compositeDisposable.clear()
     }
 }
