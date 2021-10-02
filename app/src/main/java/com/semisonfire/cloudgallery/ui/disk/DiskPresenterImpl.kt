@@ -130,6 +130,8 @@ class DiskPresenterImpl @Inject constructor(
 
     override fun getPhotos() {
         viewModel.currentPage.set(0)
+        viewModel.hasMore.set(true)
+
         loadListener.onNext(Unit)
     }
 

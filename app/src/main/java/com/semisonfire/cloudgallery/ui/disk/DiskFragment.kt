@@ -212,6 +212,7 @@ class DiskFragment : ContentFragment() {
 
         swipeRefreshLayout?.setOnRefreshListener {
             presenter.getPhotos()
+            adapter.endlessScrollEnabled = true
             swipeRefreshLayout?.isRefreshing = true
         }
     }
