@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
+import com.semisonfire.cloudgallery.R.dimen
 import com.semisonfire.cloudgallery.adapter.LoadMoreAdapter
 import com.semisonfire.cloudgallery.adapter.factory.AdapterFactory
 import com.semisonfire.cloudgallery.adapter.holder.Item
@@ -20,7 +21,6 @@ import com.semisonfire.cloudgallery.core.ui.ContentFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.FragmentTrashBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.custom.ItemDecorator
 import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
@@ -101,7 +101,7 @@ class TrashFragment : ContentFragment() {
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) 4 else 3
         )
 
-        val itemDecorator = ItemDecorator(view.context.dimen(R.dimen.disk_grid_space))
+        val itemDecorator = TrashBinItemDecorator(view.context.dimen(dimen.disk_grid_space))
         viewBinding.rvTrash.addItemDecoration(itemDecorator)
         swipeRefreshLayout?.setOnRefreshListener {
             swipeRefreshLayout?.isRefreshing = true
