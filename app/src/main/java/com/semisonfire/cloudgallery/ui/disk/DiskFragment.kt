@@ -11,8 +11,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -20,10 +18,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.adapter.LoadMoreListener
 import com.semisonfire.cloudgallery.adapter.progress.ProgressItem
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
+import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.FragmentDiskBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
@@ -66,17 +64,13 @@ class DiskFragment : SelectableFragment() {
 
     //Uploading
     private val uploadingList: MutableList<Photo> = mutableListOf()
-
-    //Camera/gallery request
-    private var cameraFileUri: Uri? = null
-
     private val selectedPhotos = mutableListOf<Photo>()
 
     private var floatingActionButton: FloatingActionButton? = null
     private var swipeRefreshLayout: SwipeRefreshLayout? = null
 
-    private lateinit var diskModel: DiskViewModel
-
+    // Activity Result
+    private var cameraFileUri: Uri? = null
     private lateinit var pickFromCamera: ActivityResultLauncher<Intent>
     private lateinit var pickFromGallery: ActivityResultLauncher<Intent>
     private lateinit var openDetail: ActivityResultLauncher<Intent>
@@ -126,9 +120,7 @@ class DiskFragment : SelectableFragment() {
 
         DaggerDiskComponent
             .factory()
-            .create(
-                context.provideComponent()
-            )
+            .create(context.provideComponent())
             .inject(this)
         super.onAttach(context)
     }
@@ -148,7 +140,8 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun showContent(model: DiskViewModel) {
-        this.diskModel = model
+        adapter.updateDataSet(model.getListItems())
+        adapter.endlessScrollEnabled = model.hasMore.get()
     }
 
     override fun onStart() {
@@ -253,7 +246,7 @@ class DiskFragment : SelectableFragment() {
         when (item.itemId) {
             android.R.id.home -> setEnabledSelection(false)
             R.id.menu_download -> {
-                val activity = activity ?: return false
+                val context = requireContext()
 
                 val memoryPermission = object : PermissionResultCallback {
                     override fun onPermissionGranted() {
@@ -262,7 +255,7 @@ class DiskFragment : SelectableFragment() {
                     }
 
                     override fun onPermissionDenied(permissionList: Array<String>) {
-                        val positiveButton = AlertButton(activity.string(R.string.action_ok)) {
+                        val positiveButton = AlertButton(context.string(R.string.action_ok)) {
                             permissionManager.checkPermissions(
                                 this@DiskFragment,
                                 this,
@@ -271,22 +264,22 @@ class DiskFragment : SelectableFragment() {
                         }
 
                         val action =
-                            activity.string(R.string.action_download).lowercase()
+                            context.string(R.string.action_download).lowercase()
                         val message =
-                            "${activity.string(R.string.text_memory_rights_description)} $action"
-                        showPermissionDialogWithCancelButton(activity, message, positiveButton)
+                            "${context.string(R.string.text_memory_rights_description)} $action"
+                        showPermissionDialogWithCancelButton(context, message, positiveButton)
                     }
 
                     override fun onPermissionPermanentlyDenied(permission: String) {
-                        val positiveButton = AlertButton(activity.string(R.string.action_ok)) {
-                            permissionManager.openApplicationSettings(activity)
+                        val positiveButton = AlertButton(context.string(R.string.action_ok)) {
+                            permissionManager.openApplicationSettings(context)
                         }
 
                         val action =
-                            activity.string(R.string.action_download).lowercase()
+                            context.string(R.string.action_download).lowercase()
                         val message =
-                            "${activity.string(R.string.text_memory_rights_settings_description)} $action"
-                        showPermissionDialogWithCancelButton(activity, message, positiveButton)
+                            "${context.string(R.string.text_memory_rights_settings_description)} $action"
+                        showPermissionDialogWithCancelButton(context, message, positiveButton)
                     }
                 }
                 permissionManager.checkPermissions(
@@ -388,13 +381,11 @@ class DiskFragment : SelectableFragment() {
 
     private fun onPhotosLoaded(result: DiskResult.Loaded) {
         swipeRefreshLayout?.isRefreshing = false
+
         val photos = result.photos
-        if (photos.isNotEmpty()) {
-            floatingActionButton?.show()
-//            diskAdapter.setPhotos(photos)
-            adapter.updateDataSet(photos)
-            adapter.endlessScrollEnabled = result.hasMore
-        }
+        floatingActionButton?.show()
+        adapter.updateDataSet(photos)
+        adapter.endlessScrollEnabled = result.hasMore
     }
 
     private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
@@ -424,7 +415,6 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {
-//        adapter.addPhotos(items)
         adapter.onLoadMoreComplete(emptyList())
         adapter.updateDataSet(result.photos)
         adapter.endlessScrollEnabled = result.hasMore
@@ -447,106 +437,104 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun showBottomDialog() {
-        val activity = activity as AppCompatActivity?
-        if (activity != null) {
-            val bottomDialog = BottomDialogFragment()
-            bottomDialog.dialogListener = object : DialogListener() {
-                override fun onItemClick(view: View) {
-                    when (view.id) {
-                        R.id.container_camera -> permissionManager.checkPermissions(
-                            this@DiskFragment,
-                            object : PermissionResultCallback {
-                                override fun onPermissionGranted() {
-                                    createCameraIntent()
-                                }
+        val context = requireContext()
+        val bottomDialog = BottomDialogFragment()
+        bottomDialog.dialogListener = object : DialogListener() {
+            override fun onItemClick(view: View) {
+                when (view.id) {
+                    R.id.container_camera -> permissionManager.checkPermissions(
+                        this@DiskFragment,
+                        object : PermissionResultCallback {
+                            override fun onPermissionGranted() {
+                                createCameraIntent()
+                            }
 
-                                override fun onPermissionDenied(permissionList: Array<String>) {
-                                    val positiveButton =
-                                        AlertButton(activity.string(R.string.action_ok)) {
-                                            permissionManager.checkPermissions(
-                                                this@DiskFragment,
-                                                this,
-                                                *permissionList
-                                            )
-                                        }
-                                    val action = activity.string(R.string.action_photo).lowercase()
-                                    val message =
-                                        "${activity.string(R.string.text_camera_rights_description)} $action"
-                                    showPermissionDialogWithCancelButton(
-                                        activity,
-                                        message,
-                                        positiveButton
-                                    )
-                                }
+                            override fun onPermissionDenied(permissionList: Array<String>) {
+                                val positiveButton =
+                                    AlertButton(context.string(R.string.action_ok)) {
+                                        permissionManager.checkPermissions(
+                                            this@DiskFragment,
+                                            this,
+                                            *permissionList
+                                        )
+                                    }
+                                val action = context.string(R.string.action_photo).lowercase()
+                                val message =
+                                    "${context.string(R.string.text_camera_rights_description)} $action"
+                                showPermissionDialogWithCancelButton(
+                                    context,
+                                    message,
+                                    positiveButton
+                                )
+                            }
 
-                                override fun onPermissionPermanentlyDenied(permission: String) {
-                                    val positiveButton =
-                                        AlertButton(activity.string(R.string.action_ok)) {
-                                            permissionManager.openApplicationSettings(activity)
-                                        }
-                                    val action = activity.string(R.string.action_photo).lowercase()
-                                    val message =
-                                        "${activity.string(R.string.text_camera_rights_settings_description)} $action"
-                                    showPermissionDialogWithCancelButton(
-                                        activity,
-                                        message,
-                                        positiveButton
-                                    )
-                                }
-                            },
-                            Manifest.permission.CAMERA
-                        )
-                        R.id.container_gallery -> permissionManager.checkPermissions(
-                            this@DiskFragment,
-                            object : PermissionResultCallback {
-                                override fun onPermissionGranted() {
-                                    createGalleryIntent()
-                                }
+                            override fun onPermissionPermanentlyDenied(permission: String) {
+                                val positiveButton =
+                                    AlertButton(context.string(R.string.action_ok)) {
+                                        permissionManager.openApplicationSettings(context)
+                                    }
+                                val action = context.string(R.string.action_photo).lowercase()
+                                val message =
+                                    "${context.string(R.string.text_camera_rights_settings_description)} $action"
+                                showPermissionDialogWithCancelButton(
+                                    context,
+                                    message,
+                                    positiveButton
+                                )
+                            }
+                        },
+                        Manifest.permission.CAMERA
+                    )
+                    R.id.container_gallery -> permissionManager.checkPermissions(
+                        this@DiskFragment,
+                        object : PermissionResultCallback {
+                            override fun onPermissionGranted() {
+                                createGalleryIntent()
+                            }
 
-                                override fun onPermissionDenied(permissionList: Array<String>) {
-                                    val positiveButton =
-                                        AlertButton(activity.string(R.string.action_ok)) {
-                                            permissionManager.checkPermissions(
-                                                this@DiskFragment,
-                                                this,
-                                                *permissionList
-                                            )
-                                        }
-                                    val action =
-                                        activity.string(R.string.action_download).lowercase()
-                                    val message =
-                                        "${activity.string(R.string.text_memory_rights_description)} $action"
-                                    showPermissionDialogWithCancelButton(
-                                        activity,
-                                        message,
-                                        positiveButton
-                                    )
-                                }
+                            override fun onPermissionDenied(permissionList: Array<String>) {
+                                val positiveButton =
+                                    AlertButton(context.string(R.string.action_ok)) {
+                                        permissionManager.checkPermissions(
+                                            this@DiskFragment,
+                                            this,
+                                            *permissionList
+                                        )
+                                    }
+                                val action =
+                                    context.string(R.string.action_download).lowercase()
+                                val message =
+                                    "${context.string(R.string.text_memory_rights_description)} $action"
+                                showPermissionDialogWithCancelButton(
+                                    context,
+                                    message,
+                                    positiveButton
+                                )
+                            }
 
-                                override fun onPermissionPermanentlyDenied(permission: String) {
-                                    val positiveButton =
-                                        AlertButton(activity.string(R.string.action_ok)) {
-                                            permissionManager.openApplicationSettings(activity)
-                                        }
-                                    val action =
-                                        activity.string(R.string.action_download).lowercase()
-                                    val message =
-                                        "${activity.string(R.string.text_memory_rights_settings_description)} $action"
-                                    showPermissionDialogWithCancelButton(
-                                        activity,
-                                        message,
-                                        positiveButton
-                                    )
-                                }
-                            },
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        )
-                    }
+                            override fun onPermissionPermanentlyDenied(permission: String) {
+                                val positiveButton =
+                                    AlertButton(context.string(R.string.action_ok)) {
+                                        permissionManager.openApplicationSettings(context)
+                                    }
+                                val action =
+                                    context.string(R.string.action_download).lowercase()
+                                val message =
+                                    "${context.string(R.string.text_memory_rights_settings_description)} $action"
+                                showPermissionDialogWithCancelButton(
+                                    context,
+                                    message,
+                                    positiveButton
+                                )
+                            }
+                        },
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
                 }
             }
-            bottomDialog.show(activity.supportFragmentManager, BOTTOM)
         }
+        bottomDialog.show(requireActivity().supportFragmentManager, BOTTOM)
     }
 
     private fun createCameraIntent() {
@@ -570,14 +558,14 @@ class DiskFragment : SelectableFragment() {
     }
 
     private fun showPermissionDialogWithCancelButton(
-        activity: FragmentActivity,
+        context: Context,
         message: String,
         positiveButton: AlertButton
     ) {
-        val negativeButton = AlertButton(activity.string(R.string.action_cancel))
+        val negativeButton = AlertButton(context.string(R.string.action_cancel))
         permissionManager.permissionAlertDialog(
-            context = activity,
-            title = activity.string(R.string.text_request_rights),
+            context = context,
+            title = context.string(R.string.text_request_rights),
             message = message,
             positive = positiveButton,
             negative = negativeButton

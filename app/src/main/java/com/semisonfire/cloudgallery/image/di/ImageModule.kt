@@ -1,7 +1,6 @@
 package com.semisonfire.cloudgallery.image.di
 
 import android.app.Application
-import com.semisonfire.cloudgallery.di.module.DISK_CACHE_SIZE
 import dagger.Module
 import dagger.Provides
 import java.io.File
@@ -33,7 +32,7 @@ class ImageModule {
     private fun provideCache(application: Application): Cache {
         return Cache(
             File(application.cacheDir, cacheName),
-            DISK_CACHE_SIZE
+            10 * 1024 * 1024L
         )
     }
 }

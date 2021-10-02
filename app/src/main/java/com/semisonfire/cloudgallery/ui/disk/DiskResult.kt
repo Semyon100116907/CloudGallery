@@ -1,7 +1,7 @@
 package com.semisonfire.cloudgallery.ui.disk
 
 import com.semisonfire.cloudgallery.adapter.holder.Item
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 
 sealed class DiskResult {
 

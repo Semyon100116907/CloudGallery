@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.data.model
+package com.semisonfire.cloudgallery.data.model
 
 import android.os.Parcel
 import android.os.Parcelable

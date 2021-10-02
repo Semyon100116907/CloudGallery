@@ -1,10 +1,10 @@
-package com.semisonfire.cloudgallery.core.data.local
+package com.semisonfire.cloudgallery.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-import com.semisonfire.cloudgallery.core.data.local.dao.PhotoDao
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.local.dao.PhotoDao
+import com.semisonfire.cloudgallery.data.model.Photo
 
 @Database(
     entities = [

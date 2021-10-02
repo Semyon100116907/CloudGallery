@@ -1,10 +1,10 @@
-package com.semisonfire.cloudgallery.di.module
+package com.semisonfire.cloudgallery.data.local.di
 
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
-import com.semisonfire.cloudgallery.core.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.data.local.LocalDatabase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

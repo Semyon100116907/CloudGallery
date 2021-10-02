@@ -4,7 +4,7 @@ import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.common.title.TitleItem
-import com.semisonfire.cloudgallery.core.data.model.Photo
+import com.semisonfire.cloudgallery.data.model.Photo
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 

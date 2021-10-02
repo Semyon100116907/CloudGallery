@@ -1,8 +1,8 @@
-package com.semisonfire.cloudgallery.core.data.remote.interceptors
+package com.semisonfire.cloudgallery.data.remote.interceptors
 
-import com.semisonfire.cloudgallery.core.data.remote.auth.Auth
-import com.semisonfire.cloudgallery.core.data.remote.auth.AuthManager
-import com.semisonfire.cloudgallery.core.data.remote.exceptions.UnauthorizedException
+import com.semisonfire.cloudgallery.data.remote.auth.Auth
+import com.semisonfire.cloudgallery.data.remote.auth.AuthManager
+import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException
 import java.io.IOException
 import javax.inject.Inject
 import okhttp3.Interceptor

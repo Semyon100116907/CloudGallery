@@ -1,7 +1,7 @@
-package com.semisonfire.cloudgallery.core.data.remote.interceptors
+package com.semisonfire.cloudgallery.data.remote.interceptors
 
 import android.net.ConnectivityManager
-import com.semisonfire.cloudgallery.core.data.remote.exceptions.InternetUnavailableException
+import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
 import java.io.IOException
 import javax.inject.Inject
 import okhttp3.Interceptor

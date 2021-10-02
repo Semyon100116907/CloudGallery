@@ -1,15 +1,15 @@
-package com.semisonfire.cloudgallery.di.module
+package com.semisonfire.cloudgallery.data.remote.di
 
-import com.semisonfire.cloudgallery.core.data.remote.interceptors.AuthInterceptor
-import com.semisonfire.cloudgallery.core.data.remote.interceptors.NetworkConnectionInterceptor
+import com.semisonfire.cloudgallery.data.remote.interceptors.AuthInterceptor
+import com.semisonfire.cloudgallery.data.remote.interceptors.NetworkConnectionInterceptor
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
-import okhttp3.Interceptor
-import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Qualifier
 import javax.inject.Singleton
+import okhttp3.Interceptor
+import okhttp3.logging.HttpLoggingInterceptor
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)

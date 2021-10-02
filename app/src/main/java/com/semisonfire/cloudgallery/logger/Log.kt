@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.core.logger
+package com.semisonfire.cloudgallery.logger
 
 import android.util.Log
 import com.semisonfire.cloudgallery.BuildConfig

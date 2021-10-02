@@ -13,11 +13,11 @@ import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.data.model.Photo
 import com.semisonfire.cloudgallery.core.permisson.AlertButton
 import com.semisonfire.cloudgallery.core.permisson.PermissionManager
 import com.semisonfire.cloudgallery.core.permisson.PermissionResultCallback
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
+import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.ActivityPhotoDetailBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
 import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent

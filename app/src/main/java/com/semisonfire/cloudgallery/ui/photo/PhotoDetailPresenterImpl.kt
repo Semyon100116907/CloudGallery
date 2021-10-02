@@ -3,9 +3,9 @@ package com.semisonfire.cloudgallery.ui.photo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
 import com.semisonfire.cloudgallery.utils.FileUtils

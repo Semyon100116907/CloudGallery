@@ -2,10 +2,10 @@ package com.semisonfire.cloudgallery.ui.main
 
 import android.os.Bundle
 import com.semisonfire.cloudgallery.R
-import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.ContentActivity
 import com.semisonfire.cloudgallery.databinding.ActivityMainBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
+import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.navigation.ScreenKey
 import com.semisonfire.cloudgallery.navigation.destination.Destination
 import com.semisonfire.cloudgallery.navigation.router.Router
@@ -52,7 +52,7 @@ class MainActivity : ContentActivity() {
         }
 
         if (savedInstanceState == null) {
-            router.open(Destination(ScreenKey.DISK))
+            router.replaceScreen(Destination(ScreenKey.DISK))
         }
     }
 

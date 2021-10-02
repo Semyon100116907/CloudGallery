@@ -1,9 +1,9 @@
 package com.semisonfire.cloudgallery.ui.disk
 
 import android.graphics.BitmapFactory
-import com.semisonfire.cloudgallery.core.data.model.Photo
-import com.semisonfire.cloudgallery.core.logger.printThrowable
 import com.semisonfire.cloudgallery.core.ui.Presenter
+import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
