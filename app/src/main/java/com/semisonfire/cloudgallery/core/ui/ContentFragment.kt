@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import io.reactivex.disposables.CompositeDisposable
 
-@Suppress("UNCHECKED_CAST")
 abstract class ContentFragment : Fragment() {
 
     protected val disposables: CompositeDisposable = CompositeDisposable()
