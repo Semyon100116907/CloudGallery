@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.custom
+package com.semisonfire.cloudgallery.ui.trash
 
 import android.graphics.Rect
 import android.view.View
@@ -6,9 +6,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
-import com.semisonfire.cloudgallery.ui.disk.adapter.items.TYPE_HEADER
 
-class ItemDecorator(private val space: Int) : ItemDecoration() {
+class TrashBinItemDecorator(private val space: Int) : ItemDecoration() {
 
     override fun getItemOffsets(
         outRect: Rect,
@@ -59,10 +58,7 @@ class ItemDecorator(private val space: Int) : ItemDecoration() {
             outRect.top = if (position == 0) space else 0
             outRect.bottom = space
 
-            when {
-                position == -1 -> outRect.bottom = 0
-                adapter.getItemViewType(position) == TYPE_HEADER -> outRect.bottom = 0
-            }
+            if (position == -1) outRect.bottom = 0
         }
     }
 

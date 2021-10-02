@@ -9,7 +9,7 @@ import com.semisonfire.cloudgallery.adapter.factory.AdapterFactoryImpl
 import com.semisonfire.cloudgallery.adapter.factory.ItemProvider
 import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.adapter.holder.ItemViewHolder
-import java.util.*
+import java.util.Collections
 
 @Suppress("UNCHECKED_CAST")
 abstract class ItemAdapter<I : Item>(
@@ -18,7 +18,18 @@ abstract class ItemAdapter<I : Item>(
 
     constructor(providers: Set<ItemProvider>) : this(AdapterFactoryImpl(providers))
 
+    private var recyclerView: RecyclerView? = null
     protected val items = mutableListOf<I>()
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        this.recyclerView = null
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder<out I> {
         return factory.create(parent, viewType) as ItemViewHolder<I>
@@ -26,6 +37,16 @@ abstract class ItemAdapter<I : Item>(
 
     override fun getItemViewType(position: Int): Int {
         return factory.getItemViewType(items, position)
+    }
+
+    override fun onBindViewHolder(
+        holder: ItemViewHolder<out I>,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        }
     }
 
     @CallSuper
@@ -62,11 +83,15 @@ abstract class ItemAdapter<I : Item>(
 
     open fun updateDataSet(newItems: List<I>) {
         val diff =
-            DiffUtil.calculateDiff(ItemDiffCallback(items, newItems))
+            DiffUtil.calculateDiff(ItemDiffCallback(items, newItems), false)
 
         items.clear()
         items.addAll(newItems)
         diff.dispatchUpdatesTo(this)
+
+        if (hasDecorations()) {
+            notifyItemRangeChanged(0, itemCount - 1, false)
+        }
     }
 
     fun addItem(item: I) {
@@ -154,6 +179,24 @@ abstract class ItemAdapter<I : Item>(
             i++
         }
     }
+
+    fun removeIf(predicate: (I) -> Boolean) {
+        var i = 0
+        val iterator = items.iterator()
+        while (iterator.hasNext()) {
+            if (predicate(iterator.next())) {
+                iterator.remove()
+                notifyItemRemoved(i)
+
+                if (hasDecorations() && isInBounds(i - 1)) {
+                    notifyItemChanged(i - 1, false);
+                }
+            }
+            i++
+        }
+    }
+
+    private fun hasDecorations(): Boolean = (recyclerView?.itemDecorationCount ?: 0) > 0
 
     private fun isInBounds(position: Int) = position in 0..itemCount
 

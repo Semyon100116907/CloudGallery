@@ -5,10 +5,12 @@ import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.common.title.TitleItem
 import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItem
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 data class DiskViewModel(
+    var uploading: HorizontalScrollItem<UploadItem>? = null,
     val items: MutableMap<TitleItem, HorizontalScrollItem<PhotoItem>> = mutableMapOf(),
     val selectedPhotoList: MutableMap<String, Photo> = mutableMapOf()
 ) {
@@ -39,6 +41,8 @@ data class DiskViewModel(
     }
 
     fun getListItems(): List<Item> {
-        return items.entries.flatMap { listOf(it.key, it.value) }
+        return items.entries
+            .flatMapTo(mutableListOf()) { listOf(it.key, it.value) }
+            .apply { uploading?.let { add(0, it) } }
     }
 }

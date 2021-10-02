@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.logger.printThrowable
+import com.semisonfire.cloudgallery.ui.disk.adapter.upload.UploadItem
 import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
@@ -116,8 +117,10 @@ class DiskPresenterImpl @Inject constructor(
         compositeDisposable.add(
             uploadManager.uploadingPhotos
                 .subscribeOn(background())
+                .map { mapper.mapUploading(it) }
                 .subscribe(
                     {
+                        viewModel.uploading = it
                         diskResultListener.onNext(DiskResult.Uploading(it))
                     },
                     { it.printThrowable() }
@@ -160,10 +163,29 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun uploadPhoto(photo: Photo) {
-        uploadManager.uploadPhotos(photo)
+        createFakeUploads(listOf(photo))
+
+//      uploadManager.uploadPhotos(photo)
     }
 
     override fun uploadPhotos(photos: List<Photo>) {
-        uploadManager.uploadPhotos(*photos.toTypedArray())
+        createFakeUploads(photos)
+
+//      uploadManager.uploadPhotos(*photos.toTypedArray())
+    }
+
+    private fun createFakeUploads(photos: List<Photo>) {
+        var uploading = viewModel.uploading
+        if (uploading == null) {
+            uploading = mapper.mapUploading(photos)
+            viewModel.uploading = uploading
+
+        } else {
+            val items = uploading.items
+            items as MutableList<UploadItem>
+            items.addAll(mapper.mapUploadItems(photos))
+        }
+
+        diskResultListener.onNext(DiskResult.Uploading(uploading))
     }
 }

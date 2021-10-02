@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.common.scroll
 import com.semisonfire.cloudgallery.adapter.holder.Item
 
 data class HorizontalScrollItem<I : Item>(
-    val id: Long,
+    val id: String,
     val items: List<I>
 ) : Item {
 

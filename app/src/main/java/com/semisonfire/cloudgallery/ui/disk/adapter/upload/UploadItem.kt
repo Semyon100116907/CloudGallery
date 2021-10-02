@@ -1,20 +1,19 @@
-package com.semisonfire.cloudgallery.common.title
+package com.semisonfire.cloudgallery.ui.disk.adapter.upload
 
 import com.semisonfire.cloudgallery.adapter.holder.Item
 
-data class TitleItem(
+data class UploadItem(
     val id: String,
-    val title: String,
-    val subtitle: String
+    val imagePath: String
 ) : Item {
     override fun areItemsTheSame(item: Item): Boolean {
-        if (item !is TitleItem) return false
+        if (item !is UploadItem) return false
 
-        return this.id == item.id
+        return id == item.id
     }
 
     override fun areContentTheSame(item: Item): Boolean {
-        if (item !is TitleItem) return false
+        if (item !is UploadItem) return false
 
         return this == item
     }
