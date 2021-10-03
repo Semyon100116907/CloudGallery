@@ -4,8 +4,8 @@ import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.data.remote.api.IMAGE_MEDIA_TYPE
 import com.semisonfire.cloudgallery.data.remote.api.IMAGE_SIZE_XL
+import com.semisonfire.cloudgallery.data.remote.api.LinkResponse
 import com.semisonfire.cloudgallery.data.remote.api.SORT_MODIFIED_DESC
-import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -27,12 +27,7 @@ class DiskRepository @Inject constructor(
             .onErrorReturn { emptyList() }
     }
 
-    fun deletePhoto(photo: Photo): Observable<Photo> {
-        return diskApi.deleteImage(photo.remotePath)
-            .andThen(Observable.just(photo))
-    }
-
-    fun getDownloadLink(path: String): Observable<Link> {
+    fun getDownloadLink(path: String): Observable<LinkResponse> {
         return diskApi.getDownloadLink(path)
     }
 

@@ -25,10 +25,10 @@ import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.foreground
 import javax.inject.Inject
 
-class TrashFragment : ContentFragment() {
+class TrashBinFragment : ContentFragment() {
 
     @Inject
-    lateinit var presenter: TrashPresenter
+    lateinit var presenter: TrashBinPresenter
 
     @Inject
     lateinit var adapter: TrashBinAdapter

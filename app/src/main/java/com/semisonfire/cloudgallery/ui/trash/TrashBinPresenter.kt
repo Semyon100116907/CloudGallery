@@ -4,7 +4,7 @@ import com.semisonfire.cloudgallery.core.ui.Presenter
 import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.ui.disk.LIMIT
 import com.semisonfire.cloudgallery.ui.trash.data.TrashBinMapper
-import com.semisonfire.cloudgallery.ui.trash.data.TrashRepository
+import com.semisonfire.cloudgallery.ui.trash.data.TrashBinRepository
 import com.semisonfire.cloudgallery.ui.trash.model.TrashBinResult
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
@@ -12,7 +12,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
-interface TrashPresenter : Presenter {
+interface TrashBinPresenter : Presenter {
 
     fun observeTrashBinResult(): Observable<TrashBinResult>
 
@@ -20,10 +20,10 @@ interface TrashPresenter : Presenter {
     fun clear()
 }
 
-class TrashPresenterImpl @Inject constructor(
-    private val trashRepository: TrashRepository,
+class TrashBinPresenterImpl @Inject constructor(
+    private val trashRepository: TrashBinRepository,
     private val trashBinMapper: TrashBinMapper
-) : TrashPresenter {
+) : TrashBinPresenter {
 
     private val compositeDisposable = CompositeDisposable()
 

@@ -4,7 +4,7 @@ import com.semisonfire.cloudgallery.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.data.local.entity.PhotoEntity
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
+import com.semisonfire.cloudgallery.data.remote.api.LinkResponse
 import com.semisonfire.cloudgallery.utils.DateUtils
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
@@ -100,7 +100,7 @@ class UploadManager @Inject constructor(
             }
     }
 
-    private fun upload(photo: Photo, link: Link): Single<Photo> {
+    private fun upload(photo: Photo, link: LinkResponse): Single<Photo> {
         val file = File(photo.localPath)
         val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData("file", file.name, reqFile)

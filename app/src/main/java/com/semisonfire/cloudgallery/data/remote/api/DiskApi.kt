@@ -1,8 +1,6 @@
 package com.semisonfire.cloudgallery.data.remote.api
 
-import com.semisonfire.cloudgallery.ui.disk.model.remote.DiskResponse
-import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
-import com.semisonfire.cloudgallery.ui.trash.model.remote.Trash
+import com.semisonfire.cloudgallery.ui.trash.model.remote.TrashBinResponse
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -33,14 +31,14 @@ interface DiskApi {
         @Query("media_type") mediaType: String?,
         @Query("preview_size") size: String?,
         @Query("sort") sort: String?
-    ): Single<DiskResponse>
+    ): Single<ItemsResponse>
 
     /** Get the link to upload file on the disk.  */
     @GET("disk/resources/upload")
     fun getUploadLink(
         @Query("path") path: String?,
         @Query("overwrite") overwrite: Boolean
-    ): Observable<Link>
+    ): Observable<LinkResponse>
 
     /** Upload file on the disk.  */
     @Multipart
@@ -52,7 +50,7 @@ interface DiskApi {
 
     /** Download file from the disk folder.  */
     @GET("disk/resources/download")
-    fun getDownloadLink(@Query("path") path: String?): Observable<Link>
+    fun getDownloadLink(@Query("path") path: String?): Observable<LinkResponse>
 
     /** Delete file from the disk folder.  */
     @DELETE("disk/resources")
@@ -66,7 +64,7 @@ interface DiskApi {
         @Query("offset") offset: Int,
         @Query("preview_size") size: String?,
         @Query("sort") sort: String?
-    ): Single<Trash>
+    ): Single<TrashBinResponse>
 
     /** Restore file from the trash folder.  */
     @PUT("disk/trash/resources/restore")

@@ -1,14 +1,9 @@
 package com.semisonfire.cloudgallery.ui.trash.model.remote
 
 import com.google.gson.annotations.SerializedName
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.data.remote.api.ItemsResponse
 
-class Trash {
+data class TrashBinResponse(
     @SerializedName("_embedded")
-    var trashResponse: TrashResponse? = null
-}
-
-class TrashResponse {
-    @SerializedName("items")
-    var photos: List<Photo>? = null
-}
+    val trashResponse: ItemsResponse? = null
+)
