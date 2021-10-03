@@ -39,10 +39,6 @@ data class DiskViewModel(
                     value.titleItem.copy(subtitle = "${mergedItems.size} photo"),
                     value.scrollItem.copy(items = mergedItems as List<PhotoItem>)
                 )
-
-//                items.remove(key)
-//                items[key.copy(subtitle = "${mergedItems.size} photo")] =
-//                    oldValue.copy(items = mergedItems)
             }
         }
     }
