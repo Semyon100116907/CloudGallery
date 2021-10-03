@@ -1,9 +1,10 @@
-package com.semisonfire.cloudgallery.ui.disk.data
+package com.semisonfire.cloudgallery.upload
 
 import com.semisonfire.cloudgallery.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
+import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
 import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
 import com.semisonfire.cloudgallery.utils.background
@@ -15,12 +16,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import retrofit2.HttpException
-
-sealed class UploadResult(open val photo: Photo, val uploaded: Boolean) {
-    data class Complete(override val photo: Photo) : UploadResult(photo, true)
-    data class Fail(override val photo: Photo) : UploadResult(photo, false)
-}
 
 @Singleton
 class UploadManager @Inject constructor(
@@ -45,7 +40,7 @@ class UploadManager @Inject constructor(
         }
     }
 
-    fun uploadListener() =
+    fun uploadListener(): Observable<UploadResult> =
         Observable
             .merge(
                 uploadCompleteListener().map { UploadResult.Complete(it) },
@@ -86,52 +81,31 @@ class UploadManager @Inject constructor(
      * Upload one photo at the time.
      */
     private fun upload(photo: Photo): Observable<Photo> {
-        return Observable.just(photo)
-            .flatMap { getUploadLink(it) }
-            .flatMap { diskRepository.savePhoto(it.photo, it) }
+        return Observable
+            .just(photo)
+            .flatMap {
+                getUploadLink(it)
+                    .flatMap { diskRepository.savePhoto(it.photo, it) }
+            }
             .retryWhen {
                 it.flatMap { throwable ->
                     if (throwable is InternetUnavailableException) {
                         uploadSubjectInformer.onNext(Photo())
                         return@flatMap Observable.timer(2, TimeUnit.SECONDS)
                     }
-                    if (throwable is HttpException) {
-                        if (throwable.code() == 409) {
-                            photo.name = rename(photo.name)
-                            return@flatMap Observable.timer(1, TimeUnit.SECONDS)
-                        }
-                    }
-                    Observable.error<Long>(throwable)
+
+                    Observable.error(throwable)
                 }
             }
             .filter { it.isUploaded }
             .flatMapSingle {
                 val absolutePath = "file://" + File(it.localPath).absolutePath
-                it.preview = absolutePath
-                it.modifiedAt = DateUtils.currentDate
-                removeUploadingPhoto(it)
+                removeUploadingPhoto(
+                    it.copy(
+                        preview = absolutePath,
+                        modifiedAt = DateUtils.currentDate
+                    )
+                )
             }
-    }
-
-    /**
-     * Rename duplicate file.
-     */
-    private fun rename(fullName: String): String {
-        val split = fullName.split('.')
-        val name = split[0]
-        val extension = split[1]
-
-        val first = name.indexOf("(") + 1
-        val last = name.lastIndexOf(")")
-
-        var newName = if (last != -1) {
-            var counter = name.substring(first, last).toInt()
-            counter++
-            name.substring(0, first - 1) + "(" + counter.toString() + ")"
-        } else {
-            "$name(1)"
-        }
-        newName += extension
-        return newName
     }
 }

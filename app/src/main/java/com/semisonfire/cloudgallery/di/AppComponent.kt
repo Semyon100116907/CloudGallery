@@ -15,8 +15,8 @@ import com.semisonfire.cloudgallery.image.di.ImageModule
 import com.semisonfire.cloudgallery.navigation.di.annotation.NavigationScope
 import com.semisonfire.cloudgallery.navigation.di.module.NavigationModule
 import com.semisonfire.cloudgallery.navigation.router.Router
-import com.semisonfire.cloudgallery.ui.disk.data.UploadManager
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
+import com.semisonfire.cloudgallery.upload.UploadManager
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton

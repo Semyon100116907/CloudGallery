@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.disk.adapter.upload
+package com.semisonfire.cloudgallery.upload.adapter
 
 import android.view.View
 import com.semisonfire.cloudgallery.adapter.holder.ItemViewHolder

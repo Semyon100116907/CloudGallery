@@ -43,9 +43,9 @@ class DiskRepository @Inject constructor(
             .andThen(
                 Observable
                     .just(photo)
-                    .doOnNext {
+                    .map {
                         it.isUploaded = true
-                        it.remotePath = "disk:/" + it.name
+                        it.copy(remotePath = "disk:/" + it.name)
                     }
             )
     }

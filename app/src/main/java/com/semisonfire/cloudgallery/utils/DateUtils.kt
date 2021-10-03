@@ -8,27 +8,50 @@ import java.util.Date
 import java.util.Locale
 
 object DateUtils {
-    const val DATE_FORMAT = "dd.MM.yyyy"
-    const val DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
+    private const val DATE_FORMAT = "dd.MM.yyyy"
+    private const val DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
+
+    private val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.ROOT)
+    private val dateTimeFormat = SimpleDateFormat(DATE_TIME_FORMAT, Locale.ROOT)
 
     val currentDate: String
         get() {
-            val millis = System.currentTimeMillis()
-            return getDateString(Date(millis), DATE_TIME_FORMAT)
+            return millisToDateTime(System.currentTimeMillis())
         }
 
-    fun getDateString(date: String?, format: String?): String? {
+    fun dateString(date: String): String {
+        return dateString(dateTimeFormat.parse(date), DATE_FORMAT)
+    }
+
+    fun dateTimeMillis(date: String?): Long {
         try {
-            val simpleDateFormat = SimpleDateFormat(DATE_TIME_FORMAT, Locale.getDefault())
-            val newDate = simpleDateFormat.parse(date)
-            return getDateString(newDate, format)
+            return dateTimeFormat.parse(date.orEmpty())?.time ?: -1L
         } catch (e: ParseException) {
             e.printThrowable()
         }
-        return null
+
+        return -1L
     }
 
-    fun getDateString(date: Date?, format: String?): String {
+    fun dateMillis(date: String?): Long {
+        try {
+            return dateFormat.parse(date.orEmpty())?.time ?: -1L
+        } catch (e: ParseException) {
+            e.printThrowable()
+        }
+
+        return -1L
+    }
+
+    fun millisToDate(millis: Long): String {
+        return DateFormat.format(DATE_FORMAT, millis).toString()
+    }
+
+    fun millisToDateTime(millis: Long): String {
+        return DateFormat.format(DATE_TIME_FORMAT, millis).toString()
+    }
+
+    private fun dateString(date: Date?, format: String?): String {
         return DateFormat.format(format, date).toString()
     }
 }
