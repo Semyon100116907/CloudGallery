@@ -4,8 +4,7 @@ import com.semisonfire.cloudgallery.data.local.LocalDatabase
 import com.semisonfire.cloudgallery.data.local.entity.PhotoEntity
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
-import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
-import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
+import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
@@ -13,21 +12,22 @@ import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.File
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.util.LinkedList
+import java.util.Queue
 import javax.inject.Inject
 import javax.inject.Singleton
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 
 @Singleton
 class UploadManager @Inject constructor(
     private val diskApi: DiskApi,
-    private val database: LocalDatabase,
-    private val diskRepository: DiskRepository
+    private val database: LocalDatabase
 ) {
 
     //Upload
     private val uploadListener = PublishSubject.create<Photo>()
-    private val uploadFailedListener = PublishSubject.create<Photo>()
 
     private val uploadingQueue: Queue<Photo> = LinkedList()
 
@@ -57,14 +57,7 @@ class UploadManager @Inject constructor(
         }
     }
 
-    fun uploadListener(): Observable<UploadResult> =
-        Observable
-            .merge(
-                uploadCompleteListener().map { UploadResult.Complete(it) },
-                uploadFailedListener.map { UploadResult.Fail(it) }
-            )
-
-    private fun uploadCompleteListener(): Observable<Photo> {
+    fun uploadListener(): Observable<UploadResult> {
         return uploadListener
             .observeOn(Schedulers.io())
             .switchMap { photo ->
@@ -89,30 +82,32 @@ class UploadManager @Inject constructor(
     /**
      * Upload one photo at the time.
      */
-    private fun upload(photo: Photo): Observable<Photo> {
+    private fun upload(photo: Photo): Observable<UploadResult> {
         return diskApi
             .getUploadLink("disk:/" + photo.name, false)
             .subscribeOn(background())
-            .flatMap { diskRepository.savePhoto(photo, it) }
-            .retryWhen {
-                it.flatMap { throwable ->
-                    if (throwable is InternetUnavailableException) {
-                        uploadFailedListener.onNext(Photo())
-                        return@flatMap Observable.timer(2, TimeUnit.SECONDS)
-                    }
-
-                    Observable.error(throwable)
-                }
-            }
+            .flatMapSingle { upload(photo, it) }
             .filter { it.isUploaded }
-            .flatMapSingle {
+            .map {
                 database.photoDao.deleteById(it.id)
-                Single.just(
+
+                UploadResult.Success(
                     it.copy(
                         preview = "file://" + File(it.localPath).absolutePath,
                         modifiedAt = DateUtils.currentDate
                     )
                 )
+            }
+    }
+
+    private fun upload(photo: Photo, link: Link): Single<Photo> {
+        val file = File(photo.localPath)
+        val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", file.name, reqFile)
+        return diskApi
+            .uploadImage(link.href, body)
+            .toSingle {
+                photo.copy(remotePath = "disk:/" + photo.name, isUploaded = true)
             }
     }
 }
