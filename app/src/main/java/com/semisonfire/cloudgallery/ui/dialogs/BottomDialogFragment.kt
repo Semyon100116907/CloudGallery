@@ -14,7 +14,7 @@ class BottomDialogFragment : DialogFragment() {
     var dialogListener: DialogListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = context ?: throw NullPointerException("Context must not be null")
+        val context = requireContext()
 
         val bottomSheetDialog = BottomSheetDialog(context)
         val sheetView = View.inflate(context, R.layout.dialog_bottom, null)
