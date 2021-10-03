@@ -25,12 +25,12 @@ import com.semisonfire.cloudgallery.core.ui.ContentFragment
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.FragmentDiskBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
+import com.semisonfire.cloudgallery.ui.detail.PhotoDetailActivity
 import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
 import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
 import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
-import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
@@ -156,9 +156,7 @@ class DiskFragment : ContentFragment() {
                         }
                         is DiskResult.Loaded -> onPhotosLoaded(it)
                         is DiskResult.LoadMoreCompleted -> onLoadMoreComplete(it)
-                        is DiskResult.PhotoDeleted -> onPhotoDeleted(it.photo)
                         is DiskResult.PhotoDownloaded -> onPhotoDownloaded(it.path)
-                        is DiskResult.PhotoUploaded -> onPhotoUploaded(it.photo, it.uploaded)
                         is DiskResult.Uploading -> onUploadingPhotos(it)
                     }
                 }
@@ -293,23 +291,8 @@ class DiskFragment : ContentFragment() {
         adapter.endlessScrollEnabled = result.hasMore
     }
 
-    private fun onPhotoUploaded(photo: Photo, uploaded: Boolean) {
-//        if (!uploaded) {
-//            requireContext().shortToast(getString(R.string.msg_wait))
-//        }
-    }
-
     private fun onPhotoDownloaded(path: String) {
         context?.longToast(getString(R.string.msg_file_saved) + " " + path)
-    }
-
-    private fun onPhotoDeleted(photo: Photo) {
-//        diskAdapter.removePhoto(photo)
-
-        context?.let {
-            val action = getString(R.string.msg_deleted).lowercase()
-            it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
-        }
     }
 
     private fun onLoadMoreComplete(result: DiskResult.LoadMoreCompleted) {

@@ -18,6 +18,6 @@ class TrashBinNavigator @Inject constructor() : Navigator {
     }
 
     override fun createFragment(): Fragment {
-        return TrashFragment()
+        return TrashBinFragment()
     }
 }

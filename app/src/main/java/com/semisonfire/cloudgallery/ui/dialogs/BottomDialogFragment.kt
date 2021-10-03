@@ -3,7 +3,7 @@ package com.semisonfire.cloudgallery.ui.dialogs
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -14,10 +14,10 @@ class BottomDialogFragment : DialogFragment() {
     var dialogListener: DialogListener? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val context = context ?: throw NullPointerException("Context must not be null")
+        val context = requireContext()
 
         val bottomSheetDialog = BottomSheetDialog(context)
-        val sheetView = View.inflate(context, R.layout.dialog_bottom, null)
+        val sheetView = View.inflate(context, R.layout.fragment_upload_chooser, null)
         bind(sheetView)
 
         bottomSheetDialog.setContentView(sheetView)
@@ -36,10 +36,10 @@ class BottomDialogFragment : DialogFragment() {
             dismiss()
         }
 
-        val camera = sheetView.findViewById<ViewGroup>(R.id.container_camera)
+        val camera = sheetView.findViewById<TextView>(R.id.container_camera)
         camera.setOnClickListener(clickListener)
 
-        val gallery = sheetView.findViewById<ViewGroup>(R.id.container_gallery)
+        val gallery = sheetView.findViewById<TextView>(R.id.container_gallery)
         gallery.setOnClickListener(clickListener)
     }
 }

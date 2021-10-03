@@ -1,8 +1,8 @@
-package com.semisonfire.cloudgallery.ui.photo.di
+package com.semisonfire.cloudgallery.ui.detail.di
 
 import com.semisonfire.cloudgallery.di.annotation.ActivityScope
-import com.semisonfire.cloudgallery.ui.photo.PhotoDetailPresenter
-import com.semisonfire.cloudgallery.ui.photo.PhotoDetailPresenterImpl
+import com.semisonfire.cloudgallery.ui.detail.PhotoDetailPresenter
+import com.semisonfire.cloudgallery.ui.detail.PhotoDetailPresenterImpl
 import dagger.Binds
 import dagger.Module
 

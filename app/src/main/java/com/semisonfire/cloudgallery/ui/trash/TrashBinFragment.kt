@@ -8,35 +8,27 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.semisonfire.cloudgallery.R
 import com.semisonfire.cloudgallery.R.dimen
-import com.semisonfire.cloudgallery.adapter.LoadMoreAdapter
-import com.semisonfire.cloudgallery.adapter.factory.AdapterFactory
 import com.semisonfire.cloudgallery.adapter.holder.Item
 import com.semisonfire.cloudgallery.core.ui.ContentFragment
-import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.FragmentTrashBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.dialogs.AlertDialogFragment
-import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
-import com.semisonfire.cloudgallery.ui.photo.PhotoDetailActivity
+import com.semisonfire.cloudgallery.ui.detail.PhotoDetailActivity
+import com.semisonfire.cloudgallery.ui.trash.adapter.TrashBinAdapter
 import com.semisonfire.cloudgallery.ui.trash.di.DaggerTrashBinComponent
+import com.semisonfire.cloudgallery.ui.trash.model.TrashBinResult
 import com.semisonfire.cloudgallery.utils.dimen
 import com.semisonfire.cloudgallery.utils.foreground
-import com.semisonfire.cloudgallery.utils.longToast
-import com.semisonfire.cloudgallery.utils.string
 import javax.inject.Inject
 
-class TrashBinAdapter @Inject constructor(factory: AdapterFactory) : LoadMoreAdapter<Item>(factory)
-
-class TrashFragment : ContentFragment() {
+class TrashBinFragment : ContentFragment() {
 
     @Inject
-    lateinit var presenter: TrashPresenter
+    lateinit var presenter: TrashBinPresenter
 
     @Inject
     lateinit var adapter: TrashBinAdapter
@@ -118,8 +110,6 @@ class TrashFragment : ContentFragment() {
                 .subscribe {
                     when (it) {
                         is TrashBinResult.Loaded -> onTrashLoaded(it.photos)
-                        is TrashBinResult.PhotoDeleted -> onPhotoDeleted(it.photo)
-                        is TrashBinResult.PhotoRestored -> onPhotoRestored(it.photo)
                         TrashBinResult.Cleared -> onTrashCleared()
                     }
                 }
@@ -146,34 +136,7 @@ class TrashFragment : ContentFragment() {
         adapter.updateDataSet(photos)
     }
 
-    private fun onPhotoRestored(photo: Photo) {
-        context?.let {
-            val action = it.string(R.string.msg_restored).lowercase()
-            it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
-        }
-    }
-
-    private fun onPhotoDeleted(photo: Photo) {
-        context?.let {
-            val action = it.string(R.string.msg_deleted).lowercase()
-            it.longToast("${it.string(R.string.msg_photo)} ${photo.name} $action")
-        }
-    }
-
     private fun onTrashCleared() {
         adapter.updateDataSet(emptyList())
-    }
-
-    private fun showDialog(title: String, message: String, color: Int) {
-        val activity = activity as AppCompatActivity?
-        if (activity != null) {
-            val alertDialog = AlertDialogFragment.newInstance(title, message, color)
-            alertDialog.dialogListener = object : DialogListener() {
-                override fun onPositiveClick() {
-                    presenter.clear()
-                }
-            }
-            alertDialog.show(activity.supportFragmentManager, "alert")
-        }
     }
 }

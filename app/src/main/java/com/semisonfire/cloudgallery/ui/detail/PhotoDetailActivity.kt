@@ -1,7 +1,6 @@
-package com.semisonfire.cloudgallery.ui.photo
+package com.semisonfire.cloudgallery.ui.detail
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -20,7 +19,7 @@ import com.semisonfire.cloudgallery.core.ui.ContentActivity
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.databinding.ActivityPhotoDetailBinding
 import com.semisonfire.cloudgallery.di.provider.provideComponent
-import com.semisonfire.cloudgallery.ui.photo.di.DaggerPhotoDetailComponent
+import com.semisonfire.cloudgallery.ui.detail.di.DaggerPhotoDetailComponent
 import com.semisonfire.cloudgallery.utils.*
 import java.util.*
 import javax.inject.Inject
@@ -154,14 +153,13 @@ class PhotoDetailActivity : ContentActivity() {
                 .observeOn(foreground())
                 .subscribe {
                     onFilePrepared(it)
-                },
-            presenter
-                .observeFileChanged()
-                .observeOn(foreground())
-                .subscribe {
-                    onFilesChanged(it)
                 }
         )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        disposables.clear()
     }
 
     private fun onPhotoDownloaded(path: String) {
@@ -173,21 +171,6 @@ class PhotoDetailActivity : ContentActivity() {
         shareIntent.type = "image/jpg"
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
         startActivity(Intent.createChooser(shareIntent, getString(R.string.msg_share_chooser)))
-    }
-
-    private fun onFilesChanged(photo: Photo) {
-        val returnIntent = Intent()
-        returnIntent.putExtra(EXTRA_CHANGED, true)
-        setResult(Activity.RESULT_OK, returnIntent)
-
-        photoList.remove(photo)
-        if (photoList.isEmpty()) {
-            finish()
-            return
-        }
-
-        adapter.setItems(photoList)
-        updateToolbarTitle(currentPosition)
     }
 
     override fun onRequestPermissionsResult(
@@ -277,8 +260,6 @@ class PhotoDetailActivity : ContentActivity() {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
             }
-            R.id.menu_delete -> presenter.delete(currentPhoto, from)
-            R.id.menu_restore -> presenter.restore(currentPhoto)
         }
         return super.onOptionsItemSelected(item)
     }
@@ -314,8 +295,6 @@ class PhotoDetailActivity : ContentActivity() {
     }
 
     companion object {
-        const val DETAIL_REQUEST = 432
-
         //FROM TYPES
         const val FROM_DISK = 0
         const val FROM_TRASH = 1

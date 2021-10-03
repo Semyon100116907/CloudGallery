@@ -2,13 +2,12 @@ package com.semisonfire.cloudgallery.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-
 import com.semisonfire.cloudgallery.data.local.dao.PhotoDao
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.data.local.entity.PhotoEntity
 
 @Database(
     entities = [
-        Photo::class
+        PhotoEntity::class
     ],
     version = LocalDatabase.DATABASE_VERSION,
     exportSchema = false

@@ -1,7 +1,7 @@
-package com.semisonfire.cloudgallery.ui.disk.model.remote
+package com.semisonfire.cloudgallery.data.remote.api
 
 import com.semisonfire.cloudgallery.data.model.Photo
 
-data class DiskResponse(
+data class ItemsResponse(
     val items: List<Photo>? = null
 )

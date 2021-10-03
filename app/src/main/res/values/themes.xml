@@ -28,6 +28,9 @@
             @color/cg_color_primary_dark
         </item>
         <item name="android:windowDrawsSystemBarBackgrounds" tools:targetApi="lollipop">true</item>
+
+
+        <item name="alertDialogTheme">@style/AlertDialogTheme.Light</item>
     </style>
 
     <!--Dark-->
@@ -44,10 +47,24 @@
 
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:statusBarColor" tools:targetApi="lollipop">@color/color_dark</item>
+
+        <item name="alertDialogTheme">@style/AlertDialogTheme.Dark</item>
     </style>
 
     <style name="AppTheme.FullScreen" parent="AppTheme.Light">
         <item name="android:textColorSecondary">@color/color_white</item>
+    </style>
+
+    <style name="AlertDialogTheme.Light" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/cg_color_accent</item>
+        <item name="colorPrimaryDark">@color/cg_color_accent</item>
+        <item name="colorAccent">@color/cg_color_accent</item>
+    </style>
+
+    <style name="AlertDialogTheme.Dark" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/cgdt_color_accent</item>
+        <item name="colorPrimaryDark">@color/cgdt_color_accent</item>
+        <item name="colorAccent">@color/cgdt_color_accent</item>
     </style>
 
 </resources>

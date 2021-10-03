@@ -1,7 +1,6 @@
 package com.semisonfire.cloudgallery.ui.disk.model
 
 import com.semisonfire.cloudgallery.adapter.holder.Item
-import com.semisonfire.cloudgallery.common.photo.PhotoItem
 import com.semisonfire.cloudgallery.common.scroll.HorizontalScrollItem
 import com.semisonfire.cloudgallery.ui.disk.data.DiskKey
 import com.semisonfire.cloudgallery.ui.disk.data.DiskValue
@@ -37,7 +36,7 @@ data class DiskViewModel(
 
                 items[key] = DiskValue(
                     value.titleItem.copy(subtitle = "${mergedItems.size} photo"),
-                    value.scrollItem.copy(items = mergedItems as List<PhotoItem>)
+                    value.scrollItem.copy(items = mergedItems)
                 )
             }
         }

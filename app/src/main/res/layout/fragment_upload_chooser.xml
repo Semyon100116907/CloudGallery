@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_round_rect"
+    android:orientation="vertical"
+    app:layout_behavior="@string/bottom_sheet_behavior">
+
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:text="@string/action_upload"
+        android:textAppearance="@style/Text.Head"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/container_camera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackground"
+        android:drawablePadding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        android:text="@string/action_make_photo"
+        android:textAppearance="@style/Text.Body.L"
+        app:drawableStartCompat="@drawable/ic_camera" />
+
+    <TextView
+        android:id="@+id/container_gallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="?selectableItemBackground"
+        android:drawablePadding="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        android:text="@string/action_upload_from_gallery"
+        android:textAppearance="@style/Text.Body.L"
+        app:drawableStartCompat="@drawable/ic_gallery" />
+</LinearLayout>
