@@ -1,15 +1,16 @@
 package com.semisonfire.cloudgallery.upload
 
 import com.semisonfire.cloudgallery.data.local.LocalDatabase
+import com.semisonfire.cloudgallery.data.local.entity.PhotoEntity
 import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
 import com.semisonfire.cloudgallery.data.remote.exceptions.InternetUnavailableException
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
-import com.semisonfire.cloudgallery.ui.disk.model.remote.Link
 import com.semisonfire.cloudgallery.utils.DateUtils
 import com.semisonfire.cloudgallery.utils.background
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 import java.io.File
 import java.util.*
@@ -25,18 +26,34 @@ class UploadManager @Inject constructor(
 ) {
 
     //Upload
-    private val uploadSubject = PublishSubject.create<Photo>()
-    private val uploadSubjectInformer = PublishSubject.create<Photo>()
-    private val uploadingPhotosQueue: Queue<Photo> = LinkedList()
+    private val uploadListener = PublishSubject.create<Photo>()
+    private val uploadFailedListener = PublishSubject.create<Photo>()
 
-    val uploadingPhotos: Single<List<Photo>>
-        get() = database.photoDao.uploadingPhotos
+    private val uploadingQueue: Queue<Photo> = LinkedList()
+
+    fun getUploadingPhotos(): Single<List<Photo>> {
+        return database.photoDao.getUploadingPhotos()
+            .map {
+                it.map { entity ->
+                    Photo(
+                        id = entity.id,
+                        name = entity.name,
+                        preview = entity.preview,
+                        localPath = entity.localPath,
+                        file = entity.file,
+                        isUploaded = entity.isUploaded,
+                        remotePath = entity.remotePath,
+                        modifiedAt = entity.modifiedAt
+                    )
+                }
+            }
+    }
 
     fun uploadPhotos(vararg photos: Photo) {
-        uploadingPhotosQueue.addAll(photos)
+        uploadingQueue.addAll(photos)
 
-        while (!uploadingPhotosQueue.isEmpty()) {
-            uploadSubject.onNext(uploadingPhotosQueue.remove())
+        while (!uploadingQueue.isEmpty()) {
+            uploadListener.onNext(uploadingQueue.remove())
         }
     }
 
@@ -44,53 +61,43 @@ class UploadManager @Inject constructor(
         Observable
             .merge(
                 uploadCompleteListener().map { UploadResult.Complete(it) },
-                uploadFailListener().map { UploadResult.Fail(it) }
+                uploadFailedListener.map { UploadResult.Fail(it) }
             )
 
-    private fun uploadCompleteListener() = uploadSubject.hide().switchMap { uploadPhoto(it) }
-    private fun uploadFailListener() = uploadSubjectInformer.hide()
+    private fun uploadCompleteListener(): Observable<Photo> {
+        return uploadListener
+            .observeOn(Schedulers.io())
+            .switchMap { photo ->
+                database.photoDao.insert(
+                    PhotoEntity(
+                        id = photo.id,
+                        name = photo.name,
+                        preview = photo.preview,
+                        localPath = photo.localPath,
+                        file = photo.file,
+                        remotePath = photo.remotePath,
+                        isUploaded = photo.isUploaded,
+                        modifiedAt = photo.modifiedAt
+                    )
+                )
 
-    private fun getUploadLink(photo: Photo): Observable<Link> {
-        return diskApi.getUploadLink("disk:/" + photo.name, false)
-            .doOnNext { it.photo = photo }
-    }
-
-    private fun uploadPhoto(photo: Photo): Observable<Photo> {
-        return saveUploadingPhoto(photo)
-            .flatMapObservable { upload(it) }
-    }
-
-    private fun saveUploadingPhoto(photo: Photo): Single<Photo> {
-        return Single
-            .fromCallable {
-                database.photoDao.insertPhoto(photo)
                 photo.isUploaded = false
-                photo
+                upload(photo)
             }
-            .subscribeOn(background())
-    }
-
-    private fun removeUploadingPhoto(photo: Photo): Single<Photo> {
-        return Single.fromCallable {
-            database.photoDao.deletePhoto(photo)
-            photo
-        }
     }
 
     /**
      * Upload one photo at the time.
      */
     private fun upload(photo: Photo): Observable<Photo> {
-        return Observable
-            .just(photo)
-            .flatMap {
-                getUploadLink(it)
-                    .flatMap { diskRepository.savePhoto(it.photo, it) }
-            }
+        return diskApi
+            .getUploadLink("disk:/" + photo.name, false)
+            .subscribeOn(background())
+            .flatMap { diskRepository.savePhoto(photo, it) }
             .retryWhen {
                 it.flatMap { throwable ->
                     if (throwable is InternetUnavailableException) {
-                        uploadSubjectInformer.onNext(Photo())
+                        uploadFailedListener.onNext(Photo())
                         return@flatMap Observable.timer(2, TimeUnit.SECONDS)
                     }
 
@@ -99,10 +106,10 @@ class UploadManager @Inject constructor(
             }
             .filter { it.isUploaded }
             .flatMapSingle {
-                val absolutePath = "file://" + File(it.localPath).absolutePath
-                removeUploadingPhoto(
+                database.photoDao.deleteById(it.id)
+                Single.just(
                     it.copy(
-                        preview = absolutePath,
+                        preview = "file://" + File(it.localPath).absolutePath,
                         modifiedAt = DateUtils.currentDate
                     )
                 )

@@ -3,7 +3,6 @@ package com.semisonfire.cloudgallery.ui.main.ui.state
 import android.content.Intent
 import android.net.Uri
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.semisonfire.cloudgallery.R
@@ -39,7 +38,7 @@ class StateViewController @Inject constructor() {
         val informImage = informView.findViewById<ImageView>(R.id.image_inform)
         val informTitle = informView.findViewById<TextView>(R.id.text_inform_title)
         val informBody = informView.findViewById<TextView>(R.id.text_inform_body)
-        val informButton = informView.findViewById<Button>(R.id.btn_inform)
+        val informButton = informView.findViewById<TextView>(R.id.btn_inform)
 
         informView?.let {
 

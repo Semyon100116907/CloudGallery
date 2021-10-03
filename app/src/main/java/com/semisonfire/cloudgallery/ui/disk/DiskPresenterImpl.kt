@@ -141,7 +141,7 @@ class DiskPresenterImpl @Inject constructor(
 
     override fun getUploadingPhotos() {
         compositeDisposable.add(
-            uploadManager.uploadingPhotos
+            uploadManager.getUploadingPhotos()
                 .subscribeOn(background())
                 .map { mapper.mapUploading(it) }
                 .subscribe(
@@ -157,14 +157,18 @@ class DiskPresenterImpl @Inject constructor(
     override fun downloadPhotos(photos: List<Photo>) {
         compositeDisposable.add(
             Observable.fromIterable(photos.toMutableList())
-                .concatMap { diskRepository.getDownloadLink(it) }
-                .filter { !it.href.isNullOrEmpty() }
-                .map {
-                    val url = URL(it.href)
-                    val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
-                    FileUtils.savePublicFile(bitmap, it.photo.name)
+                .concatMap { photo ->
+                    diskRepository
+                        .getDownloadLink(photo.remotePath)
+                        .filter { !it.href.isNullOrEmpty() }
+                        .map {
+                            val url = URL(it.href)
+                            val bitmap =
+                                BitmapFactory.decodeStream(url.openConnection().getInputStream())
+                            FileUtils.savePublicFile(bitmap, photo.name)
+                        }
+                        .subscribeOn(background())
                 }
-                .subscribeOn(background())
                 .subscribe(
                     {
                         diskResultListener.onNext(DiskResult.PhotoDownloaded(it))

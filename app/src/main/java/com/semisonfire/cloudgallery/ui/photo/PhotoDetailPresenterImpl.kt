@@ -56,7 +56,8 @@ class PhotoDetailPresenterImpl @Inject constructor(
 
     override fun download(photo: Photo) {
         compositeDisposable.add(
-            diskRepository.getDownloadLink(photo)
+            diskRepository
+                .getDownloadLink(photo.remotePath)
                 .map {
                     val url = URL(it.href)
                     val bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream())

@@ -5,21 +5,24 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.semisonfire.cloudgallery.data.model.Photo
+import com.semisonfire.cloudgallery.data.local.entity.PhotoEntity
 import io.reactivex.Single
 
 @Dao
 interface PhotoDao {
 
-    @get:Query("SELECT * FROM photo")
-    val photos: Single<List<Photo>>
+    @Query("SELECT * FROM photo")
+    fun getPhotos(): Single<List<PhotoEntity>>
 
-    @get:Query("SELECT * FROM photo WHERE upload = 0")
-    val uploadingPhotos: Single<List<Photo>>
+    @Query("SELECT * FROM photo WHERE photo.upload = 0")
+    fun getUploadingPhotos(): Single<List<PhotoEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertPhoto(photo: Photo)
+    fun insert(photo: PhotoEntity)
+
+    @Query("DELETE FROM photo WHERE photo.id=:id")
+    fun deleteById(id: String)
 
     @Delete
-    fun deletePhoto(photo: Photo)
+    fun delete(photo: PhotoEntity)
 }

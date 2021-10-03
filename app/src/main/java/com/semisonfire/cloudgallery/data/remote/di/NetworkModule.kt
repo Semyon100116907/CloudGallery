@@ -9,6 +9,7 @@ import com.semisonfire.cloudgallery.BuildConfig
 import com.semisonfire.cloudgallery.data.remote.api.DiskApi
 import dagger.Module
 import dagger.Provides
+import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -51,7 +52,7 @@ class NetworkModule {
     fun provideRetrofit(httpClient: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(httpClient)
             .build()

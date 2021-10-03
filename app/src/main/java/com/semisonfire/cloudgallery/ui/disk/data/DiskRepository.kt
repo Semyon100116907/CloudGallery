@@ -55,8 +55,8 @@ class DiskRepository @Inject constructor(
             .andThen(Observable.just(photo))
     }
 
-    fun getDownloadLink(photo: Photo): Observable<Link> {
-        return diskApi.getDownloadLink(photo.remotePath).doOnNext { it.photo = photo }
+    fun getDownloadLink(path: String): Observable<Link> {
+        return diskApi.getDownloadLink(path)
     }
 
 }
