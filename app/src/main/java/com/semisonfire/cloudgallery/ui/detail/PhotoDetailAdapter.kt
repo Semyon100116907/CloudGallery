@@ -1,4 +1,4 @@
-package com.semisonfire.cloudgallery.ui.photo
+package com.semisonfire.cloudgallery.ui.detail
 
 import android.content.Context
 import android.content.res.Configuration

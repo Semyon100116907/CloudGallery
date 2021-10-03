@@ -64,8 +64,8 @@ class MainActivity : ContentActivity() {
         stateViewController.updateStateView(MainStateView.CONTENT)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
 
         stateViewController.updateStateView(MainStateView.LOADER)
         disposables.addAll(
@@ -80,6 +80,11 @@ class MainActivity : ContentActivity() {
                     it.printThrowable()
                 })
         )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        disposables.clear()
     }
 
     /** Oauth login.  */
