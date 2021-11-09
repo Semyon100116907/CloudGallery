@@ -6,7 +6,7 @@ import com.semisonfire.cloudgallery.data.model.Photo
 import com.semisonfire.cloudgallery.logger.printThrowable
 import com.semisonfire.cloudgallery.ui.disk.data.DiskMapper
 import com.semisonfire.cloudgallery.ui.disk.data.DiskRepository
-import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
+import com.semisonfire.cloudgallery.ui.disk.model.DiskState
 import com.semisonfire.cloudgallery.upload.UploadManager
 import com.semisonfire.cloudgallery.upload.adapter.UploadItem
 import com.semisonfire.cloudgallery.utils.FileUtils
@@ -29,7 +29,7 @@ interface DiskPresenter : Presenter {
     fun downloadPhotos(photos: List<Photo>)
     fun loadMorePhotos()
 
-    fun observeContent(): Observable<DiskViewModel>
+    fun observeContent(): Observable<DiskState>
     fun observeDiskResult(): Observable<DiskResult>
 }
 
@@ -41,12 +41,12 @@ class DiskPresenterImpl @Inject constructor(
 
     private val compositeDisposable = CompositeDisposable()
 
-    private val viewModel = DiskViewModel()
-
     private val loadListener = PublishSubject.create<Unit>()
-
-    private val contentListener = BehaviorSubject.createDefault(viewModel)
     private val diskResultListener = PublishSubject.create<DiskResult>()
+
+    private val stateListener = BehaviorSubject.createDefault(DiskState())
+    private val state
+        get() = stateListener.value!!
 
     init {
         compositeDisposable.add(
@@ -55,7 +55,7 @@ class DiskPresenterImpl @Inject constructor(
                 .observeOn(background())
                 .filter { it.uploaded }
                 .subscribe({ uploadResult ->
-                    val uploading = viewModel.uploading
+                    val uploading = state.uploading
                     val uploadedPhoto = uploadResult.photo
                     if (uploading != null) {
                         uploading.items as MutableList<UploadItem>
@@ -64,15 +64,14 @@ class DiskPresenterImpl @Inject constructor(
                         }
 
                         if (uploading.items.isEmpty()) {
-                            viewModel.uploading = null
+                            state.uploading = null
                         }
 
-                        val itemsMap =
-                            mapper.map(listOf(uploadedPhoto), -1)
+                        val itemsMap = mapper.map(listOf(uploadedPhoto), -1)
 
-                        viewModel.mergeItems(itemsMap)
+                        state.mergeItems(itemsMap)
 
-                        diskResultListener.onNext(DiskResult.Update(viewModel.getListItems()))
+                        diskResultListener.onNext(DiskResult.Update(state.getListItems()))
                     }
                 }, {
                     it.printThrowable()
@@ -84,25 +83,25 @@ class DiskPresenterImpl @Inject constructor(
                 .subscribeOn(background())
                 .observeOn(background())
                 .concatMapSingle {
-                    val page = viewModel.currentPage.getAndIncrement()
+                    val page = state.currentPage.getAndIncrement()
 
                     diskRepository
                         .getPhotos(page, LIMIT)
                         .map {
                             val itemMap = mapper.map(it, page)
                             val hasMore = itemMap.isNotEmpty()
-                            viewModel.hasMore.set(hasMore)
+                            state.hasMore.set(hasMore)
 
                             if (page == 0) {
-                                viewModel.setItems(itemMap)
+                                state.setItems(itemMap)
                                 DiskResult.Loaded(
-                                    photos = viewModel.getListItems(),
+                                    photos = state.getListItems(),
                                     hasMore = hasMore
                                 )
                             } else {
-                                viewModel.mergeItems(itemMap)
+                                state.mergeItems(itemMap)
                                 DiskResult.LoadMoreCompleted(
-                                    photos = viewModel.getListItems(),
+                                    photos = state.getListItems(),
                                     hasMore = hasMore
                                 )
                             }
@@ -114,8 +113,8 @@ class DiskPresenterImpl @Inject constructor(
         )
     }
 
-    override fun observeContent(): Observable<DiskViewModel> {
-        return contentListener
+    override fun observeContent(): Observable<DiskState> {
+        return stateListener
     }
 
     override fun observeDiskResult(): Observable<DiskResult> {
@@ -123,8 +122,8 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     override fun getPhotos() {
-        viewModel.currentPage.set(0)
-        viewModel.hasMore.set(true)
+        state.currentPage.set(0)
+        state.hasMore.set(true)
 
         loadListener.onNext(Unit)
     }
@@ -140,7 +139,7 @@ class DiskPresenterImpl @Inject constructor(
                 .map { mapper.mapUploading(it) }
                 .subscribe(
                     {
-                        viewModel.uploading = it
+                        state.uploading = it
                         diskResultListener.onNext(DiskResult.Uploading(it))
                     },
                     { it.printThrowable() }
@@ -185,10 +184,10 @@ class DiskPresenterImpl @Inject constructor(
     }
 
     private fun createFakeUploads(photos: List<Photo>) {
-        var uploading = viewModel.uploading
+        var uploading = state.uploading
         if (uploading == null) {
             uploading = mapper.mapUploading(photos)
-            viewModel.uploading = uploading
+            state.uploading = uploading
 
         } else {
             val items = uploading.items

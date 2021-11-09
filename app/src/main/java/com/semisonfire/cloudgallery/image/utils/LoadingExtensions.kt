@@ -16,9 +16,9 @@ fun ImageView.loadCircleImage(
     uri: String,
     width: Int? = null,
     height: Int? = null,
-    @DrawableRes errorId: Int? = null
+    @DrawableRes placeholderId: Int? = null
 ) {
-    imageRequest(uri, errorId, width, height)
+    imageRequest(uri, placeholderId, width, height)
         .transform(CircleCrop())
         .into(this)
 }
@@ -27,22 +27,28 @@ fun ImageView.loadRoundedImage(
     uri: String,
     width: Int? = null,
     height: Int? = null,
-    @DrawableRes errorId: Int? = null
+    @DrawableRes placeholderId: Int? = null
 ) {
-    imageRequest(uri, errorId, width, height)
+    imageRequest(uri, placeholderId, width, height)
         .transform(CenterCrop(), RoundedCorners(context.dip(4)))
         .into(this)
 }
 
 private fun ImageView.imageRequest(
     uri: String,
-    errorId: Int?,
+    placeholderId: Int?,
     width: Int?,
     height: Int?
 ): RequestBuilder<Drawable> {
     return Glide.with(this)
         .load(uri)
-        .apply { errorId?.let { error(it) } }
+        .let {
+            if (placeholderId == null) {
+                it
+            } else {
+                it.placeholder(placeholderId)
+            }
+        }
         .let {
             if (width != null && height != null) {
                 it.apply(RequestOptions.overrideOf(width, height))

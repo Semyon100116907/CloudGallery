@@ -30,7 +30,7 @@ import com.semisonfire.cloudgallery.ui.dialogs.BottomDialogFragment
 import com.semisonfire.cloudgallery.ui.dialogs.DialogListener
 import com.semisonfire.cloudgallery.ui.disk.adapter.DiskAdapter
 import com.semisonfire.cloudgallery.ui.disk.di.DaggerDiskComponent
-import com.semisonfire.cloudgallery.ui.disk.model.DiskViewModel
+import com.semisonfire.cloudgallery.ui.disk.model.DiskState
 import com.semisonfire.cloudgallery.utils.FileUtils
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.longToast
@@ -132,7 +132,7 @@ class DiskFragment : ContentFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    private fun showContent(model: DiskViewModel) {
+    private fun showContent(model: DiskState) {
         adapter.updateDataSet(model.getListItems())
         adapter.endlessScrollEnabled = model.hasMore.get()
     }
@@ -211,7 +211,6 @@ class DiskFragment : ContentFragment() {
         swipeRefreshLayout?.setOnRefreshListener {
             presenter.getPhotos()
             adapter.endlessScrollEnabled = true
-            swipeRefreshLayout?.isRefreshing = true
         }
     }
 

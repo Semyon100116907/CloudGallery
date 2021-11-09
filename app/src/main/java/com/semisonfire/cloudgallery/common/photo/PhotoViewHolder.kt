@@ -21,6 +21,10 @@ class PhotoViewHolder(view: View) : ItemViewHolder<PhotoItem>(view) {
 
     override fun bind(item: PhotoItem) {
         super.bind(item)
-        viewBinding.imagePhoto.loadRoundedImage(item.url, targetWidth, targetHeight)
+        viewBinding.imagePhoto.loadRoundedImage(
+            uri = item.url,
+            width = targetWidth,
+            height = targetHeight
+        )
     }
 }

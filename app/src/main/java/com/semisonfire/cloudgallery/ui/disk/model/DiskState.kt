@@ -9,7 +9,7 @@ import java.util.TreeMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
-data class DiskViewModel(
+data class DiskState(
     var uploading: HorizontalScrollItem<UploadItem>? = null,
 ) {
     private val items = TreeMap<DiskKey, DiskValue>() { firstKey, secondKey ->
