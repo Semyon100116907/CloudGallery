@@ -80,7 +80,6 @@ class DiskPresenterImpl @Inject constructor(
 
         compositeDisposable.add(
             loadListener
-                .subscribeOn(background())
                 .observeOn(background())
                 .concatMapSingle {
                     val page = state.currentPage.getAndIncrement()
