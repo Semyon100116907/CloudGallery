@@ -14,7 +14,6 @@ import com.semisonfire.cloudgallery.ui.main.ui.state.MainStateView
 import com.semisonfire.cloudgallery.ui.main.ui.state.StateViewController
 import com.semisonfire.cloudgallery.utils.foreground
 import com.semisonfire.cloudgallery.utils.string
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 class MainActivity : ContentActivity() {
@@ -90,17 +89,11 @@ class MainActivity : ContentActivity() {
     /** Oauth login.  */
     private fun login() {
         val data = intent.data
-        intent = null
-        data?.let {
-            val pattern = Pattern.compile("access_token=(.*?)(&|$)")
-            val matcher = pattern.matcher(data.toString())
-            if (matcher.find()) {
-                val token = matcher.group(1)
-                if (!token.isNullOrEmpty()) {
-                    presenter.saveToken(token)
-                }
-            }
+        if (data != null) {
+            presenter.login(data.toString())
         }
+
+        intent = null
     }
 
     /** Create navigation instance.  */

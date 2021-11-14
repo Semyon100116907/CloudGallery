@@ -1,25 +1,36 @@
 package com.semisonfire.cloudgallery.ui.main
 
 import com.semisonfire.cloudgallery.core.ui.Presenter
-import com.semisonfire.cloudgallery.data.remote.auth.Auth
 import com.semisonfire.cloudgallery.data.remote.auth.AuthManager
+import com.semisonfire.cloudgallery.data.remote.auth.AuthModel
 import io.reactivex.Observable
+import java.util.regex.Pattern
 import javax.inject.Inject
 
 interface MainPresenter : Presenter {
-    fun saveToken(token: String)
-    fun observeAuth(): Observable<Auth.AuthModel>
+    fun login(url: String)
+    fun observeAuth(): Observable<AuthModel>
 }
 
 class MainPresenterImpl @Inject constructor(
     private val authManager: AuthManager
 ) : MainPresenter {
 
-    override fun saveToken(token: String) {
-        authManager.saveToken(token)
+    companion object {
+        private val tokenPattern = Pattern.compile("access_token=(.*?)(&|$)")
     }
 
-    override fun observeAuth(): Observable<Auth.AuthModel> {
-        return authManager.getAuthObservable().ofType(Auth.AuthModel::class.java)
+    override fun login(url: String) {
+        val matcher = tokenPattern.matcher(url)
+        if (matcher.find()) {
+            val token = matcher.group(1)
+            if (!token.isNullOrEmpty()) {
+                authManager.login(token)
+            }
+        }
+    }
+
+    override fun observeAuth(): Observable<AuthModel> {
+        return authManager.observeAuth()
     }
 }
