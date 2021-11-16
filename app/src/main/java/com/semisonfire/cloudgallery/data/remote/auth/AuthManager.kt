@@ -1,49 +1,44 @@
 package com.semisonfire.cloudgallery.data.remote.auth
 
-import com.semisonfire.cloudgallery.data.local.prefs.DiskPreferences
+import android.content.SharedPreferences
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import javax.inject.Inject
 import javax.inject.Singleton
 
-typealias Token = String
-
-sealed class Auth {
-    data class AuthModel(val token: Token) : Auth()
-    object Clear : Auth()
-}
+data class AuthModel(
+    val token: String
+)
 
 @Singleton
 class AuthManager @Inject constructor(
-    private val preferences: DiskPreferences
+    private val preferences: SharedPreferences
 ) {
 
-    private val authListener = BehaviorSubject.create<Auth>()
-
-    var authModel: Auth
-        private set
-
-    init {
-
-        val token = preferences.prefToken ?: ""
-        authModel = Auth.AuthModel(token)
-        authListener.onNext(authModel)
+    companion object {
+        private const val PREF_TOKEN = "TOKEN"
     }
 
-    fun getAuthObservable(): Observable<Auth> {
-        return authListener.hide().filter { it !is Auth.Clear }
+    private val authListener =
+        BehaviorSubject.createDefault(AuthModel(preferences.getString(PREF_TOKEN, null) ?: ""))
+
+    val authModel: AuthModel
+        get() = authListener.value!!
+
+    fun login(token: String) {
+        preferences.edit()
+            .putString(PREF_TOKEN, token)
+            .apply()
+
+        authListener.onNext(AuthModel(token))
     }
 
-    fun saveToken(token: String) {
-        preferences.prefToken = token
-        authModel = Auth.AuthModel(token)
-        authListener.onNext(authModel)
+    fun logout() {
+        preferences.edit()
+            .remove(PREF_TOKEN)
+            .apply()
+        authListener.onNext(AuthModel(""))
     }
 
-    fun clear() {
-        preferences.clear()
-
-        authModel = Auth.Clear
-        authListener.onNext(authModel)
-    }
+    fun observeAuth(): Observable<AuthModel> = authListener.hide()
 }

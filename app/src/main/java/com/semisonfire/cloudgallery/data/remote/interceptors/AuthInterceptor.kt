@@ -1,9 +1,6 @@
 package com.semisonfire.cloudgallery.data.remote.interceptors
 
-import com.semisonfire.cloudgallery.data.remote.auth.Auth
 import com.semisonfire.cloudgallery.data.remote.auth.AuthManager
-import com.semisonfire.cloudgallery.data.remote.exceptions.UnauthorizedException
-import java.io.IOException
 import javax.inject.Inject
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -12,24 +9,36 @@ class AuthInterceptor @Inject constructor(
     private val authManager: AuthManager
 ) : Interceptor {
 
-    @Throws(IOException::class)
+    companion object {
+        private const val AUTH_HEADER_KEY = "Authorization"
+        private const val AUTH_HEADER_VALUE = "OAuth %s"
+
+        private const val ACCEPT_HEADER_KEY = "Accept"
+        private const val ACCEPT_HEADER_VALUE = "application/json"
+    }
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-
-        var modifiedRequest = request
+        var requestBuilder = request.newBuilder()
 
         val authModel = authManager.authModel
-        if (authModel is Auth.AuthModel) {
-            modifiedRequest = request.newBuilder()
-                .header("Accept", "application/json")
-                .header("Authorization", "OAuth ${authModel.token}")
-                .build()
+        if (authModel.token.isNotBlank()) {
+            requestBuilder = requestBuilder.header(
+                AUTH_HEADER_KEY,
+                AUTH_HEADER_VALUE.format(authModel.token)
+            )
         }
 
-        val response = chain.proceed(modifiedRequest)
+        val response = chain.proceed(
+            requestBuilder
+                .header(ACCEPT_HEADER_KEY, ACCEPT_HEADER_VALUE)
+                .build()
+        )
+
         val unauthorized = response.code == 401
         if (unauthorized) {
-            throw UnauthorizedException(response.code, response.message)
+            authManager.logout()
+            return response
         }
         return response
     }
